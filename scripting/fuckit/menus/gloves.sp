@@ -47,8 +47,15 @@ int Callback_GlovesMenu(Menu menu, MenuAction action, int client, int itemNum) {
 }
 
 void Gloves_SubMenu(int client, Glove glove) {
+    if(glove == null) {
+        return;
+    }
+
+    char title[64];
+    glove.GetName(title, sizeof(title));
+
     Menu menu = CreateMenu(Callback_GlovesSubMenu);
-    menu.SetTitle("FuckIt Gloves");
+    menu.SetTitle(title);
 
     GloveSkin skins[16];
     glove.GetSkins(skins, sizeof(skins));

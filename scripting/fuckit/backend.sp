@@ -25,7 +25,7 @@ public void Backend_Connnection(Database database, const char[] error, any data)
     Backend_LoadKnives();
 
     for(int i = 1; i <= MaxClients; i++) {
-        if(!IsClientInGame(i) || IsFakeClient(i)) {
+        if(!IsClientValid(i)) {
             continue;
         }
 
@@ -35,6 +35,8 @@ public void Backend_Connnection(Database database, const char[] error, any data)
         GetClientAuthId(i, AuthId_Steam2, steamId, sizeof(steamId));
         Backend_GetUser(i, steamId);
     }
+
+    CreateTimer(15.0, Timer_TagAll, _, TIMER_REPEAT);
 }
 
 public void Backend_LoadGroups() {
