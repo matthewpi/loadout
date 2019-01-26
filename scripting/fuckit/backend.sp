@@ -9,6 +9,7 @@
 #define GET_KNIVES "SELECT * FROM `cs_knives`;"
 #define GET_GLOVES "SELECT * FROM `cs_gloves`;"
 #define GET_GLOVE_SKINS "SELECT * FROM `cs_glove_skins`;"
+#define SEARCH_WEAPON_SKINS "SELECT * FROM `cs_skins` WHERE cs_skins.displayName LIKE \"%s%%\";"
 
 Database g_hDatabase;
 
@@ -270,7 +271,7 @@ public void Backend_SearchSkins(int client, const char[] skinQuery) {
     g_hDatabase.Escape(skinQuery, escapedSkinQuery, skinQueryLen);
 
     char query[512];
-    Format(query, sizeof(query), "SELECT * FROM `cs_skins` WHERE cs_skins.displayName LIKE \"%s%%\";", escapedSkinQuery);
+    Format(query, sizeof(query), SEARCH_WEAPON_SKINS, escapedSkinQuery);
 
     g_hDatabase.Query(Callback_SearchSkins, query, client);
 }

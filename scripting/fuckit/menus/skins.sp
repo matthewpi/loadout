@@ -215,8 +215,10 @@ int Callback_SkinsWeaponMenu(Menu menu, MenuAction action, int client, int itemN
             menu.GetItem(itemNum, info, sizeof(info));
 
             g_cSkinWeapon[client] = info;
-            g_bSkinSearch[client] = true;
-            PrintToChat(client, "%s Enter the name of the skin you would like.", PREFIX);
+            /*g_bSkinSearch[client] = true;
+            PrintToChat(client, "%s Enter the name of the skin you would like.", PREFIX);*/
+
+            Skins_FilterMenu(client);
         }
 
         case MenuAction_Cancel: {
@@ -229,6 +231,53 @@ int Callback_SkinsWeaponMenu(Menu menu, MenuAction action, int client, int itemN
             delete menu;
         }
     }
+}
+
+void Skins_FilterMenu(int client) {
+    Menu menu = CreateMenu(Callback_SkinsFilterMenu);
+    menu.SetTitle("Skin Filter");
+
+    menu.AddItem("search", "Search..");
+
+    char alphabet[26][1] = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+    for(int i = 0; i < sizeof(alphabet); i++) {
+        menu.AddItem(alphabet[i], alphabet[i]);
+    }
+
+    menu.ExitBackButton = true;
+    menu.Display(client, 0);
+}
+
+int Callback_SkinsFilterMenu(Menu menu, MenuAction action, int client, int itemNum) {
+    switch(action) {
+        case MenuAction_Select: {
+            char info[32];
+            menu.GetItem(itemNum, info, sizeof(info));
+
+            if(StrEqual(info, "search", true)) {
+                g_bSkinSearch[client] = true;
+                PrintToChat(client, "%s Enter the name of the skin you would like.", PREFIX);
+            } else {
+                if(strlen(info) < 1 || strlen(info) > 24) {
+                    return 0;
+                }
+
+                Backend_SearchSkins(client, info);
+            }
+        }
+
+        case MenuAction_Cancel: {
+            if(itemNum == MenuCancel_ExitBack) {
+                Skins_Menu(client);
+            }
+        }
+
+        case MenuAction_End: {
+            delete menu;
+        }
+    }
+
+    return 0;
 }
 
 int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int itemNum) {
