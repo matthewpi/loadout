@@ -11,8 +11,8 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define PREFIX " \x08[\x06FuckIt\x08]\x01"
-#define CONSOLE_PREFIX "[FuckIt]"
+#define PREFIX "[\x06Loadout\x01]"
+#define CONSOLE_PREFIX "[Loadout]"
 // This might need to be increased depending on the number of groups.
 #define GROUP_MAX 16
 // This might need to be increased if Valve keeps adding knives.
@@ -45,7 +45,7 @@ StringMap g_mPlayerSkins[MAXPLAYERS + 1];
 #include "fuckit/menus/skins.sp"
 
 public Plugin myinfo = {
-    name = "FuckIt",
+    name = "Weapon Loadout (Knives, Gloves, Skins)",
     author = "Matthew \"MP\" Penner",
     description = "",
     version = "0.0.1-DEV",
@@ -62,9 +62,10 @@ public void OnPluginStart() {
     RegConsoleCmd("sm_knife", Command_Knife);
     RegConsoleCmd("sm_skins", Command_Skins);
     RegConsoleCmd("sm_ws", Command_Skins);
-    RegConsoleCmd("sm_save", Command_Save);
 
     HookEvent("player_spawn", Event_PlayerSpawn);
+
+    CreateTimer(60.0, Timer_SaveData, _, TIMER_REPEAT);
 }
 
 /**
@@ -214,7 +215,7 @@ public void OnClientDisconnect(int client) {
     char steamId[64];
     GetClientAuthId(client, AuthId_Steam2, steamId, sizeof(steamId));
 
-    Backend_SetUserSkins(client, steamId);
+    Backend_SaveUserSkins(client, steamId);
 }
 
 /**
@@ -235,4 +236,16 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
     }
 
     return Plugin_Continue;
+}
+
+public Action Timer_SaveData(Handle timer) {
+    for(int i = 1; i <= MaxClients; i++) {
+        if(!IsClientValid(i)) {
+            continue;
+        }
+
+        char steamId[64];
+        GetClientAuthId(i, AuthId_Steam2, steamId, sizeof(steamId));
+        Backend_SaveUserSkins(i, steamId);
+    }
 }

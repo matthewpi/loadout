@@ -17,11 +17,3 @@ public Action Command_Skins(const int client, const int args) {
 	Skins_Menu(client);
 	return Plugin_Handled;
 }
-
-public Action Command_Save(const int client, const int args) {
-    char steamId[64];
-    GetClientAuthId(client, AuthId_Steam2, steamId, sizeof(steamId));
-
-    Backend_SetUserSkins(client, steamId);
-    return Plugin_Handled;
-}

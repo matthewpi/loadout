@@ -284,7 +284,7 @@ void Callback_SearchSkins(Database database, DBResultSet results, const char[] e
     g_hSkinMenus[client] = menu;
 }
 
-public void Backend_SetUserSkins(int client, const char[] steamId) {
+public void Backend_SaveUserSkins(int client, const char[] steamId) {
     if(g_mPlayerSkins[client] == null) {
         return;
     }
@@ -294,13 +294,13 @@ public void Backend_SetUserSkins(int client, const char[] steamId) {
     char knife[16];
     if(g_mPlayerSkins[client].GetString("plugin_knife", knife, sizeof(knife))) {
         Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_knife", knife, knife);
-        g_hDatabase.Query(Callback_SetUserSkin, query, client);
+        g_hDatabase.Query(Callback_SaveUserSkins, query, client);
     }
 
     char gloves[16];
     if(g_mPlayerSkins[client].GetString("plugin_gloves", gloves, sizeof(gloves))) {
         Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_gloves", gloves, gloves);
-        g_hDatabase.Query(Callback_SetUserSkin, query, client);
+        g_hDatabase.Query(Callback_SaveUserSkins, query, client);
     }
 
     for(int i = 0; i < sizeof(g_cWeaponClasses); i++) {
@@ -317,11 +317,11 @@ public void Backend_SetUserSkins(int client, const char[] steamId) {
         IntToString(skinId, skinIdChar, sizeof(skinIdChar));
 
         Format(query, sizeof(query), SET_USER_SKIN, steamId, g_cWeaponClasses[i], skinIdChar, skinIdChar);
-        g_hDatabase.Query(Callback_SetUserSkin, query, client);
+        g_hDatabase.Query(Callback_SaveUserSkins, query, client);
     }
 }
 
-void Callback_SetUserSkin(Database database, DBResultSet results, const char[] error, int client) {
+void Callback_SaveUserSkins(Database database, DBResultSet results, const char[] error, int client) {
     if(results == null) {
         LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_SetUserSkin", (strlen(error) > 0 ? error : "Unknown."));
         return;
