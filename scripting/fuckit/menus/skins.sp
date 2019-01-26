@@ -49,7 +49,37 @@ void Skins_PistolMenu(int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
     menu.SetTitle("Pistols");
 
-    //char weaponName[32];
+    char weaponName[32];
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_cz75a");
+    menu.AddItem("weapon_cz75a", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_deagle");
+    menu.AddItem("weapon_deagle", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_elite");
+    menu.AddItem("weapon_elite", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_fiveseven");
+    menu.AddItem("weapon_fiveseven", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_glock18");
+    menu.AddItem("weapon_glock18", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_hkp2000");
+    menu.AddItem("weapon_hkp2000", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_p250");
+    menu.AddItem("weapon_p250", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_tec9");
+    menu.AddItem("weapon_tec9", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_usp_silencer");
+    menu.AddItem("weapon_usp_silencer", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_revolver");
+    menu.AddItem("weapon_revolver", weaponName);
 
     menu.ExitBackButton = true;
     menu.Display(client, 0);
@@ -59,7 +89,25 @@ void Skins_HeavyMenu(int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
     menu.SetTitle("Heavy");
 
-    //char weaponName[32];
+    char weaponName[32];
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_nova");
+    menu.AddItem("weapon_nova", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_m249");
+    menu.AddItem("weapon_bizon", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_mag7");
+    menu.AddItem("weapon_mag7", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_negev");
+    menu.AddItem("weapon_negev", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_sawedoff");
+    menu.AddItem("weapon_sawedoff", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_xm1014");
+    menu.AddItem("weapon_xm1014", weaponName);
 
     menu.ExitBackButton = true;
     menu.Display(client, 0);
@@ -69,7 +117,28 @@ void Skins_SMGMenu(int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
     menu.SetTitle("SMG");
 
-    //char weaponName[32];
+    char weaponName[32];
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_bizon");
+    menu.AddItem("weapon_bizon", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_mac10");
+    menu.AddItem("weapon_mac10", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_mp5sd");
+    menu.AddItem("weapon_mp5sd", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_mp7");
+    menu.AddItem("weapon_mp7", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_mp9");
+    menu.AddItem("weapon_mp9", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_p90");
+    menu.AddItem("weapon_p90", weaponName);
+
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_ump45");
+    menu.AddItem("weapon_ump45", weaponName);
 
     menu.ExitBackButton = true;
     menu.Display(client, 0);

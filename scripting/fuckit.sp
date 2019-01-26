@@ -140,6 +140,7 @@ public Action OnPostWeaponEquip(int client, int entity) {
         SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
     }
 
+    // TODO: Add ammo thingy
     if((StrContains(g_cSkinWeapon[client], "weapon_knife") != -1 && StrContains(classname, "weapon_knife") != -1) || StrEqual(classname, g_cSkinWeapon[client])) {
         if(definitionIndex == -1) {
             for(int i = 1; i < sizeof(g_cWeaponClasses); i++) {
