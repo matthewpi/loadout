@@ -3,11 +3,11 @@
  * All rights reserved.
  */
 
-#define GET_KNIVES "SELECT * FROM `cs_knives`;"
-#define GET_GLOVES "SELECT * FROM `cs_gloves`;"
+#define GET_GLOVES "SELECT * FROM `cs_gloves` ORDER BY cs_gloves.displayName;"
 #define GET_GLOVE_SKINS "SELECT * FROM `cs_glove_skins`;"
+#define GET_KNIVES "SELECT * FROM `cs_knives` ORDER BY cs_knives.displayName;"
 #define GET_USER_SKINS "SELECT user_skins.weapon, user_skins.skinId FROM `user_skins` WHERE user_skins.steamId='%s';"
-#define SEARCH_WEAPON_SKINS "SELECT * FROM `cs_skins` WHERE cs_skins.displayName LIKE \"%s%%\";"
+#define SEARCH_WEAPON_SKINS "SELECT * FROM `cs_skins` WHERE cs_skins.displayName LIKE \"%s%%\" ORDER BY cs_skins.displayName;"
 #define SET_USER_SKIN "INSERT INTO `user_skins` (`steamId`, `weapon`, `skinId`) VALUES ('%s', '%s', '%s') ON DUPLICATE KEY UPDATE user_skins.skinId='%s';"
 
 Database g_hDatabase;
@@ -237,10 +237,28 @@ void Callback_SearchSkins(Database database, DBResultSet results, const char[] e
         return;
     }
 
+    if(results.RowCount == 0) {
+        PrintToChat(client, "%s No results found.", PREFIX);
+    }
+
     int nameIndex;
     int skinIdIndex;
     if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"cs_skins\".", CONSOLE_PREFIX); return; }
     if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"cs_skins\".", CONSOLE_PREFIX); return; }
+
+    if(results.RowCount == 1) {
+        results.FetchRow();
+
+        char name[64];
+        int skinId = results.FetchInt(skinIdIndex);
+
+        results.FetchString(nameIndex, name, sizeof(name));
+
+        g_mPlayerSkins[client].SetValue(g_cSkinWeapon[client], skinId, true);
+        Skins_Refresh(client, g_cSkinWeapon[client]);
+        PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, name, g_cSkinWeapon[client]);
+        return;
+    }
 
     Menu menu = CreateMenu(Callback_SkinsSkinMenu);
     menu.SetTitle("Filtered Skins");

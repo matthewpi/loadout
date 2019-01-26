@@ -281,8 +281,10 @@ int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int itemNum
     switch(action) {
         case MenuAction_Select: {
             char info[32];
-            menu.GetItem(itemNum, info, sizeof(info));
+            char displayName[64];
+            menu.GetItem(itemNum, info, sizeof(info), _, displayName, sizeof(displayName));
 
+            PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, displayName, g_cSkinWeapon[client]);
             g_mPlayerSkins[client].SetValue(g_cSkinWeapon[client], StringToInt(info), true);
             Skins_Refresh(client, g_cSkinWeapon[client]);
             g_hSkinMenus[client].Display(client, 0);
@@ -323,7 +325,6 @@ void Skins_Refresh(int client, const char[] weapon) {
         int reserve = -1;
 
         if(!isKnife) {
-            PrintToChat(client, "%s Reading ammo from current weapon..", PREFIX);
             offset = FindDataMapInfo(client, "m_iAmmo") + (GetEntProp(entity, Prop_Data, "m_iPrimaryAmmoType") * 4);
             ammo = GetEntData(client, offset);
             clip = GetEntProp(entity, Prop_Send, "m_iClip1");
