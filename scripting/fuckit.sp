@@ -3,6 +3,7 @@
  * All rights reserved.
  */
 
+#include <clientprefs>
 #include <cstrike>
 #include <sdkhooks>
 #include <sdktools>
@@ -34,10 +35,14 @@ int g_iKnives[MAXPLAYERS + 1];
 
 Glove g_hGloves[GLOVE_MAX];
 int g_iGloves[MAXPLAYERS + 1];
+int g_iGloveSkins[MAXPLAYERS + 1];
 
 User g_hUsers[MAXPLAYERS + 1];
 
 int g_iSwapOnRoundEnd[MAXPLAYERS + 1];
+
+Handle g_hKnifeCookie;
+Handle g_hGloveCookie;
 
 #include "fuckit/utils.sp"
 #include "fuckit/backend.sp"
@@ -57,6 +62,9 @@ public Plugin myinfo = {
 public void OnPluginStart() {
     LoadTranslations("common.phrases");
 
+    g_hKnifeCookie = RegClientCookie("fuckit_knife", "Knife ID for FuckIt", CookieAccess_Protected);
+    g_hGloveCookie = RegClientCookie("fuckit_gloves", "Gloves ID for FuckIt", CookieAccess_Protected);
+
     Database.Connect(Backend_Connnection, "development");
 
     RegConsoleCmd("sm_admins", Command_Admins);
@@ -68,6 +76,34 @@ public void OnPluginStart() {
     RegAdminCmd("sm_team_t", Command_Team_T, ADMFLAG_CHAT, "Swap a client to the terrorist team.");
     RegAdminCmd("sm_team_ct", Command_Team_CT, ADMFLAG_CHAT, "Swap a client to the counter-terrorist team.");
     RegAdminCmd("sm_team_spec", Command_Team_Spec, ADMFLAG_CHAT, "Swap a client to the spectator team.");
+
+    HookEvent("player_spawn", Event_PlayerSpawn);
+}
+
+/**
+ * Event_PlayerSpawn
+ * Gives a player their selected knife and glove skin.
+ */
+public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
+    int client = GetClientOfUserId(event.GetInt("userid"));
+
+    if(!IsClientValid(client) || !IsPlayerAlive(client)) {
+        return Plugin_Continue;
+    }
+
+    if(g_iKnives[client] != 0) {
+        int currentKnife = GetEntProp(GetPlayerWeaponSlot(client, CS_SLOT_KNIFE), Prop_Send, "m_iItemDefinitionIndex");
+
+        if(g_iKnives[client] != currentKnife) {
+            Knives_Refresh(client);
+        }
+    }
+
+    if(g_iGloves[client] != 0 && g_iGloveSkins[client] != 0) {
+        Gloves_Refresh(client);
+    }
+
+    return Plugin_Continue;
 }
 
 /**
@@ -75,11 +111,13 @@ public void OnPluginStart() {
  * Adds client index to knives and gloves array and hooks "OnPostWeaponEquip".
  */
 public void OnClientPutInServer(int client) {
-    g_iKnives[client] = 0;
-    g_iGloves[client] = 0;
     SDKHook(client, SDKHook_WeaponEquip, OnPostWeaponEquip);
 }
 
+/**
+ * OnPostWeaponEquip
+ * Handles setting a client's knife.
+ */
 public Action OnPostWeaponEquip(int client, int entity) {
     char classname[64];
     if(!GetEdictClassname(entity, classname, 64)) {
@@ -101,6 +139,27 @@ public void OnClientSettingsChanged(int client) {
     } else {
         SetTag(client);
     }
+}
+
+/**
+ * OnClientCookiesCached
+ * Loads client's cookies into memory.
+ */
+public void OnClientCookiesCached(int client) {
+    g_iKnives[client] = 0;
+    g_iGloves[client] = 0;
+
+    char knife[8];
+    char gloves[16];
+    GetClientCookie(client, g_hKnifeCookie, knife, sizeof(knife));
+    GetClientCookie(client, g_hGloveCookie, gloves, sizeof(gloves));
+
+    char gloveSections[2][8];
+    ExplodeString(gloves, ";", gloveSections, 2, 8, true);
+
+    g_iKnives[client] = StringToInt(knife);
+    g_iGloves[client] = StringToInt(gloveSections[0]);
+    g_iGloveSkins[client] = StringToInt(gloveSections[1]);
 }
 
 /**

@@ -7,7 +7,15 @@ public void Skins_Menu(int client) {
     Menu menu = CreateMenu(Callback_SkinsMenu);
     menu.SetTitle("FuckIt Skins");
 
-    // TODO: Load CS:GO weapons.
+    menu.AddItem("pistols", "Pistols");
+    menu.AddItem("heavy", "Heavy");
+    menu.AddItem("smg", "SMG");
+    menu.AddItem("rifles", "Rifles");
+
+    PrintToChat(client, "%s Primary: %i", PREFIX, GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY));
+    PrintToChat(client, "%s Secondary: %i", PREFIX, GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY));
+    PrintToChat(client, "%s Knife: %i", PREFIX, GetPlayerWeaponSlot(client, CS_SLOT_KNIFE));
+    PrintToChat(client, "%s C4: %i", PREFIX, GetPlayerWeaponSlot(client, CS_SLOT_C4));
 
     menu.Display(client, 0);
 }

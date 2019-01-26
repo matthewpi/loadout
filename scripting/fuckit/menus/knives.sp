@@ -32,6 +32,7 @@ int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
             menu.GetItem(itemNum, info, sizeof(info));
 
             g_iKnives[client] = StringToInt(info);
+            SetClientCookie(client, g_hKnifeCookie, info);
             Knives_Refresh(client);
             Knives_Menu(client);
         }

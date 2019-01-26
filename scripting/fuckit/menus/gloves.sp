@@ -90,8 +90,13 @@ int Callback_GlovesSubMenu(Menu menu, MenuAction action, int client, int itemNum
             }
 
             GloveSkin skin = glove.GetSkin(StringToInt(info));
+            g_iGloveSkins[client] = skin.GetID();
 
-            Gloves_Refresh(client, skin);
+            char cookie[16];
+            Format(cookie, sizeof(cookie), "%i;%i", glove.GetID(), skin.GetID());
+            SetClientCookie(client, g_hGloveCookie, cookie);
+
+            Gloves_Refresh(client);
             Gloves_SubMenu(client, g_hGloves[g_iGloves[client]]);
         }
 
@@ -107,9 +112,14 @@ int Callback_GlovesSubMenu(Menu menu, MenuAction action, int client, int itemNum
     }
 }
 
-void Gloves_Refresh(int client, GloveSkin skin) {
+public void Gloves_Refresh(int client) {
     Glove glove = g_hGloves[g_iGloves[client]];
     if(glove == null) {
+        return;
+    }
+
+    GloveSkin skin = glove.GetSkin(g_iGloveSkins[client]);
+    if(skin == null) {
         return;
     }
 

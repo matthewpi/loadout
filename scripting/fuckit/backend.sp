@@ -30,6 +30,7 @@ public void Backend_Connnection(Database database, const char[] error, any data)
         }
 
         OnClientPutInServer(i);
+        OnClientCookiesCached(i);
 
         char steamId[64];
         GetClientAuthId(i, AuthId_Steam2, steamId, sizeof(steamId));
