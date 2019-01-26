@@ -3,14 +3,12 @@
  * All rights reserved.
  */
 
-#define GET_USER_GROUPS "SELECT user_groups.id, user_groups.name, user_groups.tag, user_groups.immunity, user_groups.flags FROM `user_groups`;"
-#define GET_USER "SELECT users.id, users.username, users.steamId, users.group, UNIX_TIMESTAMP(users.createdAt) FROM `users` WHERE users.steamId='%s' LIMIT 1;"
-#define INSERT_USER "INSERT INTO `users` (`username`, `steamId`) VALUES ('%s', '%s');"
 #define GET_KNIVES "SELECT * FROM `cs_knives`;"
 #define GET_GLOVES "SELECT * FROM `cs_gloves`;"
 #define GET_GLOVE_SKINS "SELECT * FROM `cs_glove_skins`;"
-#define SEARCH_WEAPON_SKINS "SELECT * FROM `cs_skins` WHERE cs_skins.displayName LIKE \"%s%%\";"
 #define GET_USER_SKINS "SELECT user_skins.weapon, user_skins.skinId FROM `user_skins` WHERE user_skins.steamId='%s';"
+#define SEARCH_WEAPON_SKINS "SELECT * FROM `cs_skins` WHERE cs_skins.displayName LIKE \"%s%%\";"
+#define SET_USER_SKIN "INSERT INTO `user_skins` (`steamId`, `weapon`, `skinId`) VALUES ('%s', '%s', '%s') ON DUPLICATE KEY UPDATE user_skins.skinId='%s';"
 
 Database g_hDatabase;
 
@@ -22,7 +20,6 @@ public void Backend_Connnection(Database database, const char[] error, any data)
 
     g_hDatabase = database;
     LogMessage("%s Connected to database.", CONSOLE_PREFIX);
-    Backend_LoadGroups();
     Backend_LoadGloves();
     Backend_LoadKnives();
 
@@ -31,152 +28,12 @@ public void Backend_Connnection(Database database, const char[] error, any data)
             continue;
         }
 
+        OnClientConnected(i);
         OnClientPutInServer(i);
 
         char steamId[64];
         GetClientAuthId(i, AuthId_Steam2, steamId, sizeof(steamId));
-        Backend_GetUser(i, steamId);
         Backend_GetUserSkins(i, steamId);
-    }
-
-    CreateTimer(15.0, Timer_TagAll, _, TIMER_REPEAT);
-}
-
-public void Backend_LoadGroups() {
-    g_hDatabase.Query(Callback_LoadGroups, GET_USER_GROUPS);
-}
-
-void Callback_LoadGroups(Database database, DBResultSet results, const char[] error, any data) {
-    if(results == null) {
-        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_LoadGroups", (strlen(error) > 0 ? error : "Unknown."));
-        return;
-    }
-
-    int idIndex;
-    int nameIndex;
-    int tagIndex;
-    int immunityIndex;
-    int flagsIndex;
-    if(!results.FieldNameToNum("id", idIndex)) { LogError("%s Failed to locate \"id\" field in table \"user_groups\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("name", nameIndex)) { LogError("%s Failed to locate \"name\" field in table \"user_groups\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("tag", tagIndex)) { LogError("%s Failed to locate \"tag\" field in table \"user_groups\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("immunity", immunityIndex)) { LogError("%s Failed to locate \"immunity\" field in table \"user_groups\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("flags", flagsIndex)) { LogError("%s Failed to locate \"flags\" field in table \"user_groups\".", CONSOLE_PREFIX); return; }
-
-    while(results.FetchRow()) {
-        int id = results.FetchInt(idIndex);
-        char name[32];
-        char tag[16];
-        int immunity = results.FetchInt(immunityIndex);
-        char flags[26];
-
-        results.FetchString(nameIndex, name, sizeof(name));
-        results.FetchString(tagIndex, tag, sizeof(tag));
-        results.FetchString(flagsIndex, flags, sizeof(flags));
-
-        Group group = new Group();
-        group.SetID(id);
-        group.SetName(name);
-        group.SetTag(tag);
-        group.SetImmunity(immunity);
-        group.SetFlags(flags);
-
-        g_hGroups[id] = group;
-    }
-}
-
-public void Backend_GetUser(int client, const char[] steamId) {
-    char query[512];
-    Format(query, sizeof(query), GET_USER, steamId);
-    g_hDatabase.Query(Callback_GetUser, query, client);
-}
-
-void Callback_GetUser(Database database, DBResultSet results, const char[] error, int client) {
-    if(results == null) {
-        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_GetUser", (strlen(error) > 0 ? error : "Unknown."));
-        return;
-    }
-
-    int idIndex;
-    int usernameIndex;
-    int steamIdIndex;
-    int groupIndex;
-    int createdAtIndex;
-    if(!results.FieldNameToNum("id", idIndex)) { LogError("%s Failed to locate \"id\" field in table \"users\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("username", usernameIndex)) { LogError("%s Failed to locate \"username\" field in table \"users\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("steamId", steamIdIndex)) { LogError("%s Failed to locate \"steamId\" field in table \"users\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("group", groupIndex)) { LogError("%s Failed to locate \"group\" field in table \"users\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("UNIX_TIMESTAMP(users.createdAt)", createdAtIndex)) { LogError("%s Failed to locate \"createdAt\" field in table \"users\".", CONSOLE_PREFIX); return; }
-
-    while(results.FetchRow()) {
-        int id = results.FetchInt(idIndex);
-        char username[32];
-        char steamId[64];
-        int group = results.FetchInt(groupIndex);
-        int createdAt = results.FetchInt(createdAtIndex);
-
-        results.FetchString(usernameIndex, username, sizeof(username));
-        results.FetchString(steamIdIndex, steamId, sizeof(steamId));
-
-        User user = new User();
-        user.SetID(id);
-        user.SetUsername(username);
-        user.SetSteamID(steamId);
-        user.SetGroup(group);
-        user.SetCreatedAt(createdAt);
-
-        g_hUsers[client] = user;
-        SetTagDelayed(client);
-    }
-    // TODO: Create user if they don't exist?
-}
-
-public void Backend_CreateUser(int client, const char[] name, const char[] steamId) {
-    char query[512];
-    Format(query, sizeof(query), INSERT_USER, name, steamId);
-    g_hDatabase.Query(Callback_GetUser, query, client);
-}
-
-public void Backend_GetUserSkins(int client, const char[] steamId) {
-    char query[512];
-    Format(query, sizeof(query), GET_USER_SKINS, steamId);
-    g_hDatabase.Query(Callback_GetUserSkins, query, client);
-}
-
-void Callback_GetUserSkins(Database database, DBResultSet results, const char[] error, int client) {
-    if(results == null) {
-        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_GetUserSkins", (strlen(error) > 0 ? error : "Unknown."));
-        return;
-    }
-
-    int weaponIndex;
-    int skinIdIndex;
-    if(!results.FieldNameToNum("weapon", weaponIndex)) { LogError("%s Failed to locate \"weapon\" field in table \"user_skins\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"user_skins\".", CONSOLE_PREFIX); return; }
-
-    while(results.FetchRow()) {
-        char weapon[64];
-        char skinId[16];
-
-        results.FetchString(weaponIndex, weapon, sizeof(weapon));
-        results.FetchString(skinIdIndex, skinId, sizeof(skinId));
-
-        // Handles knife type (not skin)
-        if(StrEqual(weapon, "plugin_knife", true)) {
-            g_iKnives[client] = StringToInt(skinId);
-        }
-
-        // Handles gloves
-        if(StrEqual(weapon, "plugin_gloves", true)) {
-            char gloveSections[2][8];
-            ExplodeString(skinId, ";", gloveSections, 2, 8, true);
-
-            g_iGloves[client] = StringToInt(gloveSections[0]);
-            g_iGloveSkins[client] = StringToInt(gloveSections[1]);
-        }
-
-        // Handles all actual skins
-        g_mPlayerSkins[client].SetValue(weapon, StringToInt(skinId), true);
     }
 }
 
@@ -313,6 +170,51 @@ void Callback_LoadGloveSkins(Database database, DBResultSet results, const char[
     }
 }
 
+public void Backend_GetUserSkins(int client, const char[] steamId) {
+    char query[512];
+    Format(query, sizeof(query), GET_USER_SKINS, steamId);
+    g_hDatabase.Query(Callback_GetUserSkins, query, client);
+}
+
+void Callback_GetUserSkins(Database database, DBResultSet results, const char[] error, int client) {
+    if(results == null) {
+        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_GetUserSkins", (strlen(error) > 0 ? error : "Unknown."));
+        return;
+    }
+
+    int weaponIndex;
+    int skinIdIndex;
+    if(!results.FieldNameToNum("weapon", weaponIndex)) { LogError("%s Failed to locate \"weapon\" field in table \"user_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"user_skins\".", CONSOLE_PREFIX); return; }
+
+    while(results.FetchRow()) {
+        char weapon[64];
+        char skinId[16];
+
+        results.FetchString(weaponIndex, weapon, sizeof(weapon));
+        results.FetchString(skinIdIndex, skinId, sizeof(skinId));
+
+        // Handles knife type (not skin)
+        if(StrEqual(weapon, "plugin_knife", true)) {
+            g_iKnives[client] = StringToInt(skinId);
+            g_mPlayerSkins[client].SetString("plugin_knife", skinId, true);
+        }
+
+        // Handles gloves
+        if(StrEqual(weapon, "plugin_gloves", true)) {
+            char gloveSections[2][8];
+            ExplodeString(skinId, ";", gloveSections, 2, 8, true);
+
+            g_iGloves[client] = StringToInt(gloveSections[0]);
+            g_iGloveSkins[client] = StringToInt(gloveSections[1]);
+            g_mPlayerSkins[client].SetString("plugin_gloves", skinId, true);
+        }
+
+        // Handles all actual skins
+        g_mPlayerSkins[client].SetValue(weapon, StringToInt(skinId), true);
+    }
+}
+
 public void Backend_SearchSkins(int client, const char[] skinQuery) {
     int skinQueryLen = strlen(skinQuery) * 2 + 1;
     char[] escapedSkinQuery = new char[skinQueryLen];
@@ -362,4 +264,52 @@ void Callback_SearchSkins(Database database, DBResultSet results, const char[] e
     menu.ExitBackButton = true;
     menu.Display(client, 0);
     g_hSkinMenus[client] = menu;
+}
+
+public void Backend_SetUserSkins(int client, const char[] steamId) {
+    if(g_mPlayerSkins[client] == null) {
+        return;
+    }
+
+    char query[512];
+
+    char knife[16];
+    if(g_mPlayerSkins[client].GetString("plugin_knife", knife, sizeof(knife))) {
+        Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_knife", knife, knife);
+        g_hDatabase.Query(Callback_SetUserSkin, query, client);
+    } else {
+        PrintToChat(client, "%s No knife set?", PREFIX);
+    }
+
+    char gloves[16];
+    if(g_mPlayerSkins[client].GetString("plugin_gloves", gloves, sizeof(gloves))) {
+        Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_gloves", gloves, gloves);
+        g_hDatabase.Query(Callback_SetUserSkin, query, client);
+    } else {
+        PrintToChat(client, "%s No gloves set?", PREFIX);
+    }
+
+    for(int i = 1; i < sizeof(g_cWeaponClasses); i++) {
+        int skinId;
+        if(!g_mPlayerSkins[client].GetValue(g_cWeaponClasses[i], skinId)) {
+            continue;
+        }
+
+        if(skinId < 1) {
+            continue;
+        }
+
+        char skinIdChar[16];
+        IntToString(skinId, skinIdChar, sizeof(skinIdChar));
+
+        Format(query, sizeof(query), SET_USER_SKIN, steamId, g_cWeaponClasses[i], skinIdChar, skinIdChar);
+        g_hDatabase.Query(Callback_SetUserSkin, query, client);
+    }
+}
+
+void Callback_SetUserSkin(Database database, DBResultSet results, const char[] error, int client) {
+    if(results == null) {
+        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_SetUserSkin", (strlen(error) > 0 ? error : "Unknown."));
+        return;
+    }
 }

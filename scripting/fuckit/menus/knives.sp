@@ -5,11 +5,11 @@
 
 public void Knives_Menu(int client) {
     Menu menu = CreateMenu(Callback_KnivesMenu);
-    menu.SetTitle("FuckIt Knives");
+    menu.SetTitle("Knives");
 
     char item[4];
     char name[64];
-    for(int i = 1; i < sizeof(g_hKnives); i++) {
+    for(int i = 1; i < KNIFE_MAX; i++) {
         Knife knife = g_hKnives[i];
 
         if(knife == null) {
@@ -32,7 +32,7 @@ int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
             menu.GetItem(itemNum, info, sizeof(info));
 
             g_iKnives[client] = StringToInt(info);
-            g_mPlayerSkins[client].SetValue("plugin_knife", g_iKnives[client], true);
+            g_mPlayerSkins[client].SetString("plugin_knife", info, true);
 
             Knives_Refresh(client);
             Knives_Menu(client);

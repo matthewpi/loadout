@@ -5,7 +5,7 @@
 
 public void Skins_Menu(int client) {
     Menu menu = CreateMenu(Callback_SkinsMenu, MENU_ACTIONS_DEFAULT);
-    menu.SetTitle("FuckIt Skins");
+    menu.SetTitle("Skins");
 
     menu.AddItem("pistols", "Pistols");
     menu.AddItem("heavy", "Heavy");
@@ -200,7 +200,7 @@ void Skins_InventoryMenu(int client) {
 
         if(entity != -1 && GetWeaponClass(entity, weaponClass, sizeof(weaponClass))) {
             Format(weaponName, sizeof(weaponName), "%T", weaponClass, client);
-            menu.AddItem(weaponClass, weaponName, (StrContains(weaponClass, "weapon_knife") && g_iKnives[client] == 0) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+            menu.AddItem(weaponClass, weaponName, (StrContains(weaponClass, "weapon_knife") != -1 && g_iKnives[client] == 0) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
         }
     }
 

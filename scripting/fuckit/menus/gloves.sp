@@ -5,11 +5,11 @@
 
 public void Gloves_Menu(int client) {
     Menu menu = CreateMenu(Callback_GlovesMenu);
-    menu.SetTitle("FuckIt Gloves");
+    menu.SetTitle("Gloves");
 
     char item[8];
     char name[64];
-    for(int i = 1; i < sizeof(g_hGloves); i++) {
+    for(int i = 1; i < GLOVE_MAX; i++) {
         Glove glove = g_hGloves[i];
 
         if(glove == null) {
@@ -62,7 +62,7 @@ void Gloves_SubMenu(int client, Glove glove) {
 
     char item[8];
     char name[64];
-    for(int i = 1; i < sizeof(skins); i++) {
+    for(int i = 1; i < GLOVE_SKIN_MAX; i++) {
         GloveSkin skin = skins[i];
 
         if(skin == null) {
@@ -96,7 +96,6 @@ int Callback_GlovesSubMenu(Menu menu, MenuAction action, int client, int itemNum
             char cookie[16];
             Format(cookie, sizeof(cookie), "%i;%i", glove.GetID(), gloveIndex);
             g_mPlayerSkins[client].SetString("plugin_gloves", cookie, true);
-            PrintToChat(client, "%s Gloves: %s", PREFIX, cookie);
 
             Gloves_Refresh(client);
             Gloves_SubMenu(client, g_hGloves[g_iGloves[client]]);
