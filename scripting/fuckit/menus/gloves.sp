@@ -89,11 +89,12 @@ int Callback_GlovesSubMenu(Menu menu, MenuAction action, int client, int itemNum
                 return;
             }
 
-            GloveSkin skin = glove.GetSkin(StringToInt(info));
+            int gloveIndex = StringToInt(info);
+            GloveSkin skin = glove.GetSkin(gloveIndex);
             g_iGloveSkins[client] = skin.GetID();
 
             char cookie[16];
-            Format(cookie, sizeof(cookie), "%i;%i", glove.GetID(), skin.GetID());
+            Format(cookie, sizeof(cookie), "%i;%i", glove.GetID(), gloveIndex);
             SetClientCookie(client, g_hGloveCookie, cookie);
 
             Gloves_Refresh(client);

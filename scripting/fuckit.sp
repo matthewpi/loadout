@@ -37,6 +37,11 @@ Glove g_hGloves[GLOVE_MAX];
 int g_iGloves[MAXPLAYERS + 1];
 int g_iGloveSkins[MAXPLAYERS + 1];
 
+Menu g_hSkinMenus[MAXPLAYERS + 1];
+char g_cSkinWeapon[MAXPLAYERS + 1][64];
+int g_iSkinWeaponPaint[MAXPLAYERS + 1];
+bool g_bSkinSearch[MAXPLAYERS + 1];
+
 User g_hUsers[MAXPLAYERS + 1];
 
 int g_iSwapOnRoundEnd[MAXPLAYERS + 1];
@@ -61,6 +66,7 @@ public Plugin myinfo = {
 
 public void OnPluginStart() {
     LoadTranslations("common.phrases");
+    LoadTranslations("fuckit.weapons.phrases");
 
     g_hKnifeCookie = RegClientCookie("fuckit_knife", "Knife ID for FuckIt", CookieAccess_Protected);
     g_hGloveCookie = RegClientCookie("fuckit_gloves", "Gloves ID for FuckIt", CookieAccess_Protected);
@@ -92,10 +98,14 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
     }
 
     if(g_iKnives[client] != 0) {
-        int currentKnife = GetEntProp(GetPlayerWeaponSlot(client, CS_SLOT_KNIFE), Prop_Send, "m_iItemDefinitionIndex");
+        int knifeEntity = GetPlayerWeaponSlot(client, CS_SLOT_KNIFE);
 
-        if(g_iKnives[client] != currentKnife) {
-            Knives_Refresh(client);
+        if(knifeEntity != -1) {
+            int currentKnife = GetEntProp(knifeEntity, Prop_Send, "m_iItemDefinitionIndex");
+
+            if(g_iKnives[client] != currentKnife) {
+                Knives_Refresh(client);
+            }
         }
     }
 
@@ -124,8 +134,35 @@ public Action OnPostWeaponEquip(int client, int entity) {
         return;
     }
 
+    int definitionIndex = -1;
     if(StrContains(classname, "weapon_knife", false) == 0 && g_iKnives[client] > 0) {
-        SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", g_iKnives[client]);
+        definitionIndex = g_iKnives[client];
+        SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
+    }
+
+    if((StrContains(g_cSkinWeapon[client], "weapon_knife") != -1 && StrContains(classname, "weapon_knife") != -1) || StrEqual(classname, g_cSkinWeapon[client])) {
+        if(definitionIndex == -1) {
+            for(int i = 1; i < sizeof(g_cWeaponClasses); i++) {
+                if(StrEqual(g_cWeaponClasses[i], classname)) {
+                    definitionIndex = g_iWeaponDefIndex[i];
+                }
+            }
+
+            if(definitionIndex == -1) {
+                PrintToChat(client, "%s Welp fuck %s", PREFIX);
+                return;
+            }
+        }
+
+        SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
+        SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
+        SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", g_iSkinWeaponPaint[client]);
+        SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", 0.01);
+        SetEntProp(entity, Prop_Send, "m_nFallbackSeed", GetRandomInt(0, 8192));
+        SetEntPropEnt(entity, Prop_Data, "m_hParent", client);
+        SetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity", client);
+        SetEntPropEnt(entity, Prop_Data, "m_hMoveParent", client);
+        SetEntPropEnt(entity, Prop_Send, "m_hPrevOwner", -1);
     }
 }
 
@@ -148,6 +185,7 @@ public void OnClientSettingsChanged(int client) {
 public void OnClientCookiesCached(int client) {
     g_iKnives[client] = 0;
     g_iGloves[client] = 0;
+    g_bSkinSearch[client] = false;
 
     char knife[8];
     char gloves[16];
@@ -198,6 +236,21 @@ public void OnClientDisconnect_Post(int client) {
     }
 
     delete g_hUsers[client];
+}
+
+/**
+ * OnClientDisconnect_Post
+ * Deletes memory allocation for the client's data if it is loaded.
+ */
+public Action OnClientSayCommand(int client, const char[] command, const char[] args) {
+    if(g_bSkinSearch[client]) {
+        Backend_SearchSkins(client, args);
+
+        g_bSkinSearch[client] = false;
+        return Plugin_Stop;
+    }
+
+    return Plugin_Continue;
 }
 
 /**

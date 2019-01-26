@@ -262,3 +262,51 @@ void Callback_LoadGloveSkins(Database database, DBResultSet results, const char[
         gloveSkins[glove.GetID()]++;
     }
 }
+
+public void Backend_SearchSkins(int client, const char[] searchQuery) {
+    char query[512];
+    Format(query, sizeof(query), "SELECT * FROM `cs_skins` WHERE cs_skins.displayName LIKE \"%s%%\";", searchQuery);
+
+    // TODO: Prepared Statement
+    
+    g_hDatabase.Query(Callback_SearchSkins, query, client);
+}
+
+void Callback_SearchSkins(Database database, DBResultSet results, const char[] error, int client) {
+    if(results == null) {
+        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_SearchSkins", (strlen(error) > 0 ? error : "Unknown."));
+        return;
+    }
+
+    if(!IsClientValid(client)) {
+        return;
+    }
+
+    int nameIndex;
+    int skinIdIndex;
+    if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"cs_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"cs_skins\".", CONSOLE_PREFIX); return; }
+
+    Menu menu = CreateMenu(Callback_SkinsSkinMenu);
+    menu.SetTitle("Filtered Skins");
+
+    while(results.FetchRow()) {
+        char name[64];
+        int skinId = results.FetchInt(skinIdIndex);
+
+        results.FetchString(nameIndex, name, sizeof(name));
+
+        char itemId[8];
+        IntToString(skinId, itemId, sizeof(itemId));
+
+        menu.AddItem(itemId, name);
+    }
+
+    if(!IsClientValid(client)) {
+        return;
+    }
+
+    menu.ExitBackButton = true;
+    menu.Display(client, 0);
+    g_hSkinMenus[client] = menu;
+}
