@@ -315,13 +315,56 @@ void Skins_Refresh(int client, const char[] weapon) {
             continue;
         }
 
+        bool isKnife = StrContains(weapon, "weapon_knife") != -1;
+
+        int offset = -1;
+        int ammo = -1;
+        int clip = -1;
+        int reserve = -1;
+
+        if(!isKnife) {
+            PrintToChat(client, "%s Reading ammo from current weapon..", PREFIX);
+            offset = FindDataMapInfo(client, "m_iAmmo") + (GetEntProp(entity, Prop_Data, "m_iPrimaryAmmoType") * 4);
+            ammo = GetEntData(client, offset);
+            clip = GetEntProp(entity, Prop_Send, "m_iClip1");
+            reserve = GetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount");
+        }
+
         RemovePlayerItem(client, entity);
         AcceptEntityInput(entity, "Kill");
 
-        if(StrContains(weapon, "weapon_knife") != -1) {
+        if(isKnife) {
             GivePlayerItem(client, "weapon_knife");
         } else {
-            GivePlayerItem(client, weapon);
+            entity = GivePlayerItem(client, weapon);
+
+            if(clip != -1) {
+                SetEntProp(entity, Prop_Send, "m_iClip1", clip);
+            }
+
+            if(reserve != -1) {
+                SetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount", reserve);
+            }
+
+            if(offset != -1 && ammo != -1) {
+                DataPack pack;
+                CreateDataTimer(0.1, Timer_WeaponAmmo, pack);
+                pack.WriteCell(client);
+                pack.WriteCell(offset);
+                pack.WriteCell(ammo);
+            }
         }
+    }
+}
+
+public Action Timer_WeaponAmmo(Handle timer, DataPack pack) {
+    ResetPack(pack);
+
+    int client = pack.ReadCell();
+    int offset = pack.ReadCell();
+    int ammo = pack.ReadCell();
+
+    if(IsClientValid(client) && IsPlayerAlive(client)) {
+        SetEntData(client, offset, ammo, 4, true);
     }
 }
