@@ -7,14 +7,6 @@ create table user_skins
     unique (steamId, weapon)
 );
 
-INSERT INTO csgo_dev.user_skins (steamId, weapon, skinId) VALUES ('STEAM_1:1:530997', 'plugin_gloves', '1;3');
-INSERT INTO csgo_dev.user_skins (steamId, weapon, skinId) VALUES ('STEAM_1:1:530997', 'plugin_knife', '523');
-INSERT INTO csgo_dev.user_skins (steamId, weapon, skinId) VALUES ('STEAM_1:1:530997', 'weapon_ak47', '524');
-INSERT INTO csgo_dev.user_skins (steamId, weapon, skinId) VALUES ('STEAM_1:1:530997', 'weapon_cz75a', '543');
-INSERT INTO csgo_dev.user_skins (steamId, weapon, skinId) VALUES ('STEAM_1:1:530997', 'weapon_glock', '680');
-INSERT INTO csgo_dev.user_skins (steamId, weapon, skinId) VALUES ('STEAM_1:1:530997', 'weapon_knife_widowmaker', '38');
-INSERT INTO csgo_dev.user_skins (steamId, weapon, skinId) VALUES ('STEAM_1:1:530997', 'weapon_p250', '678');
-INSERT INTO csgo_dev.user_skins (steamId, weapon, skinId) VALUES ('STEAM_1:1:530997', 'weapon_usp_silencer', '657');
 create table cs_skins
 (
   id          int auto_increment,
