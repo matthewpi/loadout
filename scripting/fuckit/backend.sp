@@ -10,6 +10,7 @@
 #define GET_GLOVES "SELECT * FROM `cs_gloves`;"
 #define GET_GLOVE_SKINS "SELECT * FROM `cs_glove_skins`;"
 #define SEARCH_WEAPON_SKINS "SELECT * FROM `cs_skins` WHERE cs_skins.displayName LIKE \"%s%%\";"
+#define GET_USER_SKINS "SELECT user_skins.weapon, user_skins.skinId FROM `user_skins` WHERE user_skins.steamId='%s';"
 
 Database g_hDatabase;
 
@@ -31,11 +32,11 @@ public void Backend_Connnection(Database database, const char[] error, any data)
         }
 
         OnClientPutInServer(i);
-        OnClientCookiesCached(i);
 
         char steamId[64];
         GetClientAuthId(i, AuthId_Steam2, steamId, sizeof(steamId));
         Backend_GetUser(i, steamId);
+        Backend_GetUserSkins(i, steamId);
     }
 
     CreateTimer(15.0, Timer_TagAll, _, TIMER_REPEAT);
@@ -136,6 +137,49 @@ public void Backend_CreateUser(int client, const char[] name, const char[] steam
     g_hDatabase.Query(Callback_GetUser, query, client);
 }
 
+public void Backend_GetUserSkins(int client, const char[] steamId) {
+    char query[512];
+    Format(query, sizeof(query), GET_USER_SKINS, steamId);
+    g_hDatabase.Query(Callback_GetUserSkins, query, client);
+}
+
+void Callback_GetUserSkins(Database database, DBResultSet results, const char[] error, int client) {
+    if(results == null) {
+        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_GetUserSkins", (strlen(error) > 0 ? error : "Unknown."));
+        return;
+    }
+
+    int weaponIndex;
+    int skinIdIndex;
+    if(!results.FieldNameToNum("weapon", weaponIndex)) { LogError("%s Failed to locate \"weapon\" field in table \"user_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"user_skins\".", CONSOLE_PREFIX); return; }
+
+    while(results.FetchRow()) {
+        char weapon[64];
+        char skinId[16];
+
+        results.FetchString(weaponIndex, weapon, sizeof(weapon));
+        results.FetchString(skinIdIndex, skinId, sizeof(skinId));
+
+        // Handles knife type (not skin)
+        if(StrEqual(weapon, "plugin_knife", true)) {
+            g_iKnives[client] = StringToInt(skinId);
+        }
+
+        // Handles gloves
+        if(StrEqual(weapon, "plugin_gloves", true)) {
+            char gloveSections[2][8];
+            ExplodeString(skinId, ";", gloveSections, 2, 8, true);
+
+            g_iGloves[client] = StringToInt(gloveSections[0]);
+            g_iGloveSkins[client] = StringToInt(gloveSections[1]);
+        }
+
+        // Handles all actual skins
+        g_mPlayerSkins[client].SetValue(weapon, StringToInt(skinId), true);
+    }
+}
+
 public void Backend_LoadKnives() {
     g_hDatabase.Query(Callback_LoadKnives, GET_KNIVES);
 }
@@ -148,21 +192,26 @@ void Callback_LoadKnives(Database database, DBResultSet results, const char[] er
 
     int idIndex;
     int nameIndex;
+    int itemNameIndex;
     int itemIdIndex;
     if(!results.FieldNameToNum("id", idIndex)) { LogError("%s Failed to locate \"id\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
     if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("itemName", itemNameIndex)) { LogError("%s Failed to locate \"itemName\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
     if(!results.FieldNameToNum("itemId", itemIdIndex)) { LogError("%s Failed to locate \"itemId\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
 
     while(results.FetchRow()) {
         int id = results.FetchInt(idIndex);
         char name[64];
+        char itemName[64];
         int itemId = results.FetchInt(itemIdIndex);
 
         results.FetchString(nameIndex, name, sizeof(name));
+        results.FetchString(itemNameIndex, itemName, sizeof(itemName));
 
         Knife knife = new Knife();
         knife.SetID(id);
         knife.SetName(name);
+        knife.SetItemName(itemName);
         knife.SetItemID(itemId);
 
         g_hKnives[id] = knife;

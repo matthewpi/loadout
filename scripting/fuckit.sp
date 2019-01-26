@@ -39,15 +39,12 @@ int g_iGloveSkins[MAXPLAYERS + 1];
 
 Menu g_hSkinMenus[MAXPLAYERS + 1];
 char g_cSkinWeapon[MAXPLAYERS + 1][64];
-int g_iSkinWeaponPaint[MAXPLAYERS + 1];
 bool g_bSkinSearch[MAXPLAYERS + 1];
+StringMap g_mPlayerSkins[MAXPLAYERS + 1];
 
 User g_hUsers[MAXPLAYERS + 1];
 
 int g_iSwapOnRoundEnd[MAXPLAYERS + 1];
-
-Handle g_hKnifeCookie;
-Handle g_hGloveCookie;
 
 #include "fuckit/utils.sp"
 #include "fuckit/backend.sp"
@@ -67,9 +64,6 @@ public Plugin myinfo = {
 public void OnPluginStart() {
     LoadTranslations("common.phrases");
     LoadTranslations("fuckit.weapons.phrases");
-
-    g_hKnifeCookie = RegClientCookie("fuckit_knife", "Knife ID for FuckIt", CookieAccess_Protected);
-    g_hGloveCookie = RegClientCookie("fuckit_gloves", "Gloves ID for FuckIt", CookieAccess_Protected);
 
     Database.Connect(Backend_Connnection, "development");
 
@@ -121,6 +115,10 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
  * Adds client index to knives and gloves array and hooks "OnPostWeaponEquip".
  */
 public void OnClientPutInServer(int client) {
+    g_iKnives[client] = 0;
+    g_iGloves[client] = 0;
+    g_bSkinSearch[client] = false;
+    g_mPlayerSkins[client] = new StringMap();
     SDKHook(client, SDKHook_WeaponEquip, OnPostWeaponEquip);
 }
 
@@ -135,13 +133,29 @@ public Action OnPostWeaponEquip(int client, int entity) {
     }
 
     int definitionIndex = -1;
-    if(StrContains(classname, "weapon_knife", false) == 0 && g_iKnives[client] > 0) {
+    if(StrContains(classname, "weapon_knife") == 0 && g_iKnives[client] > 0) {
         definitionIndex = g_iKnives[client];
         SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
     }
 
-    // TODO: Add ammo thingy
-    if((StrContains(g_cSkinWeapon[client], "weapon_knife") != -1 && StrContains(classname, "weapon_knife") != -1) || StrEqual(classname, g_cSkinWeapon[client])) {
+    char itemName[64];
+    bool isKnife = false;
+    if(StrContains(classname, "weapon_knife") != -1) {
+        isKnife = true;
+        for(int i = 1; i < sizeof(g_hKnives); i++) {
+            Knife knife = g_hKnives[i];
+            if(knife == null) {
+                continue;
+            }
+
+            if(knife.GetItemID() == g_iKnives[client]) {
+                knife.GetItemName(itemName, sizeof(itemName));
+            }
+        }
+    }
+
+    int skinId = 0;
+    if((isKnife && g_mPlayerSkins[client].GetValue(itemName, skinId) && skinId != 0) || (g_mPlayerSkins[client].GetValue(classname, skinId) && skinId != 0)) {
         if(definitionIndex == -1) {
             for(int i = 1; i < sizeof(g_cWeaponClasses); i++) {
                 if(StrEqual(g_cWeaponClasses[i], classname)) {
@@ -150,14 +164,13 @@ public Action OnPostWeaponEquip(int client, int entity) {
             }
 
             if(definitionIndex == -1) {
-                PrintToChat(client, "%s Welp fuck %s", PREFIX);
                 return;
             }
         }
 
         SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
         SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
-        SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", g_iSkinWeaponPaint[client]);
+        SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", skinId);
         SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", 0.01);
         SetEntProp(entity, Prop_Send, "m_nFallbackSeed", GetRandomInt(0, 8192));
         SetEntPropEnt(entity, Prop_Data, "m_hParent", client);
@@ -177,28 +190,6 @@ public void OnClientSettingsChanged(int client) {
     } else {
         SetTag(client);
     }
-}
-
-/**
- * OnClientCookiesCached
- * Loads client's cookies into memory.
- */
-public void OnClientCookiesCached(int client) {
-    g_iKnives[client] = 0;
-    g_iGloves[client] = 0;
-    g_bSkinSearch[client] = false;
-
-    char knife[8];
-    char gloves[16];
-    GetClientCookie(client, g_hKnifeCookie, knife, sizeof(knife));
-    GetClientCookie(client, g_hGloveCookie, gloves, sizeof(gloves));
-
-    char gloveSections[2][8];
-    ExplodeString(gloves, ";", gloveSections, 2, 8, true);
-
-    g_iKnives[client] = StringToInt(knife);
-    g_iGloves[client] = StringToInt(gloveSections[0]);
-    g_iGloveSkins[client] = StringToInt(gloveSections[1]);
 }
 
 /**

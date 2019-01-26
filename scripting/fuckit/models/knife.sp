@@ -26,6 +26,14 @@ methodmap Knife < StringMap {
         this.SetString("name", name);
     }
 
+    public void GetItemName(char[] buffer, int maxlen) {
+        this.GetString("itemName", buffer, maxlen);
+    }
+
+    public void SetItemName(const char[] itemName) {
+        this.SetString("itemName", itemName);
+    }
+
     public int GetItemID() {
         int itemId;
         this.GetValue("itemId", itemId);

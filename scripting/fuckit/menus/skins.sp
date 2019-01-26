@@ -215,9 +215,6 @@ int Callback_SkinsWeaponMenu(Menu menu, MenuAction action, int client, int itemN
             menu.GetItem(itemNum, info, sizeof(info));
 
             g_cSkinWeapon[client] = info;
-            /*g_bSkinSearch[client] = true;
-            PrintToChat(client, "%s Enter the name of the skin you would like.", PREFIX);*/
-
             Skins_FilterMenu(client);
         }
 
@@ -286,7 +283,7 @@ int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int itemNum
             char info[32];
             menu.GetItem(itemNum, info, sizeof(info));
 
-            g_iSkinWeaponPaint[client] = StringToInt(info);
+            g_mPlayerSkins[client].SetValue(g_cSkinWeapon[client], StringToInt(info), true);
             Skins_Refresh(client, g_cSkinWeapon[client]);
             g_hSkinMenus[client].Display(client, 0);
         }

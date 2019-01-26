@@ -95,7 +95,8 @@ int Callback_GlovesSubMenu(Menu menu, MenuAction action, int client, int itemNum
 
             char cookie[16];
             Format(cookie, sizeof(cookie), "%i;%i", glove.GetID(), gloveIndex);
-            SetClientCookie(client, g_hGloveCookie, cookie);
+            g_mPlayerSkins[client].SetString("plugin_gloves", cookie, true);
+            PrintToChat(client, "%s Gloves: %s", PREFIX, cookie);
 
             Gloves_Refresh(client);
             Gloves_SubMenu(client, g_hGloves[g_iGloves[client]]);
