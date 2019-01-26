@@ -63,8 +63,8 @@ void Skins_PistolMenu(int client) {
     Format(weaponName, sizeof(weaponName), "%t", "weapon_fiveseven");
     menu.AddItem("weapon_fiveseven", weaponName);
 
-    Format(weaponName, sizeof(weaponName), "%t", "weapon_glock18");
-    menu.AddItem("weapon_glock18", weaponName);
+    Format(weaponName, sizeof(weaponName), "%t", "weapon_glock");
+    menu.AddItem("weapon_glock", weaponName);
 
     Format(weaponName, sizeof(weaponName), "%t", "weapon_hkp2000");
     menu.AddItem("weapon_hkp2000", weaponName);
@@ -216,7 +216,7 @@ int Callback_SkinsWeaponMenu(Menu menu, MenuAction action, int client, int itemN
 
             g_cSkinWeapon[client] = info;
             g_bSkinSearch[client] = true;
-            PrintToChat(client, "%s Please enter your query.", PREFIX);
+            PrintToChat(client, "%s Enter the name of the skin you would like.", PREFIX);
         }
 
         case MenuAction_Cancel: {

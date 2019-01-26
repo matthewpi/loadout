@@ -245,6 +245,11 @@ public void OnClientDisconnect_Post(int client) {
  */
 public Action OnClientSayCommand(int client, const char[] command, const char[] args) {
     if(g_bSkinSearch[client]) {
+        if(strlen(args) < 1 || strlen(args) > 24) {
+            PrintToChat(client, "%s Your search must be between \x071\x01 and \x0724\x01 characters.", PREFIX);
+            return Plugin_Stop;
+        }
+
         Backend_SearchSkins(client, args);
 
         g_bSkinSearch[client] = false;

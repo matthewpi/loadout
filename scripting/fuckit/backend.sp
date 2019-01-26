@@ -263,12 +263,15 @@ void Callback_LoadGloveSkins(Database database, DBResultSet results, const char[
     }
 }
 
-public void Backend_SearchSkins(int client, const char[] searchQuery) {
-    char query[512];
-    Format(query, sizeof(query), "SELECT * FROM `cs_skins` WHERE cs_skins.displayName LIKE \"%s%%\";", searchQuery);
+public void Backend_SearchSkins(int client, const char[] skinQuery) {
+    int skinQueryLen = strlen(skinQuery) * 2 + 1;
+    char[] escapedSkinQuery = new char[skinQueryLen];
 
-    // TODO: Prepared Statement
-    
+    g_hDatabase.Escape(skinQuery, escapedSkinQuery, skinQueryLen);
+
+    char query[512];
+    Format(query, sizeof(query), "SELECT * FROM `cs_skins` WHERE cs_skins.displayName LIKE \"%s%%\";", escapedSkinQuery);
+
     g_hDatabase.Query(Callback_SearchSkins, query, client);
 }
 
