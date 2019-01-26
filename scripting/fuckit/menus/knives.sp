@@ -9,9 +9,8 @@ public void Knives_Menu(int client) {
 
     char item[4];
     char name[64];
-    for(int i = 1; i < KNIFE_MAX; i++) {
+    for(int i = 0; i <= KNIFE_MAX; i++) {
         Knife knife = g_hKnives[i];
-
         if(knife == null) {
             continue;
         }

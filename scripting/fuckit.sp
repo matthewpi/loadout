@@ -25,10 +25,10 @@
 #include "fuckit/models/glove.sp"
 #include "fuckit/models/knife.sp"
 
-Knife g_hKnives[KNIFE_MAX];
+Knife g_hKnives[KNIFE_MAX + 1];
 int g_iKnives[MAXPLAYERS + 1];
 
-Glove g_hGloves[GLOVE_MAX];
+Glove g_hGloves[GLOVE_MAX + 1];
 int g_iGloves[MAXPLAYERS + 1];
 int g_iGloveSkins[MAXPLAYERS + 1];
 
@@ -129,14 +129,18 @@ public Action OnPostWeaponEquip(int client, int entity) {
     int itemIndex = GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
 
     // Because Valve doesn't know how to do anything properly..
+    if(itemIndex == 23) {
+        classname = "weapon_mp5sd";
+    }
+    if(itemIndex == 60) {
+        classname = "weapon_m4a1_silencer";
+    }
     if(itemIndex == 61) {
         classname = "weapon_usp_silencer";
     }
     if(itemIndex == 63) {
         classname = "weapon_cz75a";
     }
-
-    PrintToChat(client, "%s %s", PREFIX, classname);
 
     int definitionIndex = -1;
     if(StrContains(classname, "weapon_knife") == 0 && g_iKnives[client] > 0) {
@@ -162,13 +166,8 @@ public Action OnPostWeaponEquip(int client, int entity) {
 
     int skinId = 0;
     if((isKnife && g_mPlayerSkins[client].GetValue(itemName, skinId) && skinId != 0) || (g_mPlayerSkins[client].GetValue(classname, skinId) && skinId != 0)) {
-        PrintToChat(client, "%s %s", PREFIX, classname);
-        if(isKnife) {
-            PrintToChat(client, "%s - Knife", PREFIX);
-        }
-
         if(definitionIndex == -1) {
-            for(int i = 1; i < sizeof(g_cWeaponClasses); i++) {
+            for(int i = 0; i < sizeof(g_cWeaponClasses); i++) {
                 if(StrEqual(g_cWeaponClasses[i], classname)) {
                     definitionIndex = g_iWeaponDefIndex[i];
                 }
@@ -178,9 +177,6 @@ public Action OnPostWeaponEquip(int client, int entity) {
                 return;
             }
         }
-
-        PrintToChat(client, "%s - Definition Index: %i", PREFIX, definitionIndex);
-        PrintToChat(client, "%s - Paint Kit: %i", PREFIX, skinId);
 
         SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
         SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);

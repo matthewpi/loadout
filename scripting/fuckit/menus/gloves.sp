@@ -9,9 +9,8 @@ public void Gloves_Menu(int client) {
 
     char item[8];
     char name[64];
-    for(int i = 1; i < GLOVE_MAX; i++) {
+    for(int i = 0; i <= GLOVE_MAX; i++) {
         Glove glove = g_hGloves[i];
-
         if(glove == null) {
             continue;
         }
@@ -57,14 +56,13 @@ void Gloves_SubMenu(int client, Glove glove) {
     Menu menu = CreateMenu(Callback_GlovesSubMenu);
     menu.SetTitle(title);
 
-    GloveSkin skins[16];
+    GloveSkin skins[GLOVE_SKIN_MAX + 1];
     glove.GetSkins(skins, sizeof(skins));
 
     char item[8];
     char name[64];
-    for(int i = 1; i < GLOVE_SKIN_MAX; i++) {
+    for(int i = 0; i <= GLOVE_SKIN_MAX; i++) {
         GloveSkin skin = skins[i];
-
         if(skin == null) {
             continue;
         }

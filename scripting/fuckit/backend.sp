@@ -37,44 +37,6 @@ public void Backend_Connnection(Database database, const char[] error, any data)
     }
 }
 
-public void Backend_LoadKnives() {
-    g_hDatabase.Query(Callback_LoadKnives, GET_KNIVES);
-}
-
-void Callback_LoadKnives(Database database, DBResultSet results, const char[] error, any data) {
-    if(results == null) {
-        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_LoadGroups", (strlen(error) > 0 ? error : "Unknown."));
-        return;
-    }
-
-    int idIndex;
-    int nameIndex;
-    int itemNameIndex;
-    int itemIdIndex;
-    if(!results.FieldNameToNum("id", idIndex)) { LogError("%s Failed to locate \"id\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("itemName", itemNameIndex)) { LogError("%s Failed to locate \"itemName\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("itemId", itemIdIndex)) { LogError("%s Failed to locate \"itemId\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
-
-    while(results.FetchRow()) {
-        int id = results.FetchInt(idIndex);
-        char name[64];
-        char itemName[64];
-        int itemId = results.FetchInt(itemIdIndex);
-
-        results.FetchString(nameIndex, name, sizeof(name));
-        results.FetchString(itemNameIndex, itemName, sizeof(itemName));
-
-        Knife knife = new Knife();
-        knife.SetID(id);
-        knife.SetName(name);
-        knife.SetItemName(itemName);
-        knife.SetItemID(itemId);
-
-        g_hKnives[id] = knife;
-    }
-}
-
 public void Backend_LoadGloves() {
     g_hDatabase.Query(Callback_LoadGloves, GET_GLOVES);
 }
@@ -167,6 +129,44 @@ void Callback_LoadGloveSkins(Database database, DBResultSet results, const char[
 
         glove.AddSkin(gloveSkins[glove.GetID()], skin);
         gloveSkins[glove.GetID()]++;
+    }
+}
+
+public void Backend_LoadKnives() {
+    g_hDatabase.Query(Callback_LoadKnives, GET_KNIVES);
+}
+
+void Callback_LoadKnives(Database database, DBResultSet results, const char[] error, any data) {
+    if(results == null) {
+        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_LoadGroups", (strlen(error) > 0 ? error : "Unknown."));
+        return;
+    }
+
+    int idIndex;
+    int nameIndex;
+    int itemNameIndex;
+    int itemIdIndex;
+    if(!results.FieldNameToNum("id", idIndex)) { LogError("%s Failed to locate \"id\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("itemName", itemNameIndex)) { LogError("%s Failed to locate \"itemName\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("itemId", itemIdIndex)) { LogError("%s Failed to locate \"itemId\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
+
+    while(results.FetchRow()) {
+        int id = results.FetchInt(idIndex);
+        char name[64];
+        char itemName[64];
+        int itemId = results.FetchInt(itemIdIndex);
+
+        results.FetchString(nameIndex, name, sizeof(name));
+        results.FetchString(itemNameIndex, itemName, sizeof(itemName));
+
+        Knife knife = new Knife();
+        knife.SetID(id);
+        knife.SetName(name);
+        knife.SetItemName(itemName);
+        knife.SetItemID(itemId);
+
+        g_hKnives[id] = knife;
     }
 }
 
@@ -277,19 +277,15 @@ public void Backend_SetUserSkins(int client, const char[] steamId) {
     if(g_mPlayerSkins[client].GetString("plugin_knife", knife, sizeof(knife))) {
         Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_knife", knife, knife);
         g_hDatabase.Query(Callback_SetUserSkin, query, client);
-    } else {
-        PrintToChat(client, "%s No knife set?", PREFIX);
     }
 
     char gloves[16];
     if(g_mPlayerSkins[client].GetString("plugin_gloves", gloves, sizeof(gloves))) {
         Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_gloves", gloves, gloves);
         g_hDatabase.Query(Callback_SetUserSkin, query, client);
-    } else {
-        PrintToChat(client, "%s No gloves set?", PREFIX);
     }
 
-    for(int i = 1; i < sizeof(g_cWeaponClasses); i++) {
+    for(int i = 0; i < sizeof(g_cWeaponClasses); i++) {
         int skinId;
         if(!g_mPlayerSkins[client].GetValue(g_cWeaponClasses[i], skinId)) {
             continue;
