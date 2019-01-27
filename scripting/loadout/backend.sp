@@ -3,12 +3,52 @@
  * All rights reserved.
  */
 
-#define GET_GLOVES "SELECT * FROM `cs_gloves` ORDER BY cs_gloves.displayName;"
-#define GET_GLOVE_SKINS "SELECT * FROM `cs_glove_skins`;"
-#define GET_KNIVES "SELECT * FROM `cs_knives` ORDER BY cs_knives.displayName;"
-#define GET_USER_SKINS "SELECT user_skins.weapon, user_skins.skinId FROM `user_skins` WHERE user_skins.steamId='%s';"
-#define SEARCH_WEAPON_SKINS "SELECT * FROM `cs_skins` WHERE cs_skins.displayName LIKE \"%s%%\" ORDER BY cs_skins.displayName;"
-#define SET_USER_SKIN "INSERT INTO `user_skins` (`steamId`, `weapon`, `skinId`) VALUES ('%s', '%s', '%s') ON DUPLICATE KEY UPDATE user_skins.skinId='%s';"
+#define TABLE_GLOVES "CREATE TABLE IF NOT EXISTS `loadout_gloves` (\
+    `id`          INT(11)     AUTO_INCREMENT PRIMARY KEY,\
+    `displayName` VARCHAR(64)                   NOT NULL,\
+    `itemId`      INT(11)                       NOT NULL,\
+    CONSTRAINT `loadout_gloves_id_uindex`          UNIQUE (`id`),\
+    CONSTRAINT `loadout_gloves_displayName_uindex` UNIQUE (`displayName`),\
+    CONSTRAINT `loadout_gloves_itemId_uindex`      UNIQUE (`itemId`)\
+);"
+#define TABLE_GLOVE_SKINS "CREATE TABLE IF NOT EXISTS `loadout_glove_skins` (\
+    `id`          INT(11)     AUTO_INCREMENT PRIMARY KEY,\
+    `displayName` VARCHAR(64)                   NOT NULL,\
+    `gloveId`     INT(11)                       NOT NULL,\
+    `paintId`     INT(11)                       NOT NULL,\
+    CONSTRAINT `loadout_glove_skins_id_uindex` UNIQUE (`id`),\
+    CONSTRAINT `loadout_glove_skins_loadout_gloves_id_fk` FOREIGN KEY (`gloveId`) REFERENCES `loadout_gloves` (`id`) ON UPDATE CASCADE\
+);"
+#define TABLE_KNIVES "CREATE TABLE IF NOT EXISTS `loadout_knives` (\
+    `id`          INT(11)     AUTO_INCREMENT PRIMARY KEY,\
+    `displayName` VARCHAR(64)                   NOT NULL,\
+    `itemName`    VARCHAR(64)                   NOT NULL,\
+    `itemId`      INT(11)                       NOT NULL,\
+    CONSTRAINT `loadout_knives_id_uindex`          UNIQUE (`id`),\
+    CONSTRAINT `loadout_knives_displayName_uindex` UNIQUE (`displayName`),\
+    CONSTRAINT `loadout_knives_itemName_uindex`    UNIQUE (`itemName`),\
+    CONSTRAINT `loadout_knives_itemId_uindex`      UNIQUE (`itemId`)\
+);"
+#define TABLE_SKINS "CREATE TABLE IF NOT EXISTS `loadout_skins` (\
+    `id`          INT(11)     AUTO_INCREMENT PRIMARY KEY,\
+    `displayName` VARCHAR(64)                   NOT NULL,\
+    `skinId`      INT(11)                       NOT NULL,\
+    `weapons`     TEXT                          NOT NULL,\
+    CONSTRAINT `loadout_skins_id_uindex` UNIQUE (`id`)\
+);"
+#define TABLE_USER_SKINS "CREATE TABLE IF NOT EXISTS `loadout_user_skins` (\
+    `steamId` VARCHAR(64) NOT NULL,\
+    `weapon`  VARCHAR(64) NOT NULL,\
+    `skinId`  VARCHAR(16) NOT NULL,\
+    CONSTRAINT `loadout_user_skins_steamId_weapon_uindex` UNIQUE (`steamId`, `weapon`)\
+);"
+
+#define GET_GLOVES "SELECT * FROM `loadout_gloves` ORDER BY `displayName`;"
+#define GET_GLOVE_SKINS "SELECT * FROM `loadout_glove_skins`;"
+#define GET_KNIVES "SELECT * FROM `loadout_knives` ORDER BY `displayName`;"
+#define SEARCH_WEAPON_SKINS "SELECT * FROM `loadout_skins` WHERE `displayName` LIKE \"%s%%\" ORDER BY `displayName`;"
+#define GET_USER_SKINS "SELECT weapon, skinId FROM `loadout_user_skins` WHERE `steamId`='%s';"
+#define SET_USER_SKIN "INSERT INTO `loadout_user_skins` (`steamId`, `weapon`, `skinId`) VALUES ('%s', '%s', '%s') ON DUPLICATE KEY UPDATE `skinId`='%s';"
 
 Database g_hDatabase;
 
@@ -20,6 +60,13 @@ public void Backend_Connnection(Database database, const char[] error, any data)
 
     g_hDatabase = database;
     LogMessage("%s Connected to database.", CONSOLE_PREFIX);
+
+    g_hDatabase.Query(Callback_TableCreate, TABLE_GLOVES);
+    g_hDatabase.Query(Callback_TableCreate, TABLE_GLOVE_SKINS);
+    g_hDatabase.Query(Callback_TableCreate, TABLE_KNIVES);
+    g_hDatabase.Query(Callback_TableCreate, TABLE_SKINS);
+    g_hDatabase.Query(Callback_TableCreate, TABLE_USER_SKINS);
+
     Backend_LoadGloves();
     Backend_LoadKnives();
 
@@ -37,6 +84,13 @@ public void Backend_Connnection(Database database, const char[] error, any data)
     }
 }
 
+void Callback_TableCreate(Database database, DBResultSet results, const char[] error, any data) {
+    if(results == null) {
+        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_TableCreate", (strlen(error) > 0 ? error : "Unknown."));
+        return;
+    }
+}
+
 public void Backend_LoadGloves() {
     g_hDatabase.Query(Callback_LoadGloves, GET_GLOVES);
 }
@@ -50,9 +104,9 @@ void Callback_LoadGloves(Database database, DBResultSet results, const char[] er
     int idIndex;
     int nameIndex;
     int itemIdIndex;
-    if(!results.FieldNameToNum("id", idIndex)) { LogError("%s Failed to locate \"id\" field in table \"cs_gloves\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"cs_gloves\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("itemId", itemIdIndex)) { LogError("%s Failed to locate \"itemId\" field in table \"cs_gloves\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("id", idIndex)) { LogError("%s Failed to locate \"id\" field in table \"loadout_gloves\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"loadout_gloves\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("itemId", itemIdIndex)) { LogError("%s Failed to locate \"itemId\" field in table \"loadout_gloves\".", CONSOLE_PREFIX); return; }
 
     while(results.FetchRow()) {
         int id = results.FetchInt(idIndex);
@@ -82,10 +136,10 @@ void Callback_LoadGloveSkins(Database database, DBResultSet results, const char[
     int nameIndex;
     int gloveIdIndex;
     int paintIdIndex;
-    if(!results.FieldNameToNum("id", idIndex)) { LogError("%s Failed to locate \"id\" field in table \"cs_glove_skins\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"cs_glove_skins\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("gloveId", gloveIdIndex)) { LogError("%s Failed to locate \"gloveId\" field in table \"cs_glove_skins\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("paintId", paintIdIndex)) { LogError("%s Failed to locate \"paintId\" field in table \"cs_glove_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("id", idIndex)) { LogError("%s Failed to locate \"id\" field in table \"loadout_glove_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"loadout_glove_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("gloveId", gloveIdIndex)) { LogError("%s Failed to locate \"gloveId\" field in table \"loadout_glove_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("paintId", paintIdIndex)) { LogError("%s Failed to locate \"paintId\" field in table \"loadout_glove_skins\".", CONSOLE_PREFIX); return; }
 
     GloveSkin skins[GLOVE_SKIN_MAX];
     while(results.FetchRow()) {
@@ -146,10 +200,10 @@ void Callback_LoadKnives(Database database, DBResultSet results, const char[] er
     int nameIndex;
     int itemNameIndex;
     int itemIdIndex;
-    if(!results.FieldNameToNum("id", idIndex)) { LogError("%s Failed to locate \"id\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("itemName", itemNameIndex)) { LogError("%s Failed to locate \"itemName\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("itemId", itemIdIndex)) { LogError("%s Failed to locate \"itemId\" field in table \"cs_knives\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("id", idIndex)) { LogError("%s Failed to locate \"id\" field in table \"loadout_knives\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"loadout_knives\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("itemName", itemNameIndex)) { LogError("%s Failed to locate \"itemName\" field in table \"loadout_knives\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("itemId", itemIdIndex)) { LogError("%s Failed to locate \"itemId\" field in table \"loadout_knives\".", CONSOLE_PREFIX); return; }
 
     while(results.FetchRow()) {
         int id = results.FetchInt(idIndex);
@@ -184,8 +238,8 @@ void Callback_GetUserSkins(Database database, DBResultSet results, const char[] 
 
     int weaponIndex;
     int skinIdIndex;
-    if(!results.FieldNameToNum("weapon", weaponIndex)) { LogError("%s Failed to locate \"weapon\" field in table \"user_skins\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"user_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("weapon", weaponIndex)) { LogError("%s Failed to locate \"weapon\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
 
     while(results.FetchRow()) {
         char weapon[64];
@@ -243,8 +297,8 @@ void Callback_SearchSkins(Database database, DBResultSet results, const char[] e
 
     int nameIndex;
     int skinIdIndex;
-    if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"cs_skins\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"cs_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"loadout_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"loadout_skins\".", CONSOLE_PREFIX); return; }
 
     if(results.RowCount == 1) {
         results.FetchRow();

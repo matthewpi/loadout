@@ -56,7 +56,7 @@ public void OnPluginStart() {
     LoadTranslations("common.phrases");
     LoadTranslations("loadout.weapons.phrases");
 
-    Database.Connect(Backend_Connnection, "development");
+    Database.Connect(Backend_Connnection, "staging");
 
     RegConsoleCmd("sm_gloves", Command_Gloves);
     RegConsoleCmd("sm_knife", Command_Knife);
