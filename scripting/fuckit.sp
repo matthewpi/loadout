@@ -238,6 +238,14 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
     return Plugin_Continue;
 }
 
+public void OnMapStart() {
+    CreateTimer(3.0, Timer_ValveServer, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+/**
+ * Timer_SaveData
+ * Handles the save data timer.
+ */
 public Action Timer_SaveData(Handle timer) {
     for(int i = 1; i <= MaxClients; i++) {
         if(!IsClientValid(i)) {
@@ -248,4 +256,13 @@ public Action Timer_SaveData(Handle timer) {
         GetClientAuthId(i, AuthId_Steam2, steamId, sizeof(steamId));
         Backend_SaveUserSkins(i, steamId);
     }
+}
+
+/**
+ * Timer_ValveServer
+ * i actually don't know what this does.
+ */
+public Action Timer_ValveServer(Handle timer) {
+    GameRules_SetProp("m_bIsValveDS", 1);
+    GameRules_SetProp("m_bIsQuestEligible", 1);
 }
