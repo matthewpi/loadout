@@ -11,9 +11,9 @@ public void Skins_Menu(int client) {
     menu.AddItem("heavy", "Heavy");
     menu.AddItem("smg", "SMG");
     menu.AddItem("rifles", "Rifles");
+    menu.AddItem("knives", "Knives");
 
     if(IsPlayerAlive(client)) {
-        menu.AddItem("", "", ITEMDRAW_SPACER);
         menu.AddItem("inventory", "Inventory");
     }
 
@@ -34,6 +34,8 @@ int Callback_SkinsMenu(Menu menu, MenuAction action, int client, int itemNum) {
                 Skins_SMGMenu(client);
             } else if(StrEqual(info, "rifles")) {
                 Skins_RifleMenu(client);
+            } else if(StrEqual(info, "knives")) {
+                Skins_KnifeMenu(client);
             } else if(StrEqual(info, "inventory")) {
                 Skins_InventoryMenu(client);
             }
@@ -182,6 +184,28 @@ void Skins_RifleMenu(int client) {
 
     Format(weaponName, sizeof(weaponName), "%t", "weapon_ssg08");
     menu.AddItem("weapon_ssg08", weaponName);
+
+    menu.ExitBackButton = true;
+    menu.Display(client, 0);
+}
+
+void Skins_KnifeMenu(int client) {
+    Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
+    menu.SetTitle("knives");
+
+    char name[64];
+    char itemName[64];
+    for(int i = 0; i <= KNIFE_MAX; i++) {
+        Knife knife = g_hKnives[i];
+        if(knife == null || knife.GetItemID() == 0) {
+            continue;
+        }
+
+        knife.GetName(name, sizeof(name));
+        knife.GetItemName(itemName, sizeof(itemName));
+
+        menu.AddItem(itemName, name);
+	}
 
     menu.ExitBackButton = true;
     menu.Display(client, 0);
