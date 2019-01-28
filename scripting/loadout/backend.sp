@@ -3,7 +3,8 @@
  * All rights reserved.
  */
 
-#define TABLE_GLOVES "CREATE TABLE IF NOT EXISTS `loadout_gloves` (\
+#define TABLE_GLOVES "\
+CREATE TABLE IF NOT EXISTS `loadout_gloves` (\
     `id`          INT(11)     AUTO_INCREMENT PRIMARY KEY,\
     `displayName` VARCHAR(64)                   NOT NULL,\
     `itemId`      INT(11)                       NOT NULL,\
@@ -11,7 +12,8 @@
     CONSTRAINT `loadout_gloves_displayName_uindex` UNIQUE (`displayName`),\
     CONSTRAINT `loadout_gloves_itemId_uindex`      UNIQUE (`itemId`)\
 );"
-#define TABLE_GLOVE_SKINS "CREATE TABLE IF NOT EXISTS `loadout_glove_skins` (\
+#define TABLE_GLOVE_SKINS "\
+CREATE TABLE IF NOT EXISTS `loadout_glove_skins` (\
     `id`          INT(11)     AUTO_INCREMENT PRIMARY KEY,\
     `displayName` VARCHAR(64)                   NOT NULL,\
     `gloveId`     INT(11)                       NOT NULL,\
@@ -19,7 +21,8 @@
     CONSTRAINT `loadout_glove_skins_id_uindex` UNIQUE (`id`),\
     CONSTRAINT `loadout_glove_skins_loadout_gloves_id_fk` FOREIGN KEY (`gloveId`) REFERENCES `loadout_gloves` (`id`) ON UPDATE CASCADE\
 );"
-#define TABLE_KNIVES "CREATE TABLE IF NOT EXISTS `loadout_knives` (\
+#define TABLE_KNIVES "\
+CREATE TABLE IF NOT EXISTS `loadout_knives` (\
     `id`          INT(11)     AUTO_INCREMENT PRIMARY KEY,\
     `displayName` VARCHAR(64)                   NOT NULL,\
     `itemName`    VARCHAR(64)                   NOT NULL,\
@@ -29,14 +32,16 @@
     CONSTRAINT `loadout_knives_itemName_uindex`    UNIQUE (`itemName`),\
     CONSTRAINT `loadout_knives_itemId_uindex`      UNIQUE (`itemId`)\
 );"
-#define TABLE_SKINS "CREATE TABLE IF NOT EXISTS `loadout_skins` (\
+#define TABLE_SKINS "\
+CREATE TABLE IF NOT EXISTS `loadout_skins` (\
     `id`          INT(11)     AUTO_INCREMENT PRIMARY KEY,\
     `displayName` VARCHAR(64)                   NOT NULL,\
     `skinId`      INT(11)                       NOT NULL,\
     `weapons`     TEXT                          NOT NULL,\
     CONSTRAINT `loadout_skins_id_uindex` UNIQUE (`id`)\
 );"
-#define TABLE_USER_SKINS "CREATE TABLE IF NOT EXISTS `loadout_user_skins` (\
+#define TABLE_USER_SKINS "\
+CREATE TABLE IF NOT EXISTS `loadout_user_skins` (\
     `steamId` VARCHAR(64) NOT NULL,\
     `weapon`  VARCHAR(64) NOT NULL,\
     `skinId`  VARCHAR(16) NOT NULL,\
@@ -337,25 +342,28 @@ void Callback_SearchSkins(Database database, DBResultSet results, const char[] e
     g_hSkinMenus[client] = menu;
 }
 
-public void Backend_SaveUserSkins(int client, const char[] steamId) {
+public void Backend_SaveUserData(int client, const char[] steamId) {
     if(g_mPlayerSkins[client] == null) {
         return;
     }
 
     char query[512];
 
+    // Handles knife (actual knife, not skin)
     char knife[16];
     if(g_mPlayerSkins[client].GetString("plugin_knife", knife, sizeof(knife))) {
         Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_knife", knife, knife);
-        g_hDatabase.Query(Callback_SaveUserSkins, query, client);
+        g_hDatabase.Query(Callback_SaveUserData, query, client);
     }
 
+    // Handles gloves (glove type and skin)
     char gloves[16];
     if(g_mPlayerSkins[client].GetString("plugin_gloves", gloves, sizeof(gloves))) {
         Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_gloves", gloves, gloves);
-        g_hDatabase.Query(Callback_SaveUserSkins, query, client);
+        g_hDatabase.Query(Callback_SaveUserData, query, client);
     }
 
+    // Handle weapon and knife skins
     for(int i = 0; i < sizeof(g_cWeaponClasses); i++) {
         int skinId;
         if(!g_mPlayerSkins[client].GetValue(g_cWeaponClasses[i], skinId)) {
@@ -370,11 +378,11 @@ public void Backend_SaveUserSkins(int client, const char[] steamId) {
         IntToString(skinId, skinIdChar, sizeof(skinIdChar));
 
         Format(query, sizeof(query), SET_USER_SKIN, steamId, g_cWeaponClasses[i], skinIdChar, skinIdChar);
-        g_hDatabase.Query(Callback_SaveUserSkins, query);
+        g_hDatabase.Query(Callback_SaveUserData, query);
     }
 }
 
-void Callback_SaveUserSkins(Database database, DBResultSet results, const char[] error, any data) {
+void Callback_SaveUserData(Database database, DBResultSet results, const char[] error, any data) {
     if(results == null) {
         LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_SaveUserSkins", (strlen(error) > 0 ? error : "Unknown."));
         return;
