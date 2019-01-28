@@ -17,7 +17,7 @@ public void Knives_Menu(int client) {
 
         knife.GetName(name, sizeof(name));
 
-        Format(item, sizeof(item), "%i", knife.GetItemID());
+        Format(item, sizeof(item), "%i", knife.GetID());
         menu.AddItem(item, name, g_iKnives[client] == knife.GetItemID() ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 	}
 
@@ -30,10 +30,18 @@ int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
             char info[32];
             menu.GetItem(itemNum, info, sizeof(info));
 
-            g_iKnives[client] = StringToInt(info);
+            Knife knife = g_hKnives[StringToInt(info)];
+            if(knife == null) {
+                return;
+            }
+
+            g_iKnives[client] = knife.GetID();
             g_mPlayerSkins[client].SetString("plugin_knife", info, true);
 
-            Knives_Refresh(client);
+            char itemName[64];
+            knife.GetItemName(itemName, sizeof(itemName));
+
+            Knives_Refresh(client, itemName);
             Knives_Menu(client);
         }
 
@@ -43,7 +51,7 @@ int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
     }
 }
 
-void Knives_Refresh(int client) {
+void Knives_Refresh(int client, const char[] itemName) {
     if(!IsPlayerAlive(client)) {
         return;
     }
@@ -54,6 +62,7 @@ void Knives_Refresh(int client) {
     }
 
     RemovePlayerItem(client, entity);
-    AcceptEntityInput(entity, "Kill");
-    GivePlayerItem(client, "weapon_knife");
+    AcceptEntityInput(entity, "KillHierarchy");
+    int item = GivePlayerItem(client, itemName);
+    EquipPlayerWeapon(client, item);
 }

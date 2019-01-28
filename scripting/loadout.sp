@@ -80,15 +80,9 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
     }
 
     if(g_iKnives[client] != 0) {
-        int knifeEntity = GetPlayerWeaponSlot(client, CS_SLOT_KNIFE);
-
-        if(knifeEntity != -1) {
-            int currentKnife = GetEntProp(knifeEntity, Prop_Send, "m_iItemDefinitionIndex");
-
-            if(g_iKnives[client] != currentKnife) {
-                Knives_Refresh(client);
-            }
-        }
+        char itemName[64];
+        g_hKnives[g_iKnives[client]].GetItemName(itemName, sizeof(itemName));
+        Knives_Refresh(client, itemName);
     }
 
     if(g_iGloves[client] != 0 && g_iGloveSkins[client] != 0) {
@@ -105,6 +99,7 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
 public void OnClientConnected(int client) {
     g_iKnives[client] = 0;
     g_iGloves[client] = 0;
+    g_iGloveSkins[client] = 0;
     g_bSkinSearch[client] = false;
     g_mPlayerSkins[client] = new StringMap();
 }
@@ -128,7 +123,6 @@ public Action OnPostWeaponEquip(int client, int entity) {
     }
 
     int itemIndex = GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
-
     // Because Valve doesn't know how to do anything properly..
     if(itemIndex == 23) {
         classname = "weapon_mp5sd";
@@ -143,10 +137,12 @@ public Action OnPostWeaponEquip(int client, int entity) {
         classname = "weapon_cz75a";
     }
 
+    PrintToChat(client, "%s %s (#1): %i", PREFIX, classname, itemIndex);
+
     int definitionIndex = -1;
     if(StrContains(classname, "weapon_knife") == 0 && g_iKnives[client] > 0) {
-        definitionIndex = g_iKnives[client];
-        SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
+        definitionIndex = g_hKnives[g_iKnives[client]].GetItemID();
+        //SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
     }
 
     char itemName[64];
@@ -159,14 +155,14 @@ public Action OnPostWeaponEquip(int client, int entity) {
                 continue;
             }
 
-            if(knife.GetItemID() == g_iKnives[client]) {
+            if(knife.GetID() == g_iKnives[client]) {
                 knife.GetItemName(itemName, sizeof(itemName));
             }
         }
     }
 
-    int skinId = 0;
-    if((isKnife && g_mPlayerSkins[client].GetValue(itemName, skinId) && skinId != 0) || (g_mPlayerSkins[client].GetValue(classname, skinId) && skinId != 0)) {
+    int skinId = -1;
+    if((isKnife && g_mPlayerSkins[client].GetValue(itemName, skinId) && skinId != -1) || (g_mPlayerSkins[client].GetValue(classname, skinId) && skinId != 0)) {
         if(definitionIndex == -1) {
             for(int i = 0; i < sizeof(g_cWeaponClasses); i++) {
                 if(StrEqual(g_cWeaponClasses[i], classname)) {
@@ -179,11 +175,26 @@ public Action OnPostWeaponEquip(int client, int entity) {
             }
         }
 
+        char steam32[20];
+        char temp[20];
+        GetClientAuthId(client, AuthId_Steam3, temp, sizeof(temp));
+        strcopy(steam32, sizeof(steam32), temp[5]);
+        int index;
+        if((index = StrContains(steam32, "]")) > -1) {
+            steam32[index] = '\0';
+        }
+
+        if(!isKnife) {
+            SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
+        }
         SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
-        SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
         SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", skinId);
         SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", 0.01);
         SetEntProp(entity, Prop_Send, "m_nFallbackSeed", GetRandomInt(0, 8192));
+        if(isKnife) {
+            SetEntProp(entity, Prop_Send, "m_iEntityQuality", 3);
+        }
+        SetEntProp(entity, Prop_Send, "m_iAccountID", StringToInt(steam32));
         SetEntPropEnt(entity, Prop_Data, "m_hParent", client);
         SetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity", client);
         SetEntPropEnt(entity, Prop_Data, "m_hMoveParent", client);

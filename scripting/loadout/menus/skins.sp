@@ -332,10 +332,11 @@ void Skins_Refresh(int client, const char[] weapon) {
         }
 
         RemovePlayerItem(client, entity);
-        AcceptEntityInput(entity, "Kill");
+        AcceptEntityInput(entity, "KillHierarchy");
 
         if(isKnife) {
-            GivePlayerItem(client, "weapon_knife");
+            int item = GivePlayerItem(client, weapon);
+            EquipPlayerWeapon(client, item);
         } else {
             entity = GivePlayerItem(client, weapon);
 

@@ -141,7 +141,7 @@ void Callback_LoadGloveSkins(Database database, DBResultSet results, const char[
     if(!results.FieldNameToNum("gloveId", gloveIdIndex)) { LogError("%s Failed to locate \"gloveId\" field in table \"loadout_glove_skins\".", CONSOLE_PREFIX); return; }
     if(!results.FieldNameToNum("paintId", paintIdIndex)) { LogError("%s Failed to locate \"paintId\" field in table \"loadout_glove_skins\".", CONSOLE_PREFIX); return; }
 
-    GloveSkin skins[GLOVE_SKIN_MAX];
+    GloveSkin skins[GLOVE_SKIN_MAX + 1];
     while(results.FetchRow()) {
         int id = results.FetchInt(idIndex);
         char name[64];
@@ -159,10 +159,9 @@ void Callback_LoadGloveSkins(Database database, DBResultSet results, const char[
         skins[id] = skin;
     }
 
-    int gloveSkins[GLOVE_MAX];
-    for(int i = 1; i < sizeof(g_hGloves); i++) {
+    int gloveSkins[GLOVE_MAX + 1];
+    for(int i = 0; i < sizeof(g_hGloves); i++) {
         Glove glove = g_hGloves[i];
-
         if(glove == null) {
             continue;
         }
@@ -170,7 +169,7 @@ void Callback_LoadGloveSkins(Database database, DBResultSet results, const char[
         gloveSkins[glove.GetID()] = 1;
     }
 
-    for(int i = 1; i < sizeof(skins); i++) {
+    for(int i = 0; i < sizeof(skins); i++) {
         GloveSkin skin = skins[i];
         if(skin == null) {
             continue;
@@ -371,13 +370,13 @@ public void Backend_SaveUserSkins(int client, const char[] steamId) {
         IntToString(skinId, skinIdChar, sizeof(skinIdChar));
 
         Format(query, sizeof(query), SET_USER_SKIN, steamId, g_cWeaponClasses[i], skinIdChar, skinIdChar);
-        g_hDatabase.Query(Callback_SaveUserSkins, query, client);
+        g_hDatabase.Query(Callback_SaveUserSkins, query);
     }
 }
 
-void Callback_SaveUserSkins(Database database, DBResultSet results, const char[] error, int client) {
+void Callback_SaveUserSkins(Database database, DBResultSet results, const char[] error, any data) {
     if(results == null) {
-        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_SetUserSkin", (strlen(error) > 0 ? error : "Unknown."));
+        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_SaveUserSkins", (strlen(error) > 0 ? error : "Unknown."));
         return;
     }
 }

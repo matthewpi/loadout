@@ -15,7 +15,7 @@ public void Gloves_Menu(int client) {
             continue;
         }
 
-        Format(item, sizeof(item), "%i", i);
+        Format(item, sizeof(item), "%i", glove.GetID());
         glove.GetName(name, sizeof(name));
 
         menu.AddItem(item, name);
@@ -30,12 +30,14 @@ int Callback_GlovesMenu(Menu menu, MenuAction action, int client, int itemNum) {
             char info[32];
             menu.GetItem(itemNum, info, sizeof(info));
 
-            Glove glove = g_hGloves[StringToInt(info)];
+            int gloveId = StringToInt(info);
+
+            Glove glove = g_hGloves[gloveId];
             if(glove == null) {
                 return;
             }
 
-            g_iGloves[client] = StringToInt(info);
+            g_iGloves[client] = gloveId;
             Gloves_SubMenu(client, glove);
         }
 
@@ -69,6 +71,7 @@ void Gloves_SubMenu(int client, Glove glove) {
 
         Format(item, sizeof(item), "%i", i);
         skin.GetName(name, sizeof(name));
+
         menu.AddItem(item, name);
     }
 
@@ -87,12 +90,11 @@ int Callback_GlovesSubMenu(Menu menu, MenuAction action, int client, int itemNum
                 return;
             }
 
-            int gloveIndex = StringToInt(info);
-            GloveSkin skin = glove.GetSkin(gloveIndex);
-            g_iGloveSkins[client] = skin.GetID();
+            int skinIndex = StringToInt(info);
+            g_iGloveSkins[client] = skinIndex;
 
             char cookie[16];
-            Format(cookie, sizeof(cookie), "%i;%i", glove.GetID(), gloveIndex);
+            Format(cookie, sizeof(cookie), "%i;%i", glove.GetID(), skinIndex);
             g_mPlayerSkins[client].SetString("plugin_gloves", cookie, true);
 
             Gloves_Refresh(client);
@@ -114,11 +116,13 @@ int Callback_GlovesSubMenu(Menu menu, MenuAction action, int client, int itemNum
 public void Gloves_Refresh(int client) {
     Glove glove = g_hGloves[g_iGloves[client]];
     if(glove == null) {
+        PrintToChat(client, "%s glove == null", PREFIX);
         return;
     }
 
     GloveSkin skin = glove.GetSkin(g_iGloveSkins[client]);
     if(skin == null) {
+        PrintToChat(client, "%s skin == null", PREFIX);
         return;
     }
 
@@ -145,6 +149,8 @@ public void Gloves_Refresh(int client) {
         SetEntPropEnt(entity, Prop_Data, "m_hMoveParent", client);
         SetEntProp(client, Prop_Send, "m_nBody", 1);
         DispatchSpawn(entity);
+    } else {
+        PrintToChat(client, "%s entity == -1", PREFIX);
     }
 
     int active = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
