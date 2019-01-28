@@ -22,8 +22,8 @@
 // This might need to be increased if Valve keeps adding glove skins.
 #define GLOVE_SKIN_MAX 64
 
-#include "fuckit/models/glove.sp"
-#include "fuckit/models/knife.sp"
+#include "loadout/models/glove.sp"
+#include "loadout/models/knife.sp"
 
 Knife g_hKnives[KNIFE_MAX + 1];
 int g_iKnives[MAXPLAYERS + 1];
@@ -37,15 +37,15 @@ char g_cSkinWeapon[MAXPLAYERS + 1][64];
 bool g_bSkinSearch[MAXPLAYERS + 1];
 StringMap g_mPlayerSkins[MAXPLAYERS + 1];
 
-#include "fuckit/utils.sp"
-#include "fuckit/backend.sp"
-#include "fuckit/commands.sp"
-#include "fuckit/menus/gloves.sp"
-#include "fuckit/menus/knives.sp"
-#include "fuckit/menus/skins.sp"
+#include "loadout/utils.sp"
+#include "loadout/backend.sp"
+#include "loadout/commands.sp"
+#include "loadout/menus/gloves.sp"
+#include "loadout/menus/knives.sp"
+#include "loadout/menus/skins.sp"
 
 public Plugin myinfo = {
-    name = "Weapon Loadout (Knives, Gloves, Skins)",
+    name = "Loadout (Knives, Gloves, Skins)",
     author = "Matthew \"MP\" Penner",
     description = "",
     version = "0.0.1-DEV",
@@ -54,7 +54,7 @@ public Plugin myinfo = {
 
 public void OnPluginStart() {
     LoadTranslations("common.phrases");
-    LoadTranslations("fuckit.weapons.phrases");
+    LoadTranslations("loadout.weapons.phrases");
 
     Database.Connect(Backend_Connnection, "development");
 
@@ -238,6 +238,10 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
     return Plugin_Continue;
 }
 
+/**
+ * OnMapStart
+ * I actually don't know what this does.
+ */
 public void OnMapStart() {
     CreateTimer(3.0, Timer_ValveServer, _, TIMER_FLAG_NO_MAPCHANGE);
 }
@@ -260,7 +264,7 @@ public Action Timer_SaveData(Handle timer) {
 
 /**
  * Timer_ValveServer
- * i actually don't know what this does.
+ * I actually don't know what this does.
  */
 public Action Timer_ValveServer(Handle timer) {
     GameRules_SetProp("m_bIsValveDS", 1);

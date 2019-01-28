@@ -43,6 +43,9 @@ yarn.lock
 /scripting/include
 /scripting/compile.sh
 /scripting/spcomp
+/scripting/compile.exe
+/scripting/spcomp.exe
+/scripting/compile.dat
 
 #-------------------
 # Operating Systems
