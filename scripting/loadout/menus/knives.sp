@@ -18,7 +18,7 @@ public void Knives_Menu(int client) {
         knife.GetName(name, sizeof(name));
 
         Format(item, sizeof(item), "%i", knife.GetID());
-        menu.AddItem(item, name, g_iKnives[client] == knife.GetItemID() ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+        menu.AddItem(item, name, g_iKnives[client] == knife.GetID() ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 	}
 
     menu.Display(client, 0);
