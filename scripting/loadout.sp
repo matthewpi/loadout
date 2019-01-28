@@ -137,12 +137,9 @@ public Action OnPostWeaponEquip(int client, int entity) {
         classname = "weapon_cz75a";
     }
 
-    PrintToChat(client, "%s %s (#1): %i", PREFIX, classname, itemIndex);
-
     int definitionIndex = -1;
     if(StrContains(classname, "weapon_knife") == 0 && g_iKnives[client] > 0) {
         definitionIndex = g_hKnives[g_iKnives[client]].GetItemID();
-        //SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
     }
 
     char itemName[64];
