@@ -222,7 +222,6 @@ public void OnClientDisconnect(int client) {
 
     char steamId[64];
     GetClientAuthId(client, AuthId_Steam2, steamId, sizeof(steamId));
-
     Backend_SaveUserData(client, steamId);
 }
 
@@ -260,15 +259,7 @@ public void OnMapStart() {
  */
 public Action Timer_SaveData(Handle timer) {
     PrintToServer("%s Saving user data.", CONSOLE_PREFIX);
-    for(int i = 1; i <= MaxClients; i++) {
-        if(!IsClientValid(i)) {
-            continue;
-        }
-
-        char steamId[64];
-        GetClientAuthId(i, AuthId_Steam2, steamId, sizeof(steamId));
-        Backend_SaveUserData(i, steamId);
-    }
+    Backend_SaveAllData();
 }
 
 /**

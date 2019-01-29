@@ -342,9 +342,42 @@ void Callback_SearchSkins(Database database, DBResultSet results, const char[] e
     g_hSkinMenus[client] = menu;
 }
 
+public void Backend_SaveAllData() {
+    Transaction transaction = SQL_CreateTransaction();
+    for(int i = 1; i <= MaxClients; i++) {
+        if(!IsClientValid(i) || g_mPlayerSkins[i] == null) {
+            continue;
+        }
+
+        char steamId[64];
+        GetClientAuthId(i, AuthId_Steam2, steamId, sizeof(steamId));
+        Backend_GetUserDataTransaction(transaction, i, steamId);
+    }
+
+    SQL_ExecuteTransaction(g_hDatabase, transaction, Callback_SuccessUserData, Callback_ErrorUserData);
+}
+
 public void Backend_SaveUserData(int client, const char[] steamId) {
     if(g_mPlayerSkins[client] == null) {
         return;
+    }
+
+    Transaction transaction = SQL_CreateTransaction();
+    Backend_GetUserDataTransaction(transaction, client, steamId);
+    SQL_ExecuteTransaction(g_hDatabase, transaction, Callback_SuccessUserData, Callback_ErrorUserData);
+}
+
+void Callback_SuccessUserData(Database database, any data, int numQueries, Handle[] results, any[] queryData) {
+
+}
+
+void Callback_ErrorUserData(Database database, any data, int numQueries, const char[] error, int failIndex, any[] queryData) {
+    LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_ErrorUserData", (strlen(error) > 0 ? error : "Unknown."));
+}
+
+Transaction Backend_GetUserDataTransaction(Transaction transaction, int client, const char[] steamId) {
+    if(g_mPlayerSkins[client] == null) {
+        return transaction;
     }
 
     char query[512];
@@ -353,14 +386,14 @@ public void Backend_SaveUserData(int client, const char[] steamId) {
     char knife[16];
     if(g_mPlayerSkins[client].GetString("plugin_knife", knife, sizeof(knife))) {
         Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_knife", knife, knife);
-        g_hDatabase.Query(Callback_SaveUserData, query, client);
+        transaction.AddQuery(query);
     }
 
     // Handles gloves (glove type and skin)
     char gloves[16];
     if(g_mPlayerSkins[client].GetString("plugin_gloves", gloves, sizeof(gloves))) {
         Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_gloves", gloves, gloves);
-        g_hDatabase.Query(Callback_SaveUserData, query, client);
+        transaction.AddQuery(query);
     }
 
     // Handle weapon and knife skins
@@ -378,13 +411,15 @@ public void Backend_SaveUserData(int client, const char[] steamId) {
         IntToString(skinId, skinIdChar, sizeof(skinIdChar));
 
         Format(query, sizeof(query), SET_USER_SKIN, steamId, g_cWeaponClasses[i], skinIdChar, skinIdChar);
-        g_hDatabase.Query(Callback_SaveUserData, query);
+        transaction.AddQuery(query);
     }
+
+    return transaction;
 }
 
-void Callback_SaveUserData(Database database, DBResultSet results, const char[] error, any data) {
+/*void Callback_SaveUserData(Database database, DBResultSet results, const char[] error, any data) {
     if(results == null) {
         LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_SaveUserSkins", (strlen(error) > 0 ? error : "Unknown."));
         return;
     }
-}
+}8/

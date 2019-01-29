@@ -191,7 +191,7 @@ void Skins_RifleMenu(int client) {
 
 void Skins_KnifeMenu(int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
-    menu.SetTitle("knives");
+    menu.SetTitle("Knives");
 
     char name[64];
     char itemName[64];
