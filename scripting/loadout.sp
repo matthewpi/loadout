@@ -47,8 +47,8 @@ StringMap g_mPlayerSkins[MAXPLAYERS + 1];
 public Plugin myinfo = {
     name = "Loadout (Knives, Gloves, Skins)",
     author = "Matthew \"MP\" Penner",
-    description = "",
-    version = "0.0.1-DEV",
+    description = "Allows players to change their knife, gloves, and weapon skins.",
+    version = "0.0.1-BETA",
     url = "https://matthewp.io"
 };
 

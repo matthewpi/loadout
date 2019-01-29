@@ -343,18 +343,20 @@ void Callback_SearchSkins(Database database, DBResultSet results, const char[] e
 }
 
 public void Backend_SaveAllData() {
-    Transaction transaction = SQL_CreateTransaction();
+    Transaction transaction;
+
     for(int i = 1; i <= MaxClients; i++) {
         if(!IsClientValid(i) || g_mPlayerSkins[i] == null) {
             continue;
         }
 
+        transaction = SQL_CreateTransaction();
+
         char steamId[64];
         GetClientAuthId(i, AuthId_Steam2, steamId, sizeof(steamId));
         Backend_GetUserDataTransaction(transaction, i, steamId);
+        SQL_ExecuteTransaction(g_hDatabase, transaction, Callback_SuccessUserData, Callback_ErrorUserData);
     }
-
-    SQL_ExecuteTransaction(g_hDatabase, transaction, Callback_SuccessUserData, Callback_ErrorUserData);
 }
 
 public void Backend_SaveUserData(int client, const char[] steamId) {
@@ -368,7 +370,7 @@ public void Backend_SaveUserData(int client, const char[] steamId) {
 }
 
 void Callback_SuccessUserData(Database database, any data, int numQueries, Handle[] results, any[] queryData) {
-
+    // For safe keeping :^)
 }
 
 void Callback_ErrorUserData(Database database, any data, int numQueries, const char[] error, int failIndex, any[] queryData) {
@@ -416,10 +418,3 @@ Transaction Backend_GetUserDataTransaction(Transaction transaction, int client, 
 
     return transaction;
 }
-
-/*void Callback_SaveUserData(Database database, DBResultSet results, const char[] error, any data) {
-    if(results == null) {
-        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_SaveUserSkins", (strlen(error) > 0 ? error : "Unknown."));
-        return;
-    }
-}8/
