@@ -25,6 +25,8 @@
 #include "loadout/models/glove.sp"
 #include "loadout/models/knife.sp"
 
+ConVar g_cvDatabase;
+
 Knife g_hKnives[KNIFE_MAX + 1];
 int g_iKnives[MAXPLAYERS + 1];
 
@@ -56,7 +58,12 @@ public void OnPluginStart() {
     LoadTranslations("common.phrases");
     LoadTranslations("loadout.weapons.phrases");
 
-    Database.Connect(Backend_Connnection, "staging");
+    g_cvDatabase = CreateConVar("loadout_database", "loadout", "Sets what database the plugin should use.");
+
+    char databaseName[64];
+    g_cvDatabase.GetString(databaseName, sizeof(databaseName));
+
+    Database.Connect(Backend_Connnection, databaseName);
 
     RegConsoleCmd("sm_gloves", Command_Gloves);
     RegConsoleCmd("sm_knife", Command_Knife);
