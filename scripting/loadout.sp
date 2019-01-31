@@ -58,15 +58,16 @@ public void OnPluginStart() {
     LoadTranslations("common.phrases");
     LoadTranslations("loadout.weapons.phrases");
 
-    g_cvDatabase = CreateConVar("loadout_database", "loadout", "Sets what database the plugin should use.");
+    g_cvDatabase = CreateConVar("sm_loadout_database", "loadout", "Sets what database the plugin should use.");
 
     char databaseName[64];
     g_cvDatabase.GetString(databaseName, sizeof(databaseName));
-
     Database.Connect(Backend_Connnection, databaseName);
 
     RegConsoleCmd("sm_gloves", Command_Gloves);
+    RegConsoleCmd("sm_glove", Command_Gloves);
     RegConsoleCmd("sm_knife", Command_Knife);
+    RegConsoleCmd("sm_knives", Command_Knife);
     RegConsoleCmd("sm_skins", Command_Skins);
     RegConsoleCmd("sm_ws", Command_Skins);
 
@@ -233,10 +234,31 @@ public void OnClientDisconnect(int client) {
 }
 
 /**
- * OnClientDisconnect_Post
+ * OnClientSayCommand
  * Deletes memory allocation for the client's data if it is loaded.
  */
 public Action OnClientSayCommand(int client, const char[] command, const char[] args) {
+    // Check if the user typed a command.
+    if(strlen(command) > 0) {
+        // If the command is a public showing command from this plugin, handle it then hide the message.
+        if(StrEqual(command, "!ws") || StrEqual(command, "!skins")) {
+            Command_Skins(client, 0);
+            return Plugin_Stop;
+        }
+
+        if(StrEqual(command, "!knife") || StrEqual(command, "!knives")) {
+            Command_Knife(client, 0);
+            return Plugin_Stop;
+        }
+
+        if(StrEqual(command, "!glove") || StrEqual(command, "!gloves")) {
+            Command_Gloves(client, 0);
+            return Plugin_Stop;
+        }
+
+        return Plugin_Continue;
+    }
+
     if(g_bSkinSearch[client]) {
         if(strlen(args) < 1 || strlen(args) > 24) {
             PrintToChat(client, "%s Your search must be between \x071\x01 and \x0724\x01 characters.", PREFIX);
