@@ -8,14 +8,6 @@ methodmap Item < StringMap {
         return view_as<Item>(new StringMap());
     }
 
-    public void GetSteamID(char[] buffer, int maxlen) {
-        this.GetString("steamId", buffer, maxlen);
-    }
-
-    public void SetSteamID(const char[] steamId) {
-        this.SetString("steamId", steamId);
-    }
-
     public void GetWeapon(char[] buffer, int maxlen) {
         this.GetString("weapon", buffer, maxlen);
     }
@@ -48,7 +40,7 @@ methodmap Item < StringMap {
         return floatValue;
     }
 
-    public void SetFloat(int floatValue) {
+    public void SetFloat(float floatValue) {
         this.SetValue("float", floatValue);
     }
 
