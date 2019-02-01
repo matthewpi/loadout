@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `loadout_user_skins` (\
     `skinId`      VARCHAR(16)                NOT NULL,\
     `skinPattern` INT(11)       DEFAULT 0    NOT NULL,\
     `skinFloat`   DECIMAL(9, 8) DEFAULT 0.01 NOT NULL,\
-    `stattrak`    INT(11)       DEFAULT 0    NOT NULL,\
+    `statTrak`    INT(11)       DEFAULT 0    NOT NULL,\
     CONSTRAINT `loadout_user_skins_steamId_weapon_uindex` UNIQUE (`steamId`, `weapon`)\
 );"
 
@@ -55,8 +55,10 @@ CREATE TABLE IF NOT EXISTS `loadout_user_skins` (\
 #define GET_GLOVE_SKINS "SELECT * FROM `loadout_glove_skins`;"
 #define GET_KNIVES "SELECT * FROM `loadout_knives` ORDER BY `displayName`;"
 #define SEARCH_WEAPON_SKINS "SELECT * FROM `loadout_skins` WHERE `displayName` LIKE \"%s%%\" ORDER BY `displayName`;"
-#define GET_USER_SKINS "SELECT weapon, skinId FROM `loadout_user_skins` WHERE `steamId`='%s';"
-#define SET_USER_SKIN "INSERT INTO `loadout_user_skins` (`steamId`, `weapon`, `skinId`) VALUES ('%s', '%s', '%s') ON DUPLICATE KEY UPDATE `skinId`='%s';"
+#define GET_USER_SKINS "SELECT `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak` FROM `loadout_user_skins` WHERE `steamId`='%s';"
+#define SET_USER_SKIN "\
+INSERT INTO `loadout_user_skins` (`steamId`, `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`) VALUES ('%s', '%s', '%s', '%i', '%f', '%i')\
+ON DUPLICATE KEY UPDATE `skinId`='%s', `skinPattern`='%i', `skinFloat`='%f', `statTrak`='%i';"
 
 Database g_hDatabase;
 
@@ -245,12 +247,22 @@ void Callback_GetUserSkins(Database database, DBResultSet results, const char[] 
 
     int weaponIndex;
     int skinIdIndex;
+    int patternIndex;
+    int floatIndex;
+    int statTrakIndex;
     if(!results.FieldNameToNum("weapon", weaponIndex)) { LogError("%s Failed to locate \"weapon\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
     if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("skinPattern", patternIndex)) { LogError("%s Failed to locate \"skinPattern\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("skinFloat", floatIndex)) { LogError("%s Failed to locate \"skinFloat\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("statTrak", statTrakIndex)) { LogError("%s Failed to locate \"statTrak\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
 
+    int i = 0;
     while(results.FetchRow()) {
         char weapon[64];
         char skinId[16];
+        int pattern = results.FetchInt(patternIndex);
+        float floatValue = results.FetchFloat(floatIndex);
+        int statTrak = results.FetchInt(statTrakIndex);
 
         results.FetchString(weaponIndex, weapon, sizeof(weapon));
         results.FetchString(skinIdIndex, skinId, sizeof(skinId));
@@ -258,7 +270,6 @@ void Callback_GetUserSkins(Database database, DBResultSet results, const char[] 
         // Handles knife type (not skin)
         if(StrEqual(weapon, "plugin_knife", true)) {
             g_iKnives[client] = StringToInt(skinId);
-            g_mPlayerSkins[client].SetString("plugin_knife", skinId, true);
         }
 
         // Handles gloves
@@ -268,11 +279,18 @@ void Callback_GetUserSkins(Database database, DBResultSet results, const char[] 
 
             g_iGloves[client] = StringToInt(gloveSections[0]);
             g_iGloveSkins[client] = StringToInt(gloveSections[1]);
-            g_mPlayerSkins[client].SetString("plugin_gloves", skinId, true);
         }
 
+        Item item = new Item();
+        item.SetWeapon(weapon);
+        item.SetSkinID(skinId);
+        item.SetPattern(pattern);
+        item.SetFloat(floatValue);
+        item.SetStatTrak(statTrak);
+
         // Handles all actual skins
-        g_mPlayerSkins[client].SetValue(weapon, StringToInt(skinId), true);
+        g_hPlayerItems[client][i] = item;
+        i++;
     }
 }
 
@@ -315,7 +333,38 @@ void Callback_SearchSkins(Database database, DBResultSet results, const char[] e
 
         results.FetchString(nameIndex, name, sizeof(name));
 
-        g_mPlayerSkins[client].SetValue(g_cSkinWeapon[client], skinId, true);
+        int i;
+        Item item;
+        char weapon[64];
+        int validItems = 0;
+        for(i = 0; i < USER_ITEM_MAX; i++) {
+            item = g_hPlayerItems[client][i];
+            if(item == null) {
+                continue;
+            }
+
+            item.GetWeapon(weapon, sizeof(weapon));
+            validItems++;
+
+            if(StrEqual(weapon, g_cSkinWeapon[client])) {
+                break;
+            }
+        }
+
+        if(item == null) {
+            item = new Item();
+            item.SetWeapon(g_cSkinWeapon[client]);
+            item.SetPattern(0);
+            item.SetFloat(0.01);
+            item.SetStatTrak(0);
+            i = validItems + 1;
+        }
+
+        char skinIdChar[16];
+        IntToString(skinId, skinIdChar, sizeof(skinIdChar));
+        item.SetSkinID(skinIdChar);
+        g_hPlayerItems[client][i] = item;
+
         Skins_Refresh(client, g_cSkinWeapon[client]);
         PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, name, g_cSkinWeapon[client]);
         return;
@@ -349,7 +398,7 @@ public void Backend_SaveAllData() {
     Transaction transaction;
 
     for(int i = 1; i <= MaxClients; i++) {
-        if(!IsClientValid(i) || g_mPlayerSkins[i] == null) {
+        if(!IsClientValid(i)) {
             continue;
         }
 
@@ -363,10 +412,6 @@ public void Backend_SaveAllData() {
 }
 
 public void Backend_SaveUserData(int client, const char[] steamId) {
-    if(g_mPlayerSkins[client] == null) {
-        return;
-    }
-
     Transaction transaction = SQL_CreateTransaction();
     Backend_GetUserDataTransaction(transaction, client, steamId);
     SQL_ExecuteTransaction(g_hDatabase, transaction, Callback_SuccessUserData, Callback_ErrorUserData);
@@ -381,41 +426,42 @@ void Callback_ErrorUserData(Database database, any data, int numQueries, const c
 }
 
 Transaction Backend_GetUserDataTransaction(Transaction transaction, int client, const char[] steamId) {
-    if(g_mPlayerSkins[client] == null) {
-        return transaction;
-    }
-
     char query[512];
 
     // Handles knife (actual knife, not skin)
     char knife[16];
-    if(g_mPlayerSkins[client].GetString("plugin_knife", knife, sizeof(knife))) {
-        Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_knife", knife, knife);
+    if(g_iKnives[client]) {
+        IntToString(g_iKnives[client], knife, sizeof(knife));
+        Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_knife", knife, 0, 0.01, 0, knife, 0, 0.01, 0);
         transaction.AddQuery(query);
     }
 
     // Handles gloves (glove type and skin)
     char gloves[16];
-    if(g_mPlayerSkins[client].GetString("plugin_gloves", gloves, sizeof(gloves))) {
-        Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_gloves", gloves, gloves);
+    if(g_iGloves[client] && g_iGloveSkins[client]) {
+        Format(gloves, sizeof(gloves), "%i;%i", g_iGloves[client], g_iGloveSkins[client]);
+        Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_gloves", gloves, 0, 0.01, 0, gloves, 0, 0.01, 0);
         transaction.AddQuery(query);
     }
 
     // Handle weapon and knife skins
-    for(int i = 0; i < sizeof(g_cWeaponClasses); i++) {
-        int skinId;
-        if(!g_mPlayerSkins[client].GetValue(g_cWeaponClasses[i], skinId)) {
+    for(int i = 0; i < USER_ITEM_MAX; i++) {
+        Item item = g_hPlayerItems[client][i];
+        if(item == null) {
             continue;
         }
 
-        if(skinId < 1) {
-            continue;
-        }
+        char weapon[64];
+        item.GetWeapon(weapon, sizeof(weapon));
 
-        char skinIdChar[16];
-        IntToString(skinId, skinIdChar, sizeof(skinIdChar));
+        char skinId[16];
+        item.GetSkinID(skinId, sizeof(skinId));
 
-        Format(query, sizeof(query), SET_USER_SKIN, steamId, g_cWeaponClasses[i], skinIdChar, skinIdChar);
+        int pattern = item.GetPattern();
+        float floatValue = item.GetFloat();
+        int statTrak = item.GetStatTrak();
+
+        Format(query, sizeof(query), SET_USER_SKIN, steamId, weapon, skinId, pattern, floatValue, statTrak, skinId, pattern, floatValue, statTrak);
         transaction.AddQuery(query);
     }
 

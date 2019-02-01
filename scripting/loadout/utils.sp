@@ -29,7 +29,7 @@ public bool IsClientValid(const int client) {
     return true;
 }
 
-stock bool ClassByDefIndex(int index, char[] class, int size) {
+public bool ClassByDefIndex(int index, char[] class, int size) {
 	switch(index) {
 		case 42: {
 			FormatEx(class, size, "weapon_knife");
@@ -54,7 +54,15 @@ stock bool ClassByDefIndex(int index, char[] class, int size) {
 	return false;
 }
 
-stock bool GetWeaponClass(int entity, char[] weaponClass, int size) {
+public bool GetWeaponClass(int entity, char[] weaponClass, int size) {
     int id = GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
     return ClassByDefIndex(id, weaponClass, size);
+}
+
+public bool IsKnife(const char[] classname) {
+    if((StrContains(classname, "knife") > -1 && strcmp(classname, "weapon_knifegg") != 0) || StrContains(classname, "bayonet") > -1) {
+        return true;
+    }
+
+    return false;
 }
