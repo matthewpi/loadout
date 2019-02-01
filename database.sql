@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `loadout_glove_skins` (
     `displayName` VARCHAR(64)                   NOT NULL,
     `gloveId`     INT(11)                       NOT NULL,
     `paintId`     INT(11)                       NOT NULL,
-    CONSTRAINT `loadout_glove_skins_id_uindex`       UNIQUE (`id`),
+    CONSTRAINT `loadout_glove_skins_id_uindex` UNIQUE (`id`),
     CONSTRAINT `loadout_glove_skins_loadout_gloves_id_fk` FOREIGN KEY (`gloveId`) REFERENCES `loadout_gloves` (`id`) ON UPDATE CASCADE
 );
 
@@ -32,13 +32,16 @@ CREATE TABLE IF NOT EXISTS `loadout_skins` (
     `displayName` VARCHAR(64)                   NOT NULL,
     `skinId`      INT(11)                       NOT NULL,
     `weapons`     TEXT                          NOT NULL,
-    CONSTRAINT `loadout_skins_id_uindex`          UNIQUE (`id`)
+    CONSTRAINT `loadout_skins_id_uindex` UNIQUE (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `loadout_user_skins` (
-    `steamId` VARCHAR(64) NOT NULL,
-    `weapon`  VARCHAR(64) NOT NULL,
-    `skinId`  VARCHAR(16) NOT NULL,
+    `steamId`     VARCHAR(64)                NOT NULL,
+    `weapon`      VARCHAR(64)                NOT NULL,
+    `skinId`      VARCHAR(16)                NOT NULL,
+    `skinPattern` INT(11)       DEFAULT 0    NOT NULL,
+    `skinFloat`   DECIMAL(9, 8) DEFAULT 0.01 NOT NULL,
+    `statTrak`    INT(11)       DEFAULT 0    NOT NULL,
     CONSTRAINT `loadout_user_skins_steamId_weapon_uindex` UNIQUE (`steamId`, `weapon`)
 );
 

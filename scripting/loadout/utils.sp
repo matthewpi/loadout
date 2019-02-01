@@ -21,6 +21,10 @@
  /*43*/ 519, /*44*/ 520, /*45*/ 522, /*46*/ 523, /*47*/ 23
  };
 
+/**
+ * IsClientValid
+ * Returns true if the client is valid. (in game, connected, isn't fake)
+ */
 public bool IsClientValid(const int client) {
     if(client <= 0 || client > MaxClients || !IsClientConnected(client) || !IsClientInGame(client) || IsFakeClient(client)) {
         return false;
@@ -29,6 +33,10 @@ public bool IsClientValid(const int client) {
     return true;
 }
 
+/**
+ * ClassByDefIndex
+ * Gets a weapon's class by definition index.
+ */
 public bool ClassByDefIndex(int index, char[] class, int size) {
 	switch(index) {
 		case 42: {
@@ -54,11 +62,19 @@ public bool ClassByDefIndex(int index, char[] class, int size) {
 	return false;
 }
 
+/**
+ * GetWeaponClass
+ * Gets a entity's weapon class.
+ */
 public bool GetWeaponClass(int entity, char[] weaponClass, int size) {
     int id = GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
     return ClassByDefIndex(id, weaponClass, size);
 }
 
+/**
+ * IsKnife
+ * Returns true if the classname represents a knife.
+ */
 public bool IsKnife(const char[] classname) {
     if((StrContains(classname, "knife") > -1 && strcmp(classname, "weapon_knifegg") != 0) || StrContains(classname, "bayonet") > -1) {
         return true;

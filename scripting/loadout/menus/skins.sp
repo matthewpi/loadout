@@ -359,7 +359,7 @@ int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int itemNum
 void Skins_Refresh(int client, const char[] weapon) {
     int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
 
-    char weaponClass[32];
+    char weaponClass[64];
     for(int i = 0; i < size; i++) {
         int entity = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
 
