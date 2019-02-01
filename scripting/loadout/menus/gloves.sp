@@ -93,10 +93,6 @@ int Callback_GlovesSubMenu(Menu menu, MenuAction action, int client, int itemNum
             int skinIndex = StringToInt(info);
             g_iGloveSkins[client] = skinIndex;
 
-            char cookie[16];
-            Format(cookie, sizeof(cookie), "%i;%i", glove.GetID(), skinIndex);
-            g_mPlayerSkins[client].SetString("plugin_gloves", cookie, true);
-
             Gloves_Refresh(client);
             Gloves_SubMenu(client, g_hGloves[g_iGloves[client]]);
         }
@@ -116,13 +112,11 @@ int Callback_GlovesSubMenu(Menu menu, MenuAction action, int client, int itemNum
 public void Gloves_Refresh(int client) {
     Glove glove = g_hGloves[g_iGloves[client]];
     if(glove == null) {
-        PrintToChat(client, "%s glove == null", PREFIX);
         return;
     }
 
     GloveSkin skin = glove.GetSkin(g_iGloveSkins[client]);
     if(skin == null) {
-        PrintToChat(client, "%s skin == null", PREFIX);
         return;
     }
 
@@ -149,8 +143,6 @@ public void Gloves_Refresh(int client) {
         SetEntPropEnt(entity, Prop_Data, "m_hMoveParent", client);
         SetEntProp(client, Prop_Send, "m_nBody", 1);
         DispatchSpawn(entity);
-    } else {
-        PrintToChat(client, "%s entity == -1", PREFIX);
     }
 
     int active = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");

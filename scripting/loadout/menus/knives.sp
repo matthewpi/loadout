@@ -36,7 +36,6 @@ int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
             }
 
             g_iKnives[client] = knife.GetID();
-            g_mPlayerSkins[client].SetString("plugin_knife", info, true);
 
             char itemName[64];
             knife.GetItemName(itemName, sizeof(itemName));

@@ -308,9 +308,39 @@ int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int itemNum
             char displayName[64];
             menu.GetItem(itemNum, info, sizeof(info), _, displayName, sizeof(displayName));
 
-            PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, displayName, g_cSkinWeapon[client]);
-            g_mPlayerSkins[client].SetValue(g_cSkinWeapon[client], StringToInt(info), true);
+            int i;
+
+            Item item;
+            char weapon[64];
+            int validItems = 0;
+            for(i = 0; i < USER_ITEM_MAX; i++) {
+                item = g_hPlayerItems[client][i];
+                if(item == null) {
+                    continue;
+                }
+
+                item.GetWeapon(weapon, sizeof(weapon));
+                validItems++;
+
+                if(StrEqual(weapon, g_cSkinWeapon[client])) {
+                    break;
+                }
+            }
+
+            if(item == null) {
+                item = new Item();
+                item.SetWeapon(g_cSkinWeapon[client]);
+                item.SetPattern(0);
+                item.SetFloat(0.01);
+                item.SetStatTrak(0);
+                i = validItems + 1;
+            }
+
+            item.SetSkinID(info);
+            g_hPlayerItems[client][i] = item;
+
             Skins_Refresh(client, g_cSkinWeapon[client]);
+            PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, displayName, g_cSkinWeapon[client]);
             g_hSkinMenus[client].Display(client, 0);
         }
 
@@ -341,7 +371,7 @@ void Skins_Refresh(int client, const char[] weapon) {
             continue;
         }
 
-        bool isKnife = StrContains(weapon, "weapon_knife") != -1;
+        bool isKnife = IsKnife(weapon);
 
         int offset = -1;
         int ammo = -1;
