@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `loadout_user_skins` (
     `skinId`      VARCHAR(16)                NOT NULL,
     `skinPattern` INT(11)       DEFAULT 0    NOT NULL,
     `skinFloat`   DECIMAL(9, 8) DEFAULT 0.01 NOT NULL,
-    `statTrak`    INT(11)       DEFAULT 0    NOT NULL,
+    `statTrak`    INT(11)       DEFAULT -1   NOT NULL,
     CONSTRAINT `loadout_user_skins_steamId_weapon_uindex` UNIQUE (`steamId`, `weapon`)
 );
 

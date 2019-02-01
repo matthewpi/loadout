@@ -28,6 +28,7 @@
 #include "loadout/models/item.sp"
 
 ConVar g_cvDatabase;
+ConVar g_cvStatTrak;
 
 Knife g_hKnives[KNIFE_MAX + 1];
 int g_iKnives[MAXPLAYERS + 1];
@@ -40,8 +41,6 @@ Menu g_hSkinMenus[MAXPLAYERS + 1];
 char g_cSkinWeapon[MAXPLAYERS + 1][64];
 bool g_bSkinSearch[MAXPLAYERS + 1];
 Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX + 1];
-
-bool g_bStatTrak = true;
 
 #include "loadout/utils.sp"
 #include "loadout/backend.sp"
@@ -63,6 +62,7 @@ public void OnPluginStart() {
     LoadTranslations("loadout.weapons.phrases");
 
     g_cvDatabase = CreateConVar("sm_loadout_database", "loadout", "Sets what database the plugin should use.");
+    g_cvStatTrak = CreateConVar("sm_loadout_stattrak", "0", "Sets whether stattrak weapons are enabled.");
 
     char databaseName[64];
     g_cvDatabase.GetString(databaseName, sizeof(databaseName));
@@ -110,15 +110,16 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
  * Increments a player's stattrak.
  */
 public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast) {
-    if(!g_bStatTrak) {
+    if(!g_cvStatTrak.BoolValue) {
         return Plugin_Continue;
     }
 
     int enemy = GetClientOfUserId(event.GetInt("userid"));
-    int attacker = GetClientOfUserId(event.GetInt("attacker"));
     if(!IsClientValid(enemy)) {
         return Plugin_Continue;
     }
+
+    int attacker = GetClientOfUserId(event.GetInt("attacker"));
 
     char classname[64];
     event.GetString("weapon", classname, sizeof(classname), "");
@@ -259,6 +260,8 @@ public Action OnPostWeaponEquip(int client, int entity) {
         steam32[index] = '\0';
     }
 
+    bool statTrak = g_cvStatTrak.BoolValue && item.GetStatTrak() != -1;
+
     if(!isKnife) {
         SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
     }
@@ -266,11 +269,11 @@ public Action OnPostWeaponEquip(int client, int entity) {
     SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", skinId);
     SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", floatValue);
     SetEntProp(entity, Prop_Send, "m_nFallbackSeed", pattern);
-    if(g_bStatTrak) {
+    if(statTrak) {
         SetEntProp(entity, Prop_Send, "m_nFallbackStatTrak", item.GetStatTrak());
     }
     if(!isKnife) {
-        if(g_bStatTrak) {
+        if(statTrak) {
             SetEntProp(entity, Prop_Send, "m_iEntityQuality", 9);
         }
     } else {
