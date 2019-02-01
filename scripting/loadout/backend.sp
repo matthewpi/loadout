@@ -56,9 +56,7 @@ CREATE TABLE IF NOT EXISTS `loadout_user_skins` (\
 #define GET_KNIVES "SELECT * FROM `loadout_knives` ORDER BY `displayName`;"
 #define SEARCH_WEAPON_SKINS "SELECT * FROM `loadout_skins` WHERE `displayName` LIKE \"%s%%\" ORDER BY `displayName`;"
 #define GET_USER_SKINS "SELECT `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak` FROM `loadout_user_skins` WHERE `steamId`='%s';"
-#define SET_USER_SKIN "\
-INSERT INTO `loadout_user_skins` (`steamId`, `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`) VALUES ('%s', '%s', '%s', '%i', '%f', '%i')\
-ON DUPLICATE KEY UPDATE `skinId`='%s', `skinPattern`='%i', `skinFloat`='%f', `statTrak`='%i';"
+#define SET_USER_SKIN "INSERT INTO `loadout_user_skins` (`steamId`, `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`) VALUES ('%s', '%s', '%s', %i, %f, %i) ON DUPLICATE KEY UPDATE `skinId`='%s', `skinPattern`=%i, `skinFloat`=%f, `statTrak`=%i;"
 
 Database g_hDatabase;
 
@@ -270,6 +268,7 @@ void Callback_GetUserSkins(Database database, DBResultSet results, const char[] 
         // Handles knife type (not skin)
         if(StrEqual(weapon, "plugin_knife", true)) {
             g_iKnives[client] = StringToInt(skinId);
+            continue;
         }
 
         // Handles gloves
@@ -279,6 +278,7 @@ void Callback_GetUserSkins(Database database, DBResultSet results, const char[] 
 
             g_iGloves[client] = StringToInt(gloveSections[0]);
             g_iGloveSkins[client] = StringToInt(gloveSections[1]);
+            continue;
         }
 
         Item item = new Item();
@@ -430,19 +430,15 @@ Transaction Backend_GetUserDataTransaction(Transaction transaction, int client, 
 
     // Handles knife (actual knife, not skin)
     char knife[16];
-    if(g_iKnives[client]) {
-        IntToString(g_iKnives[client], knife, sizeof(knife));
-        Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_knife", knife, 0, 0.01, 0, knife, 0, 0.01, 0);
-        transaction.AddQuery(query);
-    }
+    IntToString(g_iKnives[client], knife, sizeof(knife));
+    Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_knife", knife, 0, 0.01, 0, knife, 0, 0.01, 0);
+    transaction.AddQuery(query);
 
     // Handles gloves (glove type and skin)
     char gloves[16];
-    if(g_iGloves[client] && g_iGloveSkins[client]) {
-        Format(gloves, sizeof(gloves), "%i;%i", g_iGloves[client], g_iGloveSkins[client]);
-        Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_gloves", gloves, 0, 0.01, 0, gloves, 0, 0.01, 0);
-        transaction.AddQuery(query);
-    }
+    Format(gloves, sizeof(gloves), "%i;%i", g_iGloves[client], g_iGloveSkins[client]);
+    Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_gloves", gloves, 0, 0.01, 0, gloves, 0, 0.01, 0);
+    transaction.AddQuery(query);
 
     // Handle weapon and knife skins
     for(int i = 0; i < USER_ITEM_MAX; i++) {

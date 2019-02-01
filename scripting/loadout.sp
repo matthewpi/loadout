@@ -92,7 +92,6 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
     if(g_iKnives[client] != 0) {
         char itemName[64];
         g_hKnives[g_iKnives[client]].GetItemName(itemName, sizeof(itemName));
-        PrintToChat(client, "%s Event_PlayerSpawn: Setting knife. (%s)", PREFIX, itemName);
         Knives_Refresh(client, itemName);
     }
 
