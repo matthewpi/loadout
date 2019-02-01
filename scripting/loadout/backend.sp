@@ -42,9 +42,12 @@ CREATE TABLE IF NOT EXISTS `loadout_skins` (\
 );"
 #define TABLE_USER_SKINS "\
 CREATE TABLE IF NOT EXISTS `loadout_user_skins` (\
-    `steamId` VARCHAR(64) NOT NULL,\
-    `weapon`  VARCHAR(64) NOT NULL,\
-    `skinId`  VARCHAR(16) NOT NULL,\
+    `steamId`     VARCHAR(64)                NOT NULL,\
+    `weapon`      VARCHAR(64)                NOT NULL,\
+    `skinId`      VARCHAR(16)                NOT NULL,\
+    `skinPattern` INT(11)       DEFAULT 0    NOT NULL,\
+    `skinFloat`   DECIMAL(9, 8) DEFAULT 0.01 NOT NULL,\
+    `stattrak`    INT(11)       DEFAULT 0    NOT NULL,\
     CONSTRAINT `loadout_user_skins_steamId_weapon_uindex` UNIQUE (`steamId`, `weapon`)\
 );"
 
