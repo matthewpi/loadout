@@ -253,19 +253,19 @@ public void OnClientDisconnect(int client) {
  */
 public Action OnClientSayCommand(int client, const char[] command, const char[] args) {
     // Check if the user typed a command.
-    if(strlen(command) > 0) {
+    if(strlen(args) > 0) {
         // If the command is a public showing command from this plugin, handle it then hide the message.
-        if(StrEqual(command, "!ws") || StrEqual(command, "!skins")) {
+        if(StrEqual(args, "!ws") || StrEqual(args, "!skins")) {
             Command_Skins(client, 0);
             return Plugin_Stop;
         }
 
-        if(StrEqual(command, "!knife") || StrEqual(command, "!knives")) {
+        if(StrEqual(args, "!knife") || StrEqual(args, "!knives")) {
             Command_Knife(client, 0);
             return Plugin_Stop;
         }
 
-        if(StrEqual(command, "!glove") || StrEqual(command, "!gloves")) {
+        if(StrEqual(args, "!glove") || StrEqual(args, "!gloves")) {
             Command_Gloves(client, 0);
             return Plugin_Stop;
         }
