@@ -53,7 +53,7 @@ public Plugin myinfo = {
     name = "Loadout (Knives, Gloves, Skins)",
     author = "Matthew \"MP\" Penner",
     description = "Allows players to change their knife, gloves, and weapon skins.",
-    version = "0.0.1-BETA",
+    version = "0.0.2-BETA",
     url = "https://matthewp.io"
 };
 
