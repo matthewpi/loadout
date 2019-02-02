@@ -339,7 +339,7 @@ int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int itemNum
                 item.SetWeapon(g_cSkinWeapon[client]);
                 item.SetPattern(0);
                 item.SetFloat(0.01);
-                item.SetStatTrak(0);
+                item.SetStatTrak(-1);
                 i = validItems + 1;
             }
 
@@ -400,6 +400,63 @@ void Skins_Refresh(int client, const char[] weapon) {
             EquipPlayerWeapon(client, item);
         } else {
             entity = GivePlayerItem(client, weapon);
+
+            if(clip != -1) {
+                SetEntProp(entity, Prop_Send, "m_iClip1", clip);
+            }
+
+            if(reserve != -1) {
+                SetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount", reserve);
+            }
+
+            if(offset != -1 && ammo != -1) {
+                DataPack pack;
+                CreateDataTimer(0.1, Timer_WeaponAmmo, pack);
+                pack.WriteCell(client);
+                pack.WriteCell(offset);
+                pack.WriteCell(ammo);
+            }
+        }
+    }
+}
+
+void Skins_RefreshAll(int client, bool knife = true) {
+    int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
+
+    char weaponClass[64];
+    for(int i = 0; i < size; i++) {
+        int entity = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
+
+        if(entity == -1 || !GetWeaponClass(entity, weaponClass, sizeof(weaponClass))) {
+            continue;
+        }
+
+        bool isKnife = IsKnife(weaponClass);
+
+        if(isKnife && !knife) {
+            continue;
+        }
+
+        int offset = -1;
+        int ammo = -1;
+        int clip = -1;
+        int reserve = -1;
+
+        if(!isKnife) {
+            offset = FindDataMapInfo(client, "m_iAmmo") + (GetEntProp(entity, Prop_Data, "m_iPrimaryAmmoType") * 4);
+            ammo = GetEntData(client, offset);
+            clip = GetEntProp(entity, Prop_Send, "m_iClip1");
+            reserve = GetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount");
+        }
+
+        RemovePlayerItem(client, entity);
+        AcceptEntityInput(entity, "KillHierarchy");
+
+        if(isKnife) {
+            int item = GivePlayerItem(client, weaponClass);
+            EquipPlayerWeapon(client, item);
+        } else {
+            entity = GivePlayerItem(client, weaponClass);
 
             if(clip != -1) {
                 SetEntProp(entity, Prop_Send, "m_iClip1", clip);

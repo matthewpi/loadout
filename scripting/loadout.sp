@@ -107,6 +107,8 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
         Gloves_Refresh(client);
     }
 
+    Skins_RefreshAll(client, false);
+
     return Plugin_Continue;
 }
 
@@ -121,7 +123,7 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
     }
 
     int attacker = GetClientOfUserId(event.GetInt("attacker"));
-    if(!CanUseStattrak(attacker)) {
+    if(!IsClientValid(attacker) || !CanUseStattrak(attacker)) {
         return Plugin_Continue;
     }
 
@@ -129,7 +131,7 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
     event.GetString("weapon", classname, sizeof(classname), "");
     Format(classname, sizeof(classname), "weapon_%s", classname);
 
-    if(!IsClientValid(attacker) || strlen(classname) < 1) {
+    if(strlen(classname) < 1) {
         return Plugin_Continue;
     }
 
@@ -266,6 +268,14 @@ public Action OnPostWeaponEquip(int client, int entity) {
 
     bool statTrak = CanUseStattrak(client) && item.GetStatTrak() != -1;
 
+    if(floatValue < 0.01) {
+        floatValue = 0.01;
+    }
+
+    if(floatValue < 0.01) {
+        floatValue = 0.01;
+    }
+
     if(!isKnife) {
         SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
     }
@@ -273,14 +283,15 @@ public Action OnPostWeaponEquip(int client, int entity) {
     SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", skinId);
     SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", floatValue);
     SetEntProp(entity, Prop_Send, "m_nFallbackSeed", pattern);
-    if(statTrak) {
-        SetEntProp(entity, Prop_Send, "m_nFallbackStatTrak", item.GetStatTrak());
-    }
     if(!isKnife) {
         if(statTrak) {
+            SetEntProp(entity, Prop_Send, "m_nFallbackStatTrak", item.GetStatTrak());
             SetEntProp(entity, Prop_Send, "m_iEntityQuality", 9);
         }
     } else {
+        if(statTrak) {
+            SetEntProp(entity, Prop_Send, "m_nFallbackStatTrak", item.GetStatTrak());
+        }
         SetEntProp(entity, Prop_Send, "m_iEntityQuality", 3);
     }
     SetEntProp(entity, Prop_Send, "m_iAccountID", StringToInt(steam32));

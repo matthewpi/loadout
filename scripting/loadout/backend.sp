@@ -356,7 +356,7 @@ void Callback_SearchSkins(Database database, DBResultSet results, const char[] e
             item.SetWeapon(g_cSkinWeapon[client]);
             item.SetPattern(0);
             item.SetFloat(0.01);
-            item.SetStatTrak(0);
+            item.SetStatTrak(-1);
             i = validItems + 1;
         }
 
