@@ -43,6 +43,8 @@ int g_iGloveSkins[MAXPLAYERS + 1];
 Menu g_hSkinMenus[MAXPLAYERS + 1];
 char g_cSkinWeapon[MAXPLAYERS + 1][64];
 bool g_bSkinSearch[MAXPLAYERS + 1];
+int g_iPatternSelect[MAXPLAYERS + 1];
+int g_iFloatSelect[MAXPLAYERS + 1];
 Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX + 1];
 
 #include "loadout/utils.sp"
@@ -66,7 +68,7 @@ public void OnPluginStart() {
     LoadTranslations("loadout.weapons.phrases");
 
     g_cvDatabase = CreateConVar("sm_loadout_database", "loadout", "Sets what database the plugin should use.");
-    g_cvStatTrak = CreateConVar("sm_loadout_stattrak", "0", "Sets whether stattrak weapons are enabled.");
+    g_cvStatTrak = CreateConVar("sm_loadout_stattrak", "1", "Sets whether stattrak weapons are enabled.");
 
     char databaseName[64];
     g_cvDatabase.GetString(databaseName, sizeof(databaseName));
@@ -103,11 +105,11 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
         Knives_Refresh(client, itemName);
     }
 
+    Skins_RefreshAll(client, false);
+
     if(g_iGloves[client] != 0 && g_iGloveSkins[client] != 0) {
         Gloves_Refresh(client);
     }
-
-    Skins_RefreshAll(client, false);
 
     return Plugin_Continue;
 }
@@ -169,6 +171,8 @@ public void OnClientConnected(int client) {
     g_iGloves[client] = 0;
     g_iGloveSkins[client] = 0;
     g_bSkinSearch[client] = false;
+    g_iPatternSelect[client] = -1;
+    g_iFloatSelect[client] = -1;
 }
 
 /**
@@ -356,6 +360,63 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         Backend_SearchSkins(client, args);
 
         g_bSkinSearch[client] = false;
+        return Plugin_Stop;
+    }
+
+    if(g_iPatternSelect[client] != -1) {
+        if(strlen(args) < 1 || strlen(args) > 4) {
+            PrintToChat(client, "%s Your pattern must be between \x071\x01 and \x074\x01 characters.", PREFIX);
+            return Plugin_Stop;
+        }
+
+        Item item = g_hPlayerItems[client][g_iPatternSelect[client]];
+        if(item == null) {
+            PrintToChat(client, "%s Failed to locate item.", PREFIX);
+            return Plugin_Stop;
+        }
+
+        int patternIndex = StringToInt(args);
+
+        char weapon[64];
+        item.GetWeapon(weapon, sizeof(weapon));
+
+        item.SetPattern(patternIndex);
+        g_hPlayerItems[client][g_iPatternSelect[client]] = item;
+        Skins_Refresh(client, weapon);
+        PrintToChat(client, "%s Setting pattern on \x10%t\x01 to \x07%i", PREFIX, weapon, patternIndex);
+        Loadout_ItemInfoMenu(client, item, g_iPatternSelect[client]);
+
+        g_iPatternSelect[client] = -1;
+        return Plugin_Stop;
+    }
+
+    if(g_iFloatSelect[client] != -1) {
+        if(strlen(args) < 1 || strlen(args) > 10) {
+            PrintToChat(client, "%s Your float must be between \x071\x01 and \x0710\x01 characters.", PREFIX);
+            return Plugin_Stop;
+        }
+
+        Item item = g_hPlayerItems[client][g_iFloatSelect[client]];
+        if(item == null) {
+            PrintToChat(client, "%s Failed to locate item.", PREFIX);
+            return Plugin_Stop;
+        }
+
+        float floatValue = StringToFloat(args);
+        if(floatValue < 0.01) {
+            floatValue = 0.01;
+        }
+
+        char weapon[64];
+        item.GetWeapon(weapon, sizeof(weapon));
+
+        item.SetFloat(floatValue);
+        g_hPlayerItems[client][g_iFloatSelect[client]] = item;
+        Skins_Refresh(client, weapon);
+        PrintToChat(client, "%s Setting float value on \x10%t\x01 to \x07%f", PREFIX, weapon, floatValue);
+        Loadout_ItemInfoMenu(client, item, g_iPatternSelect[client]);
+
+        g_iFloatSelect[client] = -1;
         return Plugin_Stop;
     }
 

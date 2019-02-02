@@ -145,9 +145,13 @@ int Callback_LoadoutItemInfoMenu(Menu menu, MenuAction action, int client, int i
             item.GetWeapon(weapon, sizeof(weapon));
 
             if(StrEqual(sections[0], "pattern")) {
-
+                PrintToChat(client, "%s Please enter a pattern.", PREFIX);
+                g_iPatternSelect[client] = itemId;
+                return;
             } else if(StrEqual(sections[0], "float")) {
-
+                PrintToChat(client, "%s Please enter a float value.", PREFIX);
+                g_iFloatSelect[client] = itemId;
+                return;
             } else if(StrEqual(sections[0], "statTrakDisabled")) {
                 item.SetStatTrak(0);
                 g_hPlayerItems[client][itemId] = item;
