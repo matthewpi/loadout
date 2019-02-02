@@ -272,12 +272,8 @@ public Action OnPostWeaponEquip(int client, int entity) {
 
     bool statTrak = CanUseStattrak(client) && item.GetStatTrak() != -1;
 
-    if(floatValue < 0.01) {
-        floatValue = 0.01;
-    }
-
-    if(floatValue < 0.01) {
-        floatValue = 0.01;
+    if(floatValue < 0.0001) {
+        floatValue = 0.0001;
     }
 
     if(!isKnife) {
@@ -403,8 +399,8 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         }
 
         float floatValue = StringToFloat(args);
-        if(floatValue < 0.01) {
-            floatValue = 0.01;
+        if(floatValue < 0.0001) {
+            floatValue = 0.0001;
         }
 
         char weapon[64];
@@ -414,7 +410,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         g_hPlayerItems[client][g_iFloatSelect[client]] = item;
         Skins_Refresh(client, weapon);
         PrintToChat(client, "%s Setting float value on \x10%t\x01 to \x07%f", PREFIX, weapon, floatValue);
-        Loadout_ItemInfoMenu(client, item, g_iPatternSelect[client]);
+        Loadout_ItemInfoMenu(client, item, g_iFloatSelect[client]);
 
         g_iFloatSelect[client] = -1;
         return Plugin_Stop;

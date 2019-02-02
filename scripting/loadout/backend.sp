@@ -42,12 +42,12 @@ CREATE TABLE IF NOT EXISTS `loadout_skins` (\
 );"
 #define TABLE_USER_SKINS "\
 CREATE TABLE IF NOT EXISTS `loadout_user_skins` (\
-    `steamId`     VARCHAR(64)                NOT NULL,\
-    `weapon`      VARCHAR(64)                NOT NULL,\
-    `skinId`      VARCHAR(16)                NOT NULL,\
-    `skinPattern` INT(11)       DEFAULT 0    NOT NULL,\
-    `skinFloat`   DECIMAL(9, 8) DEFAULT 0.01 NOT NULL,\
-    `statTrak`    INT(11)       DEFAULT -1   NOT NULL,\
+    `steamId`     VARCHAR(64)                  NOT NULL,\
+    `weapon`      VARCHAR(64)                  NOT NULL,\
+    `skinId`      VARCHAR(16)                  NOT NULL,\
+    `skinPattern` INT(11)       DEFAULT 0      NOT NULL,\
+    `skinFloat`   DECIMAL(9, 8) DEFAULT 0.0001 NOT NULL,\
+    `statTrak`    INT(11)       DEFAULT -1     NOT NULL,\
     CONSTRAINT `loadout_user_skins_steamId_weapon_uindex` UNIQUE (`steamId`, `weapon`)\
 );"
 
@@ -355,7 +355,7 @@ void Callback_SearchSkins(Database database, DBResultSet results, const char[] e
             item = new Item();
             item.SetWeapon(g_cSkinWeapon[client]);
             item.SetPattern(0);
-            item.SetFloat(0.01);
+            item.SetFloat(0.0001);
             item.SetStatTrak(-1);
             i = validItems + 1;
         }
@@ -431,13 +431,13 @@ Transaction Backend_GetUserDataTransaction(Transaction transaction, int client, 
     // Handles knife (actual knife, not skin)
     char knife[16];
     IntToString(g_iKnives[client], knife, sizeof(knife));
-    Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_knife", knife, 0, 0.01, -1, knife, 0, 0.01, -1);
+    Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_knife", knife, 0, 0.0001, -1, knife, 0, 0.0001, -1);
     transaction.AddQuery(query);
 
     // Handles gloves (glove type and skin)
     char gloves[16];
     Format(gloves, sizeof(gloves), "%i;%i", g_iGloves[client], g_iGloveSkins[client]);
-    Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_gloves", gloves, 0, 0.01, -1, gloves, 0, 0.01, -1);
+    Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_gloves", gloves, 0, 0.0001, -1, gloves, 0, 0.0001, -1);
     transaction.AddQuery(query);
 
     // Handle weapon and knife skins

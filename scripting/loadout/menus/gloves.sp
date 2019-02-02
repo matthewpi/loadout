@@ -138,11 +138,10 @@ public void Gloves_Refresh(int client) {
     entity = CreateEntityByName("wearable_item");
 
     if(entity != -1) {
-        SetEntPropEnt(client, Prop_Send, "m_hMyWearables", entity);
         SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", glove.GetItemID());
         SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
         SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", skin.GetPaintID());
-        SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", 0.01);
+        SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", 0.0001);
         SetEntProp(entity, Prop_Send, "m_nFallbackSeed", GetRandomInt(0, 8192));
         SetEntProp(entity, Prop_Send, "m_bInitialized", 1);
         SetEntPropEnt(entity, Prop_Data, "m_hParent", client);
@@ -150,19 +149,17 @@ public void Gloves_Refresh(int client) {
         SetEntPropEnt(entity, Prop_Data, "m_hMoveParent", client);
         SetEntProp(client, Prop_Send, "m_nBody", 1);
         DispatchSpawn(entity);
+        SetEntPropEnt(client, Prop_Send, "m_hMyWearables", entity);
     }
 
     int active = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
     SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
 
-    DataPack pack;
-    CreateDataTimer(0.1, Timer_Reactivate, pack);
-    pack.WriteCell(client);
-
     if(IsValidEntity(active)) {
+        DataPack pack;
+        CreateDataTimer(0.1, Timer_Reactivate, pack);
+        pack.WriteCell(client);
         pack.WriteCell(active);
-    } else {
-        pack.WriteCell(-1);
     }
 }
 
