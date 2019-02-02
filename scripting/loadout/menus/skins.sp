@@ -17,6 +17,7 @@ public void Skins_Menu(int client) {
         menu.AddItem("inventory", "Inventory");
     }
 
+    menu.ExitBackButton = true;
     menu.Display(client, 0);
 }
 
@@ -38,6 +39,12 @@ int Callback_SkinsMenu(Menu menu, MenuAction action, int client, int itemNum) {
                 Skins_KnifeMenu(client);
             } else if(StrEqual(info, "inventory")) {
                 Skins_InventoryMenu(client);
+            }
+        }
+
+        case MenuAction_Cancel: {
+            if(itemNum == MenuCancel_ExitBack) {
+                Loadout_Menu(client);
             }
         }
 

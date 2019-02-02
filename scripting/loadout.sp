@@ -11,6 +11,9 @@
 #pragma semicolon 1
 #pragma newdecls required
 
+#define LOADOUT_VERSION "0.0.2-BETA"
+#define LOADOUT_AUTHOR "Matthew \"MP\" Penner"
+
 #define PREFIX "[\x06Loadout\x01]"
 #define CONSOLE_PREFIX "[Loadout]"
 // This might need to be increased depending on the number of groups.
@@ -47,13 +50,14 @@ Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX + 1];
 #include "loadout/commands.sp"
 #include "loadout/menus/gloves.sp"
 #include "loadout/menus/knives.sp"
+#include "loadout/menus/loadout.sp"
 #include "loadout/menus/skins.sp"
 
 public Plugin myinfo = {
     name = "Loadout (Knives, Gloves, Skins)",
-    author = "Matthew \"MP\" Penner",
+    author = LOADOUT_AUTHOR,
     description = "Allows players to change their knife, gloves, and weapon skins.",
-    version = "0.0.2-BETA",
+    version = LOADOUT_VERSION,
     url = "https://matthewp.io"
 };
 
@@ -68,6 +72,7 @@ public void OnPluginStart() {
     g_cvDatabase.GetString(databaseName, sizeof(databaseName));
     Database.Connect(Backend_Connnection, databaseName);
 
+    RegConsoleCmd("sm_loadout", Command_Loadout);
     RegConsoleCmd("sm_gloves", Command_Gloves);
     RegConsoleCmd("sm_glove", Command_Gloves);
     RegConsoleCmd("sm_knife", Command_Knife);
@@ -110,16 +115,15 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
  * Increments a player's stattrak.
  */
 public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast) {
-    if(!g_cvStatTrak.BoolValue) {
-        return Plugin_Continue;
-    }
-
     int enemy = GetClientOfUserId(event.GetInt("userid"));
     if(!IsClientValid(enemy)) {
         return Plugin_Continue;
     }
 
     int attacker = GetClientOfUserId(event.GetInt("attacker"));
+    if(!CanUseStattrak(attacker)) {
+        return Plugin_Continue;
+    }
 
     char classname[64];
     event.GetString("weapon", classname, sizeof(classname), "");
@@ -260,7 +264,7 @@ public Action OnPostWeaponEquip(int client, int entity) {
         steam32[index] = '\0';
     }
 
-    bool statTrak = g_cvStatTrak.BoolValue && item.GetStatTrak() != -1;
+    bool statTrak = CanUseStattrak(client) && item.GetStatTrak() != -1;
 
     if(!isKnife) {
         SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);

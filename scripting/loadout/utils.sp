@@ -33,6 +33,25 @@ public bool IsClientValid(const int client) {
     return true;
 }
 
+
+public bool CanUseStattrak(int client) {
+    if(!g_cvStatTrak.BoolValue) {
+        return false;
+    }
+
+    AdminId adminId = GetUserAdmin(client);
+
+    if(adminId == INVALID_ADMIN_ID) {
+        return false;
+    }
+
+    if(!GetAdminFlag(adminId, Admin_Custom2)) {
+        return false;
+    }
+
+    return true;
+}
+
 /**
  * ClassByDefIndex
  * Gets a weapon's class by definition index.

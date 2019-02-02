@@ -21,6 +21,7 @@ public void Gloves_Menu(int client) {
         menu.AddItem(item, name);
     }
 
+    menu.ExitBackButton = true;
     menu.Display(client, 0);
 }
 
@@ -39,6 +40,12 @@ int Callback_GlovesMenu(Menu menu, MenuAction action, int client, int itemNum) {
 
             g_iGloves[client] = gloveId;
             Gloves_SubMenu(client, glove);
+        }
+
+        case MenuAction_Cancel: {
+            if(itemNum == MenuCancel_ExitBack) {
+                Loadout_Menu(client);
+            }
         }
 
         case MenuAction_End: {

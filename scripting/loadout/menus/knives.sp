@@ -21,6 +21,7 @@ public void Knives_Menu(int client) {
         menu.AddItem(item, name, g_iKnives[client] == knife.GetID() ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 	}
 
+    menu.ExitBackButton = true;
     menu.Display(client, 0);
 }
 
@@ -42,6 +43,12 @@ int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
 
             Knives_Refresh(client, itemName);
             Knives_Menu(client);
+        }
+
+        case MenuAction_Cancel: {
+            if(itemNum == MenuCancel_ExitBack) {
+                Loadout_Menu(client);
+            }
         }
 
         case MenuAction_End: {
