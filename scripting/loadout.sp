@@ -11,7 +11,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define LOADOUT_VERSION "0.0.2-BETA"
+#define LOADOUT_VERSION "0.0.3-BETA"
 #define LOADOUT_AUTHOR "Matthew \"MP\" Penner"
 
 #define PREFIX "[\x06Loadout\x01]"
