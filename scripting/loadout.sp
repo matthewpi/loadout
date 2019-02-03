@@ -70,6 +70,8 @@ public void OnPluginStart() {
     g_cvDatabase = CreateConVar("sm_loadout_database", "loadout", "Sets what database the plugin should use.");
     g_cvStatTrak = CreateConVar("sm_loadout_stattrak", "1", "Sets whether stattrak weapons are enabled.");
 
+    AutoExecConfig(true, "loadout");
+
     char databaseName[64];
     g_cvDatabase.GetString(databaseName, sizeof(databaseName));
     Database.Connect(Backend_Connnection, databaseName);
