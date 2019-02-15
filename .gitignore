@@ -39,13 +39,13 @@ yarn.lock
 #-------------------
 # Misc
 #-------------------
-/scripting/compiled
-/scripting/include
-/scripting/compile.sh
-/scripting/spcomp
-/scripting/compile.exe
-/scripting/spcomp.exe
-/scripting/compile.dat
+/addons/sourcemod/scripting/compiled
+/addons/sourcemod/scripting/include
+/addons/sourcemod/scripting/compile.sh
+/addons/sourcemod/scripting/spcomp
+/addons/sourcemod/scripting/compile.exe
+/addons/sourcemod/scripting/spcomp.exe
+/addons/sourcemod/scripting/compile.dat
 
 #-------------------
 # Operating Systems
