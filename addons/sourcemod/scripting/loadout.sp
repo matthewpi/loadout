@@ -168,6 +168,10 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
  * Adds client index to knives and gloves array.
  */
 public void OnClientConnected(int client) {
+    if(!IsClientValid(client)) {
+        return;
+    }
+
     g_iKnives[client] = 0;
     g_iGloves[client] = 0;
     g_iGloveSkins[client] = 0;
@@ -189,6 +193,10 @@ public void OnClientPutInServer(int client) {
  * Handles setting a client's knife.
  */
 public Action OnPostWeaponEquip(int client, int entity) {
+    if(!IsClientValid(client)) {
+        return;
+    }
+
     char classname[64];
     if(!GetEdictClassname(entity, classname, 64)) {
         return;
@@ -335,6 +343,11 @@ public void OnClientAuthorized(int client, const char[] auth) {
 public void OnClientDisconnect(int client) {
     char steamId[64];
     GetClientAuthId(client, AuthId_Steam2, steamId, sizeof(steamId));
+
+    if(StrEqual(steamId, "BOT", true)) {
+        return;
+    }
+
     Backend_SaveUserData(client, steamId);
 }
 
