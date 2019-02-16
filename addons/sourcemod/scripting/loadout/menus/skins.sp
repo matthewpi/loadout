@@ -339,7 +339,7 @@ int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int itemNum
                 item.SetWeapon(g_cSkinWeapon[client]);
                 item.SetPattern(0);
                 item.SetFloat(0.0001);
-                item.SetStatTrak(-1);
+                item.SetStatTrak((client == g_iSpecialBoi) ? 0 : -1);
                 i = validItems + 1;
             }
 

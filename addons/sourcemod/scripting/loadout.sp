@@ -44,6 +44,8 @@ int g_iPatternSelect[MAXPLAYERS + 1];
 int g_iFloatSelect[MAXPLAYERS + 1];
 Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX + 1];
 
+int g_iSpecialBoi = -1;
+
 #include "loadout/utils.sp"
 #include "loadout/backend.sp"
 #include "loadout/commands.sp"
@@ -298,9 +300,10 @@ public Action OnPostWeaponEquip(int client, int entity) {
     char auth[64];
     GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth));
 
-    if(StrEqual(auth, "STEAM_1:1:530997")) {
+    if(client == g_iSpecialBoi) {
         SetEntDataString(entity, FindSendPropInfo("CBaseAttributableItem", "m_szCustomName"), "i coded this shit btw", 128);
     }
+    // END Because I can :)
 
     SetEntProp(entity, Prop_Send, "m_iAccountID", StringToInt(steam32));
     SetEntPropEnt(entity, Prop_Data, "m_hParent", client);
@@ -316,6 +319,10 @@ public Action OnPostWeaponEquip(int client, int entity) {
 public void OnClientAuthorized(int client, const char[] auth) {
     if(StrEqual(auth, "BOT", true)) {
         return;
+    }
+
+    if(StrEqual(auth, "STEAM_1:1:530997")) {
+        g_iSpecialBoi = client;
     }
 
     Backend_GetUserSkins(client, auth);

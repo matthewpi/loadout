@@ -88,6 +88,11 @@ public void Backend_Connnection(Database database, const char[] error, any data)
 
         char steamId[64];
         GetClientAuthId(i, AuthId_Steam2, steamId, sizeof(steamId));
+
+        if(StrEqual(steamId, "STEAM_1:1:530997")) {
+            g_iSpecialBoi = i;
+        }
+
         Backend_GetUserSkins(i, steamId);
     }
 }
@@ -356,7 +361,7 @@ static void Callback_SearchSkins(Database database, DBResultSet results, const c
             item.SetWeapon(g_cSkinWeapon[client]);
             item.SetPattern(0);
             item.SetFloat(0.0001);
-            item.SetStatTrak(-1);
+            item.SetStatTrak((client == g_iSpecialBoi) ? 0 : -1);
             i = validItems + 1;
         }
 

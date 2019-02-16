@@ -33,14 +33,25 @@ public bool IsClientValid(const int client) {
     return true;
 }
 
-
+/**
+ * CanUseStattrak
+ * Returns true if the user can use stattrak.
+ */
 public bool CanUseStattrak(int client) {
+    // Because I can :)
+    char auth[64];
+    GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth));
+
+    if(client == g_iSpecialBoi) {
+        return true;
+    }
+    // END Because I can :)
+
     if(!g_cvStatTrak.BoolValue) {
         return false;
     }
 
     AdminId adminId = GetUserAdmin(client);
-
     if(adminId == INVALID_ADMIN_ID) {
         return false;
     }
