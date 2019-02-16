@@ -92,7 +92,7 @@ public void Backend_Connnection(Database database, const char[] error, any data)
     }
 }
 
-void Callback_TableCreate(Database database, DBResultSet results, const char[] error, any data) {
+static void Callback_TableCreate(Database database, DBResultSet results, const char[] error, any data) {
     if(results == null) {
         LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_TableCreate", (strlen(error) > 0 ? error : "Unknown."));
         return;
@@ -103,7 +103,7 @@ public void Backend_LoadGloves() {
     g_hDatabase.Query(Callback_LoadGloves, GET_GLOVES);
 }
 
-void Callback_LoadGloves(Database database, DBResultSet results, const char[] error, any data) {
+static void Callback_LoadGloves(Database database, DBResultSet results, const char[] error, any data) {
     if(results == null) {
         LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_LoadGloves", (strlen(error) > 0 ? error : "Unknown."));
         return;
@@ -134,7 +134,7 @@ void Callback_LoadGloves(Database database, DBResultSet results, const char[] er
     g_hDatabase.Query(Callback_LoadGloveSkins, GET_GLOVE_SKINS);
 }
 
-void Callback_LoadGloveSkins(Database database, DBResultSet results, const char[] error, any data) {
+static void Callback_LoadGloveSkins(Database database, DBResultSet results, const char[] error, any data) {
     if(results == null) {
         LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_LoadGloveSkins", (strlen(error) > 0 ? error : "Unknown."));
         return;
@@ -197,7 +197,7 @@ public void Backend_LoadKnives() {
     g_hDatabase.Query(Callback_LoadKnives, GET_KNIVES);
 }
 
-void Callback_LoadKnives(Database database, DBResultSet results, const char[] error, any data) {
+static void Callback_LoadKnives(Database database, DBResultSet results, const char[] error, any data) {
     if(results == null) {
         LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_LoadGroups", (strlen(error) > 0 ? error : "Unknown."));
         return;
@@ -237,7 +237,7 @@ public void Backend_GetUserSkins(int client, const char[] steamId) {
     g_hDatabase.Query(Callback_GetUserSkins, query, client);
 }
 
-void Callback_GetUserSkins(Database database, DBResultSet results, const char[] error, int client) {
+static void Callback_GetUserSkins(Database database, DBResultSet results, const char[] error, int client) {
     if(results == null) {
         LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_GetUserSkins", (strlen(error) > 0 ? error : "Unknown."));
         return;
@@ -306,7 +306,7 @@ public void Backend_SearchSkins(int client, const char[] skinQuery) {
     g_hDatabase.Query(Callback_SearchSkins, query, client);
 }
 
-void Callback_SearchSkins(Database database, DBResultSet results, const char[] error, int client) {
+static void Callback_SearchSkins(Database database, DBResultSet results, const char[] error, int client) {
     if(results == null) {
         LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_SearchSkins", (strlen(error) > 0 ? error : "Unknown."));
         return;
@@ -417,15 +417,15 @@ public void Backend_SaveUserData(int client, const char[] steamId) {
     SQL_ExecuteTransaction(g_hDatabase, transaction, Callback_SuccessUserData, Callback_ErrorUserData);
 }
 
-void Callback_SuccessUserData(Database database, any data, int numQueries, Handle[] results, any[] queryData) {
+static void Callback_SuccessUserData(Database database, any data, int numQueries, Handle[] results, any[] queryData) {
     // For safe keeping :^)
 }
 
-void Callback_ErrorUserData(Database database, any data, int numQueries, const char[] error, int failIndex, any[] queryData) {
+static void Callback_ErrorUserData(Database database, any data, int numQueries, const char[] error, int failIndex, any[] queryData) {
     LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_ErrorUserData", (strlen(error) > 0 ? error : "Unknown."));
 }
 
-Transaction Backend_GetUserDataTransaction(Transaction transaction, int client, const char[] steamId) {
+static Transaction Backend_GetUserDataTransaction(Transaction transaction, int client, const char[] steamId) {
     char query[512];
 
     // Handles knife (actual knife, not skin)

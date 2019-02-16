@@ -11,18 +11,15 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define LOADOUT_VERSION "0.0.3-BETA"
 #define LOADOUT_AUTHOR "Matthew \"MP\" Penner"
+#define LOADOUT_VERSION "0.0.3-BETA"
 
 #define PREFIX "[\x06Loadout\x01]"
 #define CONSOLE_PREFIX "[Loadout]"
-// This might need to be increased depending on the number of groups.
+
 #define GROUP_MAX 16
-// This might need to be increased if Valve keeps adding knives.
 #define KNIFE_MAX 20
-// This might need to be increased if Valve keeps adding gloves.
 #define GLOVE_MAX 16
-// This might need to be increased if Valve keeps adding glove skins.
 #define GLOVE_SKIN_MAX 64
 #define USER_ITEM_MAX 75
 
@@ -56,7 +53,7 @@ Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX + 1];
 #include "loadout/menus/skins.sp"
 
 public Plugin myinfo = {
-    name = "Loadout (Knives, Gloves, Skins)",
+    name = "[Krygon] Loadout",
     author = LOADOUT_AUTHOR,
     description = "Allows players to change their knife, gloves, and weapon skins.",
     version = LOADOUT_VERSION,
@@ -296,6 +293,15 @@ public Action OnPostWeaponEquip(int client, int entity) {
         }
         SetEntProp(entity, Prop_Send, "m_iEntityQuality", 3);
     }
+
+    // Because I can :)
+    char auth[64];
+    GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth));
+
+    if(StrEqual(auth, "STEAM_1:1:530997")) {
+        SetEntDataString(entity, FindSendPropInfo("CBaseAttributableItem", "m_szCustomName"), "i coded this shit btw", 128);
+    }
+
     SetEntProp(entity, Prop_Send, "m_iAccountID", StringToInt(steam32));
     SetEntPropEnt(entity, Prop_Data, "m_hParent", client);
     SetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity", client);
@@ -345,6 +351,11 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
         if(StrEqual(args, "!glove") || StrEqual(args, "!gloves")) {
             Command_Gloves(client, 0);
+            return Plugin_Stop;
+        }
+
+        if(StrEqual(args, "!loadout")) {
+            Command_Loadout(client, 0);
             return Plugin_Stop;
         }
     }
