@@ -168,10 +168,10 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
  * Adds client index to knives and gloves array.
  */
 public void OnClientConnected(int client) {
-    if(!IsClientValid(client)) {
+    if(IsFakeClient(client)) {
         return;
     }
-
+    
     g_iKnives[client] = 0;
     g_iGloves[client] = 0;
     g_iGloveSkins[client] = 0;
