@@ -53,4 +53,12 @@ methodmap Item < StringMap {
     public void SetStatTrak(int statTrak) {
         this.SetValue("statTrak", statTrak);
     }
+
+    public void GetNametag(char[] buffer, int maxlen) {
+        this.GetString("nametag", buffer, maxlen);
+    }
+
+    public void SetNametag(const char[] weapon) {
+        this.SetString("nametag", weapon);
+    }
 }

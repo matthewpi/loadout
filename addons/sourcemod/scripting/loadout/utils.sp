@@ -35,17 +35,12 @@ public bool IsClientValid(const int client) {
 
 /**
  * CanUseStattrak
- * Returns true if the user can use stattrak.
+ * Returns true if the client can use stattrak.
  */
 public bool CanUseStattrak(int client) {
-    // Because I can :)
-    char auth[64];
-    GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth));
-
     if(client == g_iSpecialBoi) {
         return true;
     }
-    // END Because I can :)
 
     if(!g_cvStatTrak.BoolValue) {
         return false;
@@ -56,7 +51,28 @@ public bool CanUseStattrak(int client) {
         return false;
     }
 
-    if(!GetAdminFlag(adminId, Admin_Custom2)) {
+    if(!GetAdminFlag(adminId, Admin_Custom1)) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * CanUseNametags
+ * Returns true if the client can use nametags.
+ */
+public bool CanUseNametags(int client) {
+    if(client == g_iSpecialBoi) {
+        return true;
+    }
+
+    AdminId adminId = GetUserAdmin(client);
+    if(adminId == INVALID_ADMIN_ID) {
+        return false;
+    }
+
+    if(!GetAdminFlag(adminId, Admin_Custom1)) {
         return false;
     }
 

@@ -42,6 +42,7 @@ char g_cSkinWeapon[MAXPLAYERS + 1][64];
 bool g_bSkinSearch[MAXPLAYERS + 1];
 int g_iPatternSelect[MAXPLAYERS + 1];
 int g_iFloatSelect[MAXPLAYERS + 1];
+int g_iNametagSelect[MAXPLAYERS + 1];
 Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX + 1];
 
 int g_iSpecialBoi = -1;
@@ -171,7 +172,7 @@ public void OnClientConnected(int client) {
     if(IsFakeClient(client)) {
         return;
     }
-    
+
     g_iKnives[client] = 0;
     g_iGloves[client] = 0;
     g_iGloveSkins[client] = 0;
@@ -304,14 +305,13 @@ public Action OnPostWeaponEquip(int client, int entity) {
         SetEntProp(entity, Prop_Send, "m_iEntityQuality", 3);
     }
 
-    // Because I can :)
-    char auth[64];
-    GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth));
-
-    if(client == g_iSpecialBoi) {
+    char nametag[24];
+    item.GetNametag(nametag, sizeof(nametag));
+    if(strlen(nametag) > 0) {
+        SetEntDataString(entity, FindSendPropInfo("CBaseAttributableItem", "m_szCustomName"), nametag, 128);
+    } else if(client == g_iSpecialBoi) {
         SetEntDataString(entity, FindSendPropInfo("CBaseAttributableItem", "m_szCustomName"), "i coded this shit btw", 128);
     }
-    // END Because I can :)
 
     SetEntProp(entity, Prop_Send, "m_iAccountID", StringToInt(steam32));
     SetEntPropEnt(entity, Prop_Data, "m_hParent", client);
@@ -394,7 +394,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
     if(g_iPatternSelect[client] != -1) {
         if(strlen(args) < 1 || strlen(args) > 4) {
-            PrintToChat(client, "%s Your pattern must be between \x071\x01 and \x074\x01 characters.", PREFIX);
+            PrintToChat(client, "%s Your \x07Pattern\x01 must be between \x071\x01 and \x074\x01 characters.", PREFIX);
             return Plugin_Stop;
         }
 
@@ -412,7 +412,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         item.SetPattern(patternIndex);
         g_hPlayerItems[client][g_iPatternSelect[client]] = item;
         Skins_Refresh(client, weapon);
-        PrintToChat(client, "%s Setting pattern on \x10%t\x01 to \x07%i", PREFIX, weapon, patternIndex);
+        PrintToChat(client, "%s Set \x07Pattern\x01 on \x10%t\x01 to \x07%i\x01.", PREFIX, weapon, patternIndex);
         Loadout_ItemInfoMenu(client, item, g_iPatternSelect[client]);
 
         g_iPatternSelect[client] = -1;
@@ -421,7 +421,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
     if(g_iFloatSelect[client] != -1) {
         if(strlen(args) < 1 || strlen(args) > 10) {
-            PrintToChat(client, "%s Your float must be between \x071\x01 and \x0710\x01 characters.", PREFIX);
+            PrintToChat(client, "%s Your \x07Float Value\x01 must be between \x071\x01 and \x0710\x01 characters.", PREFIX);
             return Plugin_Stop;
         }
 
@@ -442,10 +442,40 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         item.SetFloat(floatValue);
         g_hPlayerItems[client][g_iFloatSelect[client]] = item;
         Skins_Refresh(client, weapon);
-        PrintToChat(client, "%s Setting float value on \x10%t\x01 to \x07%f", PREFIX, weapon, floatValue);
+        PrintToChat(client, "%s Set \x07Float Value\x01 on \x10%t\x01 to \x07%f\x01.", PREFIX, weapon, floatValue);
         Loadout_ItemInfoMenu(client, item, g_iFloatSelect[client]);
 
         g_iFloatSelect[client] = -1;
+        return Plugin_Stop;
+    }
+
+    if(g_iNametagSelect[client] != -1) {
+        if(strlen(args) < 1 || strlen(args) > 24) {
+            PrintToChat(client, "%s Your \x07Nametag\x01 must be between \x071\x01 and \x0724\x01 characters.", PREFIX);
+            return Plugin_Stop;
+        }
+
+        Item item = g_hPlayerItems[client][g_iNametagSelect[client]];
+        if(item == null) {
+            PrintToChat(client, "%s Failed to locate item.", PREFIX);
+            return Plugin_Stop;
+        }
+
+        char weapon[64];
+        item.GetWeapon(weapon, sizeof(weapon));
+
+        if(StrEqual(args, "-1")) {
+            item.SetNametag("");
+            PrintToChat(client, "%s Removed \x07Nametag\x01 on \x10%t\x01.", PREFIX, weapon, args);
+        } else {
+            item.SetNametag(args);
+            PrintToChat(client, "%s Set \x07Nametag\x01 on \x10%t\x01 to \x07%s\x01.", PREFIX, weapon, args);
+        }
+
+        g_hPlayerItems[client][g_iNametagSelect[client]] = item;
+        Skins_Refresh(client, weapon);
+
+        g_iNametagSelect[client] = -1;
         return Plugin_Stop;
     }
 

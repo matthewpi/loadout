@@ -42,12 +42,13 @@ CREATE TABLE IF NOT EXISTS `loadout_skins` (\
 );"
 #define TABLE_USER_SKINS "\
 CREATE TABLE IF NOT EXISTS `loadout_user_skins` (\
-    `steamId`     VARCHAR(64)                  NOT NULL,\
-    `weapon`      VARCHAR(64)                  NOT NULL,\
-    `skinId`      VARCHAR(16)                  NOT NULL,\
-    `skinPattern` INT(11)       DEFAULT 0      NOT NULL,\
-    `skinFloat`   DECIMAL(9, 8) DEFAULT 0.0001 NOT NULL,\
-    `statTrak`    INT(11)       DEFAULT -1     NOT NULL,\
+    `steamId`     VARCHAR(64)                    NOT NULL,\
+    `weapon`      VARCHAR(64)                    NOT NULL,\
+    `skinId`      VARCHAR(16)                    NOT NULL,\
+    `skinPattern` INT(11)         DEFAULT 0      NOT NULL,\
+    `skinFloat`   DECIMAL(12, 11) DEFAULT 0.0001 NOT NULL,\
+    `statTrak`    INT(11)         DEFAULT -1     NOT NULL,\
+    `nametag`     VARCHAR(24)     DEFAULT ''     NOT NULL,\
     CONSTRAINT `loadout_user_skins_steamId_weapon_uindex` UNIQUE (`steamId`, `weapon`)\
 );"
 
@@ -55,8 +56,8 @@ CREATE TABLE IF NOT EXISTS `loadout_user_skins` (\
 #define GET_GLOVE_SKINS "SELECT * FROM `loadout_glove_skins`;"
 #define GET_KNIVES "SELECT * FROM `loadout_knives` ORDER BY `displayName`;"
 #define SEARCH_WEAPON_SKINS "SELECT * FROM `loadout_skins` WHERE `displayName` LIKE \"%s%%\" ORDER BY `displayName`;"
-#define GET_USER_SKINS "SELECT `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak` FROM `loadout_user_skins` WHERE `steamId`='%s';"
-#define SET_USER_SKIN "INSERT INTO `loadout_user_skins` (`steamId`, `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`) VALUES ('%s', '%s', '%s', %i, %f, %i) ON DUPLICATE KEY UPDATE `skinId`='%s', `skinPattern`=%i, `skinFloat`=%f, `statTrak`=%i;"
+#define GET_USER_SKINS "SELECT `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`, `nametag` FROM `loadout_user_skins` WHERE `steamId`='%s';"
+#define SET_USER_SKIN "INSERT INTO `loadout_user_skins` (`steamId`, `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`, `nametag`) VALUES ('%s', '%s', '%s', %i, %f, %i, '%s') ON DUPLICATE KEY UPDATE `skinId`='%s', `skinPattern`=%i, `skinFloat`=%f, `statTrak`=%i, `nametag`='%s';"
 
 Database g_hDatabase;
 
@@ -253,11 +254,13 @@ static void Callback_GetUserSkins(Database database, DBResultSet results, const 
     int patternIndex;
     int floatIndex;
     int statTrakIndex;
+    int nametagIndex;
     if(!results.FieldNameToNum("weapon", weaponIndex)) { LogError("%s Failed to locate \"weapon\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
     if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
     if(!results.FieldNameToNum("skinPattern", patternIndex)) { LogError("%s Failed to locate \"skinPattern\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
     if(!results.FieldNameToNum("skinFloat", floatIndex)) { LogError("%s Failed to locate \"skinFloat\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
     if(!results.FieldNameToNum("statTrak", statTrakIndex)) { LogError("%s Failed to locate \"statTrak\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("nametag", nametagIndex)) { LogError("%s Failed to locate \"nametag\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
 
     int i = 0;
     while(results.FetchRow()) {
@@ -266,9 +269,11 @@ static void Callback_GetUserSkins(Database database, DBResultSet results, const 
         int pattern = results.FetchInt(patternIndex);
         float floatValue = results.FetchFloat(floatIndex);
         int statTrak = results.FetchInt(statTrakIndex);
+        char nametag[24];
 
         results.FetchString(weaponIndex, weapon, sizeof(weapon));
         results.FetchString(skinIdIndex, skinId, sizeof(skinId));
+        results.FetchString(nametagIndex, nametag, sizeof(nametag));
 
         // Handles knife type (not skin)
         if(StrEqual(weapon, "plugin_knife", true)) {
@@ -292,6 +297,7 @@ static void Callback_GetUserSkins(Database database, DBResultSet results, const 
         item.SetPattern(pattern);
         item.SetFloat(floatValue);
         item.SetStatTrak(statTrak);
+        item.SetNametag(nametag);
 
         // Handles all actual skins
         g_hPlayerItems[client][i] = item;
@@ -436,13 +442,13 @@ static Transaction Backend_GetUserDataTransaction(Transaction transaction, int c
     // Handles knife (actual knife, not skin)
     char knife[16];
     IntToString(g_iKnives[client], knife, sizeof(knife));
-    Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_knife", knife, 0, 0.0001, -1, knife, 0, 0.0001, -1);
+    Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_knife", knife, 0, 0.0001, -1, "", knife, 0, 0.0001, -1, "");
     transaction.AddQuery(query);
 
     // Handles gloves (glove type and skin)
     char gloves[16];
     Format(gloves, sizeof(gloves), "%i;%i", g_iGloves[client], g_iGloveSkins[client]);
-    Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_gloves", gloves, 0, 0.0001, -1, gloves, 0, 0.0001, -1);
+    Format(query, sizeof(query), SET_USER_SKIN, steamId, "plugin_gloves", gloves, 0, 0.0001, -1, "", gloves, 0, 0.0001, -1, "");
     transaction.AddQuery(query);
 
     // Handle weapon and knife skins
@@ -462,7 +468,10 @@ static Transaction Backend_GetUserDataTransaction(Transaction transaction, int c
         float floatValue = item.GetFloat();
         int statTrak = item.GetStatTrak();
 
-        Format(query, sizeof(query), SET_USER_SKIN, steamId, weapon, skinId, pattern, floatValue, statTrak, skinId, pattern, floatValue, statTrak);
+        char nametag[24];
+        item.GetNametag(nametag, sizeof(nametag));
+
+        Format(query, sizeof(query), SET_USER_SKIN, steamId, weapon, skinId, pattern, floatValue, statTrak, nametag, skinId, pattern, floatValue, statTrak, nametag);
         transaction.AddQuery(query);
     }
 

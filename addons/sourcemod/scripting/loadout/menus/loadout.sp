@@ -121,6 +121,15 @@ public void Loadout_ItemInfoMenu(int client, Item item, int i) {
         }
     }
 
+    if(CanUseNametags(client)) {
+        char nametag[24];
+        item.GetNametag(nametag, sizeof(nametag));
+
+        Format(itemInfo, sizeof(itemInfo), "nametag;%i", i);
+        Format(itemDisplay, sizeof(itemDisplay), "Nametag: %s", nametag);
+        menu.AddItem(itemInfo, itemDisplay);
+    }
+
     menu.ExitBackButton = true;
     menu.Display(client, 0);
 }
@@ -145,23 +154,27 @@ int Callback_LoadoutItemInfoMenu(Menu menu, MenuAction action, int client, int i
             item.GetWeapon(weapon, sizeof(weapon));
 
             if(StrEqual(sections[0], "pattern")) {
-                PrintToChat(client, "%s Please enter a pattern.", PREFIX);
+                PrintToChat(client, "%s Please enter a \x07Pattern\x01 or \x100\x01 to reset.", PREFIX);
                 g_iPatternSelect[client] = itemId;
                 return;
             } else if(StrEqual(sections[0], "float")) {
-                PrintToChat(client, "%s Please enter a float value.", PREFIX);
+                PrintToChat(client, "%s Please enter a \x07Float Value\x01 or \x100\x01 to reset.", PREFIX);
                 g_iFloatSelect[client] = itemId;
                 return;
             } else if(StrEqual(sections[0], "statTrakDisabled")) {
                 item.SetStatTrak(0);
                 g_hPlayerItems[client][itemId] = item;
-                PrintToChat(client, "%s \x04Enabling\x01 StatTrak for \x10%t\x01.", PREFIX, weapon);
+                PrintToChat(client, "%s \x04Enabling\x01 \x07StatTrak\x01 for \x10%t\x01.", PREFIX, weapon);
                 Skins_Refresh(client, weapon);
             } else if(StrEqual(sections[0], "statTrak")) {
                 item.SetStatTrak(-1);
                 g_hPlayerItems[client][itemId] = item;
-                PrintToChat(client, "%s \x02Disabling\x01 StatTrak for \x10%t\x01.", PREFIX, weapon);
+                PrintToChat(client, "%s \x02Disabling\x01 \x07StatTrak\x01 for \x10%t\x01.", PREFIX, weapon);
                 Skins_Refresh(client, weapon);
+            } else if(StrEqual(sections[0], "nametag")) {
+                PrintToChat(client, "%s Please enter an \x07Item Name\x01 or \x10-1\x01 to remove.", PREFIX);
+                g_iNametagSelect[client] = itemId;
+                return;
             }
 
             Loadout_ItemInfoMenu(client, item, itemId);
