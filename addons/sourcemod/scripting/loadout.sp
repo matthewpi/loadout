@@ -179,6 +179,7 @@ public void OnClientConnected(int client) {
     g_bSkinSearch[client] = false;
     g_iPatternSelect[client] = -1;
     g_iFloatSelect[client] = -1;
+    g_iNametagSelect[client] = -1;
 }
 
 /**
