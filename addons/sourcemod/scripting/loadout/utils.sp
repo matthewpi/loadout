@@ -37,7 +37,7 @@ public bool IsClientValid(const int client) {
  * CanUseStattrak
  * Returns true if the client can use stattrak.
  */
-public bool CanUseStattrak(int client) {
+public bool CanUseStattrak(const int client) {
     if(client == g_iSpecialBoi) {
         return true;
     }
@@ -62,7 +62,7 @@ public bool CanUseStattrak(int client) {
  * CanUseNametags
  * Returns true if the client can use nametags.
  */
-public bool CanUseNametags(int client) {
+public bool CanUseNametags(const int client) {
     if(client == g_iSpecialBoi) {
         return true;
     }
@@ -83,7 +83,7 @@ public bool CanUseNametags(int client) {
  * ClassByDefIndex
  * Gets a weapon's class by definition index.
  */
-public bool ClassByDefIndex(int index, char[] class, int size) {
+public bool ClassByDefIndex(const int index, char[] class, const int size) {
 	switch(index) {
 		case 42: {
 			FormatEx(class, size, "weapon_knife");
@@ -112,7 +112,7 @@ public bool ClassByDefIndex(int index, char[] class, int size) {
  * GetWeaponClass
  * Gets a entity's weapon class.
  */
-public bool GetWeaponClass(int entity, char[] weaponClass, int size) {
+public bool GetWeaponClass(const int entity, char[] weaponClass, const int size) {
     int id = GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
     return ClassByDefIndex(id, weaponClass, size);
 }

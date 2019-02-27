@@ -3,108 +3,10 @@
  * All rights reserved.
  */
 
-#define TABLE_GLOVES "\
-CREATE TABLE IF NOT EXISTS `loadout_gloves` (\
-    `id`          INT(11)     AUTO_INCREMENT PRIMARY KEY,\
-    `displayName` VARCHAR(64)                   NOT NULL,\
-    `itemId`      INT(11)                       NOT NULL,\
-    CONSTRAINT `loadout_gloves_id_uindex`          UNIQUE (`id`),\
-    CONSTRAINT `loadout_gloves_displayName_uindex` UNIQUE (`displayName`),\
-    CONSTRAINT `loadout_gloves_itemId_uindex`      UNIQUE (`itemId`)\
-);"
-#define TABLE_GLOVE_SKINS "\
-CREATE TABLE IF NOT EXISTS `loadout_glove_skins` (\
-    `id`          INT(11)     AUTO_INCREMENT PRIMARY KEY,\
-    `displayName` VARCHAR(64)                   NOT NULL,\
-    `gloveId`     INT(11)                       NOT NULL,\
-    `paintId`     INT(11)                       NOT NULL,\
-    CONSTRAINT `loadout_glove_skins_id_uindex` UNIQUE (`id`),\
-    CONSTRAINT `loadout_glove_skins_loadout_gloves_id_fk` FOREIGN KEY (`gloveId`) REFERENCES `loadout_gloves` (`id`) ON UPDATE CASCADE\
-);"
-#define TABLE_KNIVES "\
-CREATE TABLE IF NOT EXISTS `loadout_knives` (\
-    `id`          INT(11)     AUTO_INCREMENT PRIMARY KEY,\
-    `displayName` VARCHAR(64)                   NOT NULL,\
-    `itemName`    VARCHAR(64)                   NOT NULL,\
-    `itemId`      INT(11)                       NOT NULL,\
-    CONSTRAINT `loadout_knives_id_uindex`          UNIQUE (`id`),\
-    CONSTRAINT `loadout_knives_displayName_uindex` UNIQUE (`displayName`),\
-    CONSTRAINT `loadout_knives_itemName_uindex`    UNIQUE (`itemName`),\
-    CONSTRAINT `loadout_knives_itemId_uindex`      UNIQUE (`itemId`)\
-);"
-#define TABLE_SKINS "\
-CREATE TABLE IF NOT EXISTS `loadout_skins` (\
-    `id`          INT(11)     AUTO_INCREMENT PRIMARY KEY,\
-    `displayName` VARCHAR(64)                   NOT NULL,\
-    `skinId`      INT(11)                       NOT NULL,\
-    `weapons`     TEXT                          NOT NULL,\
-    CONSTRAINT `loadout_skins_id_uindex` UNIQUE (`id`)\
-);"
-#define TABLE_USER_SKINS "\
-CREATE TABLE IF NOT EXISTS `loadout_user_skins` (\
-    `steamId`     VARCHAR(64)                    NOT NULL,\
-    `weapon`      VARCHAR(64)                    NOT NULL,\
-    `skinId`      VARCHAR(16)                    NOT NULL,\
-    `skinPattern` INT(11)         DEFAULT 0      NOT NULL,\
-    `skinFloat`   DECIMAL(12, 11) DEFAULT 0.0001 NOT NULL,\
-    `statTrak`    INT(11)         DEFAULT -1     NOT NULL,\
-    `nametag`     VARCHAR(24)     DEFAULT ''     NOT NULL,\
-    CONSTRAINT `loadout_user_skins_steamId_weapon_uindex` UNIQUE (`steamId`, `weapon`)\
-);"
-
-#define GET_GLOVES "SELECT * FROM `loadout_gloves` ORDER BY `displayName`;"
-#define GET_GLOVE_SKINS "SELECT * FROM `loadout_glove_skins`;"
-#define GET_KNIVES "SELECT * FROM `loadout_knives` ORDER BY `displayName`;"
-#define SEARCH_WEAPON_SKINS "SELECT * FROM `loadout_skins` WHERE `displayName` LIKE \"%s%%\" ORDER BY `displayName`;"
-#define GET_USER_SKINS "SELECT `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`, `nametag` FROM `loadout_user_skins` WHERE `steamId`='%s';"
-#define SET_USER_SKIN "INSERT INTO `loadout_user_skins` (`steamId`, `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`, `nametag`) VALUES ('%s', '%s', '%s', %i, %f, %i, '%s') ON DUPLICATE KEY UPDATE `skinId`='%s', `skinPattern`=%i, `skinFloat`=%f, `statTrak`=%i, `nametag`='%s';"
-
-Database g_hDatabase;
-
-public void Backend_Connnection(Database database, const char[] error, any data) {
-    if(database == null) {
-        SetFailState("%s Failed to connect to server.  Error: %s", CONSOLE_PREFIX, error);
-        return;
-    }
-
-    g_hDatabase = database;
-    LogMessage("%s Connected to database.", CONSOLE_PREFIX);
-
-    g_hDatabase.Query(Callback_TableCreate, TABLE_GLOVES);
-    g_hDatabase.Query(Callback_TableCreate, TABLE_GLOVE_SKINS);
-    g_hDatabase.Query(Callback_TableCreate, TABLE_KNIVES);
-    g_hDatabase.Query(Callback_TableCreate, TABLE_SKINS);
-    g_hDatabase.Query(Callback_TableCreate, TABLE_USER_SKINS);
-
-    Backend_LoadGloves();
-    Backend_LoadKnives();
-
-    for(int i = 1; i <= MaxClients; i++) {
-        if(!IsClientValid(i)) {
-            continue;
-        }
-
-        OnClientConnected(i);
-        OnClientPutInServer(i);
-
-        char steamId[64];
-        GetClientAuthId(i, AuthId_Steam2, steamId, sizeof(steamId));
-
-        if(StrEqual(steamId, "STEAM_1:1:530997")) {
-            g_iSpecialBoi = i;
-        }
-
-        Backend_GetUserSkins(i, steamId);
-    }
-}
-
-static void Callback_TableCreate(Database database, DBResultSet results, const char[] error, any data) {
-    if(results == null) {
-        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_TableCreate", (strlen(error) > 0 ? error : "Unknown."));
-        return;
-    }
-}
-
+/**
+ * Backend_LoadGloves
+ * ?
+ */
 public void Backend_LoadGloves() {
     g_hDatabase.Query(Callback_LoadGloves, GET_GLOVES);
 }
@@ -199,6 +101,10 @@ static void Callback_LoadGloveSkins(Database database, DBResultSet results, cons
     }
 }
 
+/**
+ * Backend_LoadKnives
+ * ?
+ */
 public void Backend_LoadKnives() {
     g_hDatabase.Query(Callback_LoadKnives, GET_KNIVES);
 }
@@ -237,7 +143,11 @@ static void Callback_LoadKnives(Database database, DBResultSet results, const ch
     }
 }
 
-public void Backend_GetUserSkins(int client, const char[] steamId) {
+/**
+ * Backend_GetUserSkins
+ * ?
+ */
+public void Backend_GetUserSkins(const int client, const char[] steamId) {
     char query[512];
     Format(query, sizeof(query), GET_USER_SKINS, steamId);
     g_hDatabase.Query(Callback_GetUserSkins, query, client);
@@ -305,7 +215,11 @@ static void Callback_GetUserSkins(Database database, DBResultSet results, const 
     }
 }
 
-public void Backend_SearchSkins(int client, const char[] skinQuery) {
+/**
+ * Backend_SearchSkins
+ * ?
+ */
+public void Backend_SearchSkins(const int client, const char[] skinQuery) {
     int skinQueryLen = strlen(skinQuery) * 2 + 1;
     char[] escapedSkinQuery = new char[skinQueryLen];
 
@@ -405,6 +319,10 @@ static void Callback_SearchSkins(Database database, DBResultSet results, const c
     g_hSkinMenus[client] = menu;
 }
 
+/**
+ * Backend_SaveAllData
+ * ?
+ */
 public void Backend_SaveAllData() {
     Transaction transaction;
 
@@ -422,7 +340,11 @@ public void Backend_SaveAllData() {
     }
 }
 
-public void Backend_SaveUserData(int client, const char[] steamId) {
+/**
+ * Backend_SaveUserData
+ * ?
+ */
+public void Backend_SaveUserData(const int client, const char[] steamId) {
     Transaction transaction = SQL_CreateTransaction();
     Backend_GetUserDataTransaction(transaction, client, steamId);
     SQL_ExecuteTransaction(g_hDatabase, transaction, Callback_SuccessUserData, Callback_ErrorUserData);
@@ -436,7 +358,11 @@ static void Callback_ErrorUserData(Database database, any data, int numQueries, 
     LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_ErrorUserData", (strlen(error) > 0 ? error : "Unknown."));
 }
 
-static Transaction Backend_GetUserDataTransaction(Transaction transaction, int client, const char[] steamId) {
+/**
+ * Backend_GetUserDataTransaction
+ * ?
+ */
+static Transaction Backend_GetUserDataTransaction(const Transaction transaction, const int client, const char[] steamId) {
     char query[512];
 
     // Handles knife (actual knife, not skin)

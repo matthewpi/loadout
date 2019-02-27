@@ -14,11 +14,11 @@ methodmap Knife < StringMap {
         return id;
     }
 
-    public void SetID(int id) {
+    public void SetID(const int id) {
         this.SetValue("id", id);
     }
 
-    public void GetName(char[] buffer, int maxlen) {
+    public void GetName(char[] buffer, const int maxlen) {
         this.GetString("name", buffer, maxlen);
     }
 
@@ -26,7 +26,7 @@ methodmap Knife < StringMap {
         this.SetString("name", name);
     }
 
-    public void GetItemName(char[] buffer, int maxlen) {
+    public void GetItemName(char[] buffer, const int maxlen) {
         this.GetString("itemName", buffer, maxlen);
     }
 
@@ -40,7 +40,7 @@ methodmap Knife < StringMap {
         return itemId;
     }
 
-    public void SetItemID(int itemId) {
+    public void SetItemID(const int itemId) {
         this.SetValue("itemId", itemId);
     }
 }

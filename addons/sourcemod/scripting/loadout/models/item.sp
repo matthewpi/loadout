@@ -8,7 +8,7 @@ methodmap Item < StringMap {
         return view_as<Item>(new StringMap());
     }
 
-    public void GetWeapon(char[] buffer, int maxlen) {
+    public void GetWeapon(char[] buffer, const int maxlen) {
         this.GetString("weapon", buffer, maxlen);
     }
 
@@ -16,7 +16,7 @@ methodmap Item < StringMap {
         this.SetString("weapon", weapon);
     }
 
-    public void GetSkinID(char[] buffer, int maxlen) {
+    public void GetSkinID(char[] buffer, const int maxlen) {
         this.GetString("skinId", buffer, maxlen);
     }
 
@@ -30,7 +30,7 @@ methodmap Item < StringMap {
         return pattern;
     }
 
-    public void SetPattern(int pattern) {
+    public void SetPattern(const int pattern) {
         this.SetValue("pattern", pattern);
     }
 
@@ -40,7 +40,7 @@ methodmap Item < StringMap {
         return floatValue;
     }
 
-    public void SetFloat(float floatValue) {
+    public void SetFloat(const float floatValue) {
         this.SetValue("float", floatValue);
     }
 
@@ -50,11 +50,11 @@ methodmap Item < StringMap {
         return statTrak;
     }
 
-    public void SetStatTrak(int statTrak) {
+    public void SetStatTrak(const int statTrak) {
         this.SetValue("statTrak", statTrak);
     }
 
-    public void GetNametag(char[] buffer, int maxlen) {
+    public void GetNametag(char[] buffer, const int maxlen) {
         this.GetString("nametag", buffer, maxlen);
     }
 

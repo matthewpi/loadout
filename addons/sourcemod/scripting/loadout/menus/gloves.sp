@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-public void Gloves_Menu(int client) {
+public void Gloves_Menu(const int client) {
     Menu menu = CreateMenu(Callback_GlovesMenu);
     menu.SetTitle("Gloves");
 
@@ -25,7 +25,7 @@ public void Gloves_Menu(int client) {
     menu.Display(client, 0);
 }
 
-int Callback_GlovesMenu(Menu menu, MenuAction action, int client, int itemNum) {
+int Callback_GlovesMenu(const Menu menu, const MenuAction action, const int client, const int itemNum) {
     switch(action) {
         case MenuAction_Select: {
             char info[32];
@@ -54,7 +54,7 @@ int Callback_GlovesMenu(Menu menu, MenuAction action, int client, int itemNum) {
     }
 }
 
-void Gloves_SubMenu(int client, Glove glove) {
+void Gloves_SubMenu(const int client, const Glove glove) {
     if(glove == null) {
         return;
     }
@@ -86,7 +86,7 @@ void Gloves_SubMenu(int client, Glove glove) {
     menu.Display(client, 0);
 }
 
-int Callback_GlovesSubMenu(Menu menu, MenuAction action, int client, int itemNum) {
+int Callback_GlovesSubMenu(const Menu menu, const MenuAction action, const int client, const int itemNum) {
     switch(action) {
         case MenuAction_Select: {
             char info[32];
@@ -116,7 +116,7 @@ int Callback_GlovesSubMenu(Menu menu, MenuAction action, int client, int itemNum
     }
 }
 
-public void Gloves_Refresh(int client) {
+public void Gloves_Refresh(const int client) {
     Glove glove = g_hGloves[g_iGloves[client]];
     if(glove == null) {
         return;

@@ -14,11 +14,11 @@ methodmap GloveSkin < StringMap {
         return id;
     }
 
-    public void SetID(int id) {
+    public void SetID(const int id) {
         this.SetValue("id", id);
     }
 
-    public void GetName(char[] buffer, int maxlen) {
+    public void GetName(char[] buffer, const int maxlen) {
         this.GetString("name", buffer, maxlen);
     }
 
@@ -32,7 +32,7 @@ methodmap GloveSkin < StringMap {
         return gloveId;
     }
 
-    public void SetGloveID(int gloveId) {
+    public void SetGloveID(const int gloveId) {
         this.SetValue("gloveId", gloveId);
     }
 
@@ -42,7 +42,7 @@ methodmap GloveSkin < StringMap {
         return paintId;
     }
 
-    public void SetPaintID(int paintId) {
+    public void SetPaintID(const int paintId) {
         this.SetValue("paintId", paintId);
     }
 }
@@ -58,7 +58,7 @@ methodmap Glove < StringMap {
         return id;
     }
 
-    public void SetID(int id) {
+    public void SetID(const int id) {
         this.SetValue("id", id);
     }
 
@@ -76,19 +76,19 @@ methodmap Glove < StringMap {
         return itemId;
     }
 
-    public void SetItemID(int itemId) {
+    public void SetItemID(const int itemId) {
         this.SetValue("itemId", itemId);
     }
 
-    public void GetSkins(GloveSkin[] buffer, int maxlen) {
+    public void GetSkins(GloveSkin[] buffer, const int maxlen) {
         this.GetArray("skins", buffer, maxlen);
     }
 
-    public void SetSkins(GloveSkin[] skins, int maxlen) {
+    public void SetSkins(const GloveSkin[] skins, const int maxlen) {
         this.SetArray("skins", skins, maxlen, true);
     }
 
-    public void AddSkin(int index, GloveSkin skin) {
+    public void AddSkin(const int index, const GloveSkin skin) {
         GloveSkin skins[GLOVE_SKIN_MAX + 1];
         this.GetSkins(skins, sizeof(skins));
 
@@ -96,7 +96,7 @@ methodmap Glove < StringMap {
         this.SetSkins(skins, sizeof(skins));
     }
 
-    public GloveSkin GetSkin(int index) {
+    public GloveSkin GetSkin(const int index) {
         GloveSkin skins[GLOVE_SKIN_MAX];
         this.GetSkins(skins, sizeof(skins));
         return skins[index];
