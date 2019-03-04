@@ -20,6 +20,6 @@ public Action Command_Knife(const int client, const int args) {
 }
 
 public Action Command_Skins(const int client, const int args) {
-	Skins_Menu(client);
+	Loadout_Menu(client);
 	return Plugin_Handled;
 }

@@ -202,7 +202,7 @@ void Skins_KnifeMenu(int client) {
 
     char name[64];
     char itemName[64];
-    for(int i = 0; i <= KNIFE_MAX; i++) {
+    for(int i = 0; i < KNIFE_MAX; i++) {
         Knife knife = g_hKnives[i];
         if(knife == null || knife.GetItemID() == 0) {
             continue;

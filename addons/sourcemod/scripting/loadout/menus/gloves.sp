@@ -9,7 +9,7 @@ public void Gloves_Menu(const int client) {
 
     char item[8];
     char name[64];
-    for(int i = 0; i <= GLOVE_MAX; i++) {
+    for(int i = 0; i < GLOVE_MAX; i++) {
         Glove glove = g_hGloves[i];
         if(glove == null) {
             continue;
@@ -70,7 +70,7 @@ void Gloves_SubMenu(const int client, const Glove glove) {
 
     char item[8];
     char name[64];
-    for(int i = 0; i <= GLOVE_SKIN_MAX; i++) {
+    for(int i = 0; i < GLOVE_SKIN_MAX; i++) {
         GloveSkin skin = skins[i];
         if(skin == null) {
             continue;
