@@ -65,8 +65,10 @@ int g_iSpecialBoi = -1;
 
 // Backend
 #include "loadout/backend/queries.sp"
+#include "loadout/backend/gloves.sp"
+#include "loadout/backend/knives.sp"
+#include "loadout/backend/skins.sp"
 #include "loadout/backend/backend.sp"
-#include "loadout/backend.sp"
 
 // Events
 #include "loadout/events/player_chat.sp"
@@ -83,7 +85,7 @@ int g_iSpecialBoi = -1;
 
 // Plugin Information
 public Plugin myinfo = {
-    name = "[Krygon] Loadout",
+    name = "Loadout",
     author = LOADOUT_AUTHOR,
     description = "Allows players to change their knife, gloves, and weapon skins.",
     version = LOADOUT_VERSION,
@@ -192,7 +194,7 @@ public void OnMapStart() {
  * Handles the save data timer.
  */
 public Action Timer_SaveData(const Handle timer) {
-    PrintToServer("%s Saving user data.", CONSOLE_PREFIX);
+    LogMessage("%s Saving user data.", CONSOLE_PREFIX);
     Backend_SaveAllData();
 }
 
