@@ -41,6 +41,7 @@ int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
             char itemName[64];
             knife.GetItemName(itemName, sizeof(itemName));
 
+            PrintToChat(client, "%s Setting your knife to \x10%t\x01.", PREFIX, itemName);
             Knives_Refresh(client, itemName);
             Knives_Menu(client);
         }

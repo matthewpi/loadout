@@ -100,6 +100,19 @@ int Callback_GlovesSubMenu(const Menu menu, const MenuAction action, const int c
             int skinIndex = StringToInt(info);
             g_iGloveSkins[client] = skinIndex;
 
+            // Get the selected glove skin.
+            GloveSkin skin = glove.GetSkin(g_iGloveSkins[client]);
+            if(skin == null) {
+                return;
+            }
+
+            char gloveName[64];
+            glove.GetName(gloveName, sizeof(gloveName));
+
+            char skinName[64];
+            skin.GetName(skinName, sizeof(skinName));
+
+            PrintToChat(client, "%s Setting your gloves to \x10%s | %s\x01.", PREFIX, gloveName, skinName);
             Gloves_Refresh(client);
             Gloves_SubMenu(client, g_hGloves[g_iGloves[client]]);
         }
