@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-public void Skins_Menu(int client) {
+public void Skins_Menu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsMenu, MENU_ACTIONS_DEFAULT);
     menu.SetTitle("Skins");
 
@@ -54,7 +54,7 @@ int Callback_SkinsMenu(Menu menu, MenuAction action, int client, int itemNum) {
     }
 }
 
-void Skins_PistolMenu(int client) {
+void Skins_PistolMenu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
     menu.SetTitle("Pistols");
 
@@ -94,7 +94,7 @@ void Skins_PistolMenu(int client) {
     menu.Display(client, 0);
 }
 
-void Skins_HeavyMenu(int client) {
+void Skins_HeavyMenu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
     menu.SetTitle("Heavy");
 
@@ -122,7 +122,7 @@ void Skins_HeavyMenu(int client) {
     menu.Display(client, 0);
 }
 
-void Skins_SMGMenu(int client) {
+void Skins_SMGMenu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
     menu.SetTitle("SMG");
 
@@ -153,7 +153,7 @@ void Skins_SMGMenu(int client) {
     menu.Display(client, 0);
 }
 
-void Skins_RifleMenu(int client) {
+void Skins_RifleMenu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
     menu.SetTitle("Rifles");
 
@@ -196,7 +196,7 @@ void Skins_RifleMenu(int client) {
     menu.Display(client, 0);
 }
 
-void Skins_KnifeMenu(int client) {
+void Skins_KnifeMenu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
     menu.SetTitle("Knives");
 
@@ -218,7 +218,7 @@ void Skins_KnifeMenu(int client) {
     menu.Display(client, 0);
 }
 
-void Skins_InventoryMenu(int client) {
+void Skins_InventoryMenu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
     menu.SetTitle("Inventory");
 
@@ -352,7 +352,7 @@ public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int 
 
             Skins_Refresh(client, g_cSkinWeapon[client]);
             PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, displayName, g_cSkinWeapon[client]);
-            g_hSkinMenus[client].Display(client, 0);
+            g_hSkinMenus[client].DisplayAt(client, GetMenuSelectionPosition(), 0);
         }
 
         case MenuAction_Cancel: {
@@ -367,7 +367,7 @@ public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int 
     }
 }
 
-public void Skins_Refresh(int client, const char[] weapon) {
+public void Skins_Refresh(const int client, const char[] weapon) {
     int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
 
     char weaponClass[64];
@@ -424,7 +424,7 @@ public void Skins_Refresh(int client, const char[] weapon) {
     }
 }
 
-void Skins_RefreshAll(int client, bool knife = true) {
+void Skins_RefreshAll(const int client, const bool knife = true) {
     int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
 
     char weaponClass[64];

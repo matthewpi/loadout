@@ -21,7 +21,10 @@ public void Gloves_Menu(const int client) {
         menu.AddItem(item, name);
     }
 
+    // Enable the menu exit back button.
     menu.ExitBackButton = true;
+
+    // Display the menu to the client.
     menu.Display(client, 0);
 }
 
@@ -54,7 +57,7 @@ int Callback_GlovesMenu(const Menu menu, const MenuAction action, const int clie
     }
 }
 
-void Gloves_SubMenu(const int client, const Glove glove) {
+void Gloves_SubMenu(const int client, const Glove glove, const int position = -1) {
     if(glove == null) {
         return;
     }
@@ -82,8 +85,15 @@ void Gloves_SubMenu(const int client, const Glove glove) {
         menu.AddItem(item, name);
     }
 
+    // Enable the menu exit back button.
     menu.ExitBackButton = true;
-    menu.Display(client, 0);
+
+    // Display the menu to the client.
+    if(position == -1) {
+        menu.Display(client, 0);
+    } else {
+        menu.DisplayAt(client, position, 0);
+    }
 }
 
 int Callback_GlovesSubMenu(const Menu menu, const MenuAction action, const int client, const int itemNum) {
@@ -114,7 +124,7 @@ int Callback_GlovesSubMenu(const Menu menu, const MenuAction action, const int c
 
             PrintToChat(client, "%s Setting your gloves to \x10%s | %s\x01.", PREFIX, gloveName, skinName);
             Gloves_Refresh(client);
-            Gloves_SubMenu(client, g_hGloves[g_iGloves[client]]);
+            Gloves_SubMenu(client, g_hGloves[g_iGloves[client]], GetMenuSelectionPosition());
         }
 
         case MenuAction_Cancel: {

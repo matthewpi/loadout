@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-public void Knives_Menu(int client) {
+void Knives_Menu(const int client, const int position = -1) {
     Menu menu = CreateMenu(Callback_KnivesMenu);
     menu.SetTitle("Knives");
 
@@ -21,8 +21,15 @@ public void Knives_Menu(int client) {
         menu.AddItem(item, name, g_iKnives[client] == knife.GetID() ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 	}
 
+    // Enable the menu exit back button.
     menu.ExitBackButton = true;
-    menu.Display(client, 0);
+
+    // Display the menu to the client.
+    if(position == -1) {
+        menu.Display(client, 0);
+    } else {
+        menu.DisplayAt(client, position, 0);
+    }
 }
 
 int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
@@ -43,7 +50,7 @@ int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
 
             PrintToChat(client, "%s Setting your knife to \x10%t\x01.", PREFIX, itemName);
             Knives_Refresh(client, itemName);
-            Knives_Menu(client);
+            Knives_Menu(client, GetMenuSelectionPosition());
         }
 
         case MenuAction_Cancel: {
@@ -58,7 +65,7 @@ int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
     }
 }
 
-void Knives_Refresh(int client, const char[] itemName) {
+void Knives_Refresh(const int client, const char[] itemName) {
     if(!IsPlayerAlive(client)) {
         return;
     }
