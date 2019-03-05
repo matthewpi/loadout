@@ -184,5 +184,7 @@ Action Timer_Reactivate(Handle timer, DataPack pack) {
     client = pack.ReadCell();
     active = pack.ReadCell();
 
-    SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", active);
+    if(IsValidEntity(active)) {
+        SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", active);
+    }
 }
