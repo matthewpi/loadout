@@ -166,12 +166,13 @@ static void Callback_RandomSkin(Database database, DBResultSet results, const ch
     }
 
     int randRow = GetRandomInt(0, results.RowCount);
-    int i = 0;
+    int j = 0;
 
     while(results.FetchRow()) {
-        if(i == randRow) {
+        if(j == randRow) {
             break;
         }
+        j++;
     }
 
     char name[64];
