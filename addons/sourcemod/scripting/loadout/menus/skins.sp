@@ -266,6 +266,7 @@ void Skins_FilterMenu(int client) {
     menu.SetTitle("Skin Filter");
 
     menu.AddItem("search", "Search..");
+    menu.AddItem("random", "Random");
 
     char alphabet[26][1] = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
     for(int i = 0; i < sizeof(alphabet); i++) {
@@ -285,6 +286,8 @@ int Callback_SkinsFilterMenu(Menu menu, MenuAction action, int client, int itemN
             if(StrEqual(info, "search", true)) {
                 g_bSkinSearch[client] = true;
                 PrintToChat(client, "%s Enter the name of the skin you would like.", PREFIX);
+            } else if(StrEqual(info, "random", true)) {
+                Backend_RandomSkin(client);
             } else {
                 if(strlen(info) < 1 || strlen(info) > 24) {
                     return 0;

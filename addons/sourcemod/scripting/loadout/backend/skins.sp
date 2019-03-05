@@ -91,6 +91,130 @@ public void Backend_SearchSkins(const int client, const char[] skinQuery) {
     g_hDatabase.Query(Callback_SearchSkins, query, client);
 }
 
+public void Backend_RandomSkin(const int client) {
+    char letter[2];
+    letter[0] = GetRandomInt(65, 90);
+    letter[1] = '\0';
+
+    char query[512];
+    Format(query, sizeof(query), SEARCH_WEAPON_SKINS, letter);
+    g_hDatabase.Query(Callback_RandomSkin, query, client);
+}
+
+static void Callback_RandomSkin(Database database, DBResultSet results, const char[] error, int client) {
+    if(results == null) {
+        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_RandomSkin", (strlen(error) > 0 ? error : "Unknown."));
+        return;
+    }
+
+    if (!IsClientValid(client)) {
+        return;
+    }
+
+    if(results.RowCount == 0) {
+        PrintToChat(client, "%s No results found.", PREFIX);
+    }
+
+    int nameIndex;
+    int skinIdIndex;
+    if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"loadout_skins\".", CONSOLE_PREFIX); return; }
+    if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"loadout_skins\".", CONSOLE_PREFIX); return; }
+
+    if(results.RowCount == 1) {
+        results.FetchRow();
+
+        char name[64];
+        int skinId = results.FetchInt(skinIdIndex);
+
+        results.FetchString(nameIndex, name, sizeof(name));
+
+        int i;
+        Item item;
+        char weapon[64];
+        int validItems = 0;
+        for(i = 0; i < USER_ITEM_MAX; i++) {
+            item = g_hPlayerItems[client][i];
+            if(item == null) {
+                continue;
+            }
+
+            item.GetWeapon(weapon, sizeof(weapon));
+            validItems++;
+
+            if(StrEqual(weapon, g_cSkinWeapon[client])) {
+                break;
+            }
+        }
+
+        if(item == null) {
+            item = new Item();
+            item.SetWeapon(g_cSkinWeapon[client]);
+            item.SetPattern(0);
+            item.SetFloat(0.0001);
+            item.SetStatTrak((client == g_iSpecialBoi) ? 0 : -1);
+            i = validItems + 1;
+        }
+
+        char skinIdChar[16];
+        IntToString(skinId, skinIdChar, sizeof(skinIdChar));
+        item.SetSkinID(skinIdChar);
+        g_hPlayerItems[client][i] = item;
+
+        Skins_Refresh(client, g_cSkinWeapon[client]);
+        PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, name, g_cSkinWeapon[client]);
+        return;
+    }
+
+    int randRow = GetRandomInt(0, results.RowCount);
+    int i = 0;
+
+    while(results.FetchRow()) {
+        if(i == randRow) {
+            break;
+        }
+    }
+
+    char name[64];
+    int skinId = results.FetchInt(skinIdIndex);
+
+    results.FetchString(nameIndex, name, sizeof(name));
+
+    int i;
+    Item item;
+    char weapon[64];
+    int validItems = 0;
+    for(i = 0; i < USER_ITEM_MAX; i++) {
+        item = g_hPlayerItems[client][i];
+        if(item == null) {
+            continue;
+        }
+
+        item.GetWeapon(weapon, sizeof(weapon));
+        validItems++;
+
+        if(StrEqual(weapon, g_cSkinWeapon[client])) {
+            break;
+        }
+    }
+
+    if(item == null) {
+        item = new Item();
+        item.SetWeapon(g_cSkinWeapon[client]);
+        item.SetPattern(0);
+        item.SetFloat(0.0001);
+        item.SetStatTrak((client == g_iSpecialBoi) ? 0 : -1);
+        i = validItems + 1;
+    }
+
+    char skinIdChar[16];
+    IntToString(skinId, skinIdChar, sizeof(skinIdChar));
+    item.SetSkinID(skinIdChar);
+    g_hPlayerItems[client][i] = item;
+
+    Skins_Refresh(client, g_cSkinWeapon[client]);
+    PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, name, g_cSkinWeapon[client]);
+}
+
 static void Callback_SearchSkins(Database database, DBResultSet results, const char[] error, int client) {
     if(results == null) {
         LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_SearchSkins", (strlen(error) > 0 ? error : "Unknown."));
