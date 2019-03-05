@@ -261,7 +261,7 @@ int Callback_SkinsWeaponMenu(Menu menu, MenuAction action, int client, int itemN
     }
 }
 
-void Skins_FilterMenu(int client) {
+public void Skins_FilterMenu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsFilterMenu);
     menu.SetTitle("Skin Filter");
 
@@ -277,7 +277,7 @@ void Skins_FilterMenu(int client) {
     menu.Display(client, 0);
 }
 
-int Callback_SkinsFilterMenu(Menu menu, MenuAction action, int client, int itemNum) {
+static int Callback_SkinsFilterMenu(Menu menu, MenuAction action, int client, int itemNum) {
     switch(action) {
         case MenuAction_Select: {
             char info[32];
@@ -311,7 +311,7 @@ int Callback_SkinsFilterMenu(Menu menu, MenuAction action, int client, int itemN
     return 0;
 }
 
-int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int itemNum) {
+public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int itemNum) {
     switch(action) {
         case MenuAction_Select: {
             char info[32];
@@ -367,7 +367,7 @@ int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int itemNum
     }
 }
 
-void Skins_Refresh(int client, const char[] weapon) {
+public void Skins_Refresh(int client, const char[] weapon) {
     int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
 
     char weaponClass[64];
@@ -481,7 +481,7 @@ void Skins_RefreshAll(int client, bool knife = true) {
     }
 }
 
-public Action Timer_WeaponAmmo(Handle timer, DataPack pack) {
+static Action Timer_WeaponAmmo(Handle timer, DataPack pack) {
     ResetPack(pack);
 
     int client = pack.ReadCell();
