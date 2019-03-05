@@ -140,12 +140,24 @@ public void Gloves_Refresh(const int client) {
         return;
     }
 
+    int active = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+    if(active != -1) {
+        SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
+    }
+
     // Find existing gloves.
     int entity = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
 
     // Delete existing gloves.
     if(entity != -1) {
         AcceptEntityInput(entity, "KillHierarchy");
+    }
+
+    char armTemp[2];
+    GetEntPropString(client, Prop_Send, "m_szArmsModel", armTemp, sizeof(armTemp));
+
+    if(armTemp[0]) {
+        SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
     }
 
     entity = CreateEntityByName("wearable_item");
@@ -165,10 +177,7 @@ public void Gloves_Refresh(const int client) {
         SetEntPropEnt(client, Prop_Send, "m_hMyWearables", entity);
     }
 
-    int active = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-    SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
-
-    if(IsValidEntity(active)) {
+    if(active != -1) {
         DataPack pack;
         CreateDataTimer(0.1, Timer_Reactivate, pack);
         pack.WriteCell(client);
@@ -184,7 +193,13 @@ Action Timer_Reactivate(Handle timer, DataPack pack) {
     client = pack.ReadCell();
     active = pack.ReadCell();
 
-    if(IsValidEntity(active)) {
-        SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", active);
+    if(!IsClientInGame(client)) {
+        return;
     }
+
+    if(!IsPlayerAlive(client)) {
+        return;
+    }
+
+    SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", active);
 }
