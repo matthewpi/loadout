@@ -267,6 +267,7 @@ public void Skins_FilterMenu(const int client) {
 
     menu.AddItem("search", "Search..");
     menu.AddItem("random", "Random");
+    menu.AddItem("default", "Default");
 
     char alphabet[26][1] = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
     for(int i = 0; i < sizeof(alphabet); i++) {
@@ -288,6 +289,30 @@ static int Callback_SkinsFilterMenu(Menu menu, MenuAction action, int client, in
                 PrintToChat(client, "%s Enter the name of the skin you would like.", PREFIX);
             } else if(StrEqual(info, "random", true)) {
                 Backend_RandomSkin(client);
+            } else if(StrEqual(info, "default", true)) {
+                int i;
+                Item item;
+                char weapon[64];
+                for(i = 0; i < USER_ITEM_MAX; i++) {
+                    item = g_hPlayerItems[client][i];
+                    if(item == null) {
+                        continue;
+                    }
+
+                    item.GetWeapon(weapon, sizeof(weapon));
+
+                    if(StrEqual(weapon, g_cSkinWeapon[client])) {
+                        break;
+                    }
+                }
+
+                if(item == null) {
+                    return 0;
+                }
+
+                PrintToChat(client, "%s Removing skin from \x07%t\x01.", PREFIX, g_cSkinWeapon[client]);
+                g_hPlayerItems[client][i] = null;
+                Skins_Refresh(client, g_cSkinWeapon[client]);
             } else {
                 if(strlen(info) < 1 || strlen(info) > 24) {
                     return 0;
@@ -319,7 +344,6 @@ public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int 
             menu.GetItem(itemNum, info, sizeof(info), _, displayName, sizeof(displayName));
 
             int i;
-
             Item item;
             char weapon[64];
             int validItems = 0;
@@ -349,9 +373,9 @@ public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int 
 
             item.SetSkinID(info);
             g_hPlayerItems[client][i] = item;
+            PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, displayName, g_cSkinWeapon[client]);
 
             Skins_Refresh(client, g_cSkinWeapon[client]);
-            PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, displayName, g_cSkinWeapon[client]);
             g_hSkinMenus[client].DisplayAt(client, GetMenuSelectionPosition(), 0);
         }
 
@@ -434,6 +458,27 @@ void Skins_RefreshAll(const int client, const bool knife = true) {
         if(entity == -1 || !GetWeaponClass(entity, weaponClass, sizeof(weaponClass))) {
             continue;
         }
+
+        // TODO: Validate that this code actually works.
+        char weapon[64];
+        bool matched = false;
+        for(int j = 0; j < USER_ITEM_MAX; j++) {
+            Item item = g_hPlayerItems[client][j];
+            if(item == null) {
+                continue;
+            }
+
+            item.GetWeapon(weapon, sizeof(weapon));
+
+            if(StrEqual(weapon, weaponClass)) {
+                matched = true;
+            }
+        }
+
+        if(!matched) {
+            continue;
+        }
+        // END TODO: Validate that this code actually works.
 
         bool isKnife = IsKnife(weaponClass);
 

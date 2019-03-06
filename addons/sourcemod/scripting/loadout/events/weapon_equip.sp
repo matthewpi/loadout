@@ -8,38 +8,46 @@
  * Handles setting a client's knife.
  */
 public Action OnPostWeaponEquip(const int client, const int entity) {
+    // Check if the client is invalid.
     if(!IsClientValid(client)) {
         return;
     }
 
+    // Get the entity's classname.
     char classname[64];
     if(!GetEdictClassname(entity, classname, 64)) {
         return;
     }
 
+    // Get the entity's definition index;
     int itemIndex = GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
+
     // Because Valve doesn't know how to do anything properly..
     if(itemIndex == 23) {
         classname = "weapon_mp5sd";
-    }
-    if(itemIndex == 60) {
+    } else if(itemIndex == 60) {
         classname = "weapon_m4a1_silencer";
-    }
-    if(itemIndex == 61) {
+    } else if(itemIndex == 61) {
         classname = "weapon_usp_silencer";
-    }
-    if(itemIndex == 63) {
+    } else if(itemIndex == 63) {
         classname = "weapon_cz75a";
     }
 
+    // Check if the item is a knife.
     bool isKnife = false;
     int definitionIndex = -1;
     if(IsKnife(classname) && g_iKnives[client] > 0) {
         Knife knife = g_hKnives[g_iKnives[client]];
+
+        // Check if the knife item is null.
         if(knife == null) {
             return;
         }
+
+        // Get the knife's classname.
         knife.GetItemName(classname, sizeof(classname));
+
+        // Get the knife's definition index.
         definitionIndex = knife.GetItemID();
     }
 
@@ -78,8 +86,11 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
     item.GetSkinID(skinIdChar, sizeof(skinIdChar));
     int skinId = StringToInt(skinIdChar);
 
+    // Get the item's pattern.
     int pattern = item.GetPattern();
-    if(pattern < 0) {
+
+    // Check if the item wants a random pattern.
+    if(pattern < 1) {
         pattern = GetRandomInt(0, 8192);
     }
 
@@ -96,18 +107,24 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
 
     bool statTrak = CanUseStattrak(client) && item.GetStatTrak() != -1;
 
+    // Make sure the float value is not below the configured minimum.
     if(floatValue < 0.0001) {
         floatValue = 0.0001;
     }
 
+    // Check if the item is not a knife.
     if(!isKnife) {
         SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
     }
+
     SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
     SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", skinId);
     SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", floatValue);
     SetEntProp(entity, Prop_Send, "m_nFallbackSeed", pattern);
+
+    // Check if the item is not a knife.
     if(!isKnife) {
+        // Check if stattrak is enabled.
         if(statTrak) {
             SetEntProp(entity, Prop_Send, "m_nFallbackStatTrak", item.GetStatTrak());
             SetEntProp(entity, Prop_Send, "m_iEntityQuality", 9);
@@ -116,12 +133,17 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
         if(statTrak) {
             SetEntProp(entity, Prop_Send, "m_nFallbackStatTrak", item.GetStatTrak());
         }
+
         SetEntProp(entity, Prop_Send, "m_iEntityQuality", 3);
     }
 
+    // Get the item's nametag.
     char nametag[24];
     item.GetNametag(nametag, sizeof(nametag));
+
+    // Check if the item's nametag is set.
     if(strlen(nametag) > 0) {
+        // Update the physical item's nametag.
         SetEntDataString(entity, FindSendPropInfo("CBaseAttributableItem", "m_szCustomName"), nametag, 128);
     } else if(client == g_iSpecialBoi) {
         SetEntDataString(entity, FindSendPropInfo("CBaseAttributableItem", "m_szCustomName"), "i coded this shit btw", 128);

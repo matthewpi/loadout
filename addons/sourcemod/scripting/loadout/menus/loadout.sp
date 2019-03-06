@@ -154,11 +154,11 @@ int Callback_LoadoutItemInfoMenu(Menu menu, MenuAction action, int client, int i
             item.GetWeapon(weapon, sizeof(weapon));
 
             if(StrEqual(sections[0], "pattern")) {
-                PrintToChat(client, "%s Please enter a \x07Pattern\x01 or \x100\x01 to reset.", PREFIX);
+                PrintToChat(client, "%s Please enter a \x07Pattern\x01 or enter \x100\x01 to reset.", PREFIX);
                 g_iPatternSelect[client] = itemId;
                 return;
             } else if(StrEqual(sections[0], "float")) {
-                PrintToChat(client, "%s Please enter a \x07Float Value\x01 or \x100\x01 to reset.", PREFIX);
+                PrintToChat(client, "%s Please enter a \x07Float Value\x01 or enter \x100\x01 to reset.", PREFIX);
                 g_iFloatSelect[client] = itemId;
                 return;
             } else if(StrEqual(sections[0], "statTrakDisabled")) {
@@ -172,7 +172,7 @@ int Callback_LoadoutItemInfoMenu(Menu menu, MenuAction action, int client, int i
                 PrintToChat(client, "%s \x02Disabling\x01 \x07StatTrak\x01 for \x10%t\x01.", PREFIX, weapon);
                 Skins_Refresh(client, weapon);
             } else if(StrEqual(sections[0], "nametag")) {
-                PrintToChat(client, "%s Please enter an \x07Item Name\x01 or \x10-1\x01 to remove.", PREFIX);
+                PrintToChat(client, "%s Please enter a \x07Nametag\x01 or enter \x10-1\x01 to remove.", PREFIX);
                 g_iNametagSelect[client] = itemId;
                 return;
             }
