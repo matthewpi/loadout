@@ -49,6 +49,9 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
 
         // Get the knife's definition index.
         definitionIndex = knife.GetItemID();
+
+        // Update the isKnife variable.
+        isKnife = true;
     }
 
     Item item;
@@ -66,7 +69,7 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
         }
     }
 
-    if(item == null) {
+    if(!isKnife && item == null) {
         return;
     }
 
@@ -82,19 +85,32 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
         }
     }
 
-    char skinIdChar[16];
-    item.GetSkinID(skinIdChar, sizeof(skinIdChar));
-    int skinId = StringToInt(skinIdChar);
+    int skinId = 0;
+    int pattern = 0;
+    float floatValue = 0.0001;
+    bool statTrak = false;
+    if(item != null) {
+        char skinIdChar[16];
+        item.GetSkinID(skinIdChar, sizeof(skinIdChar));
+        skinId = StringToInt(skinIdChar);
 
-    // Get the item's pattern.
-    int pattern = item.GetPattern();
+        // Get the item's pattern.
+        pattern = item.GetPattern();
 
-    // Check if the item wants a random pattern.
-    if(pattern < 1) {
-        pattern = GetRandomInt(0, 8192);
+        // Check if the item wants a random pattern.
+        if(pattern < 1) {
+            pattern = GetRandomInt(0, 8192);
+        }
+
+        floatValue = item.GetFloat();
+
+        statTrak = CanUseStattrak(client) && item.GetStatTrak() != -1;
+
+        // Make sure the float value is not below the configured minimum.
+        if(floatValue < 0.0001) {
+            floatValue = 0.0001;
+        }
     }
-
-    float floatValue = item.GetFloat();
 
     char steam32[20];
     char temp[20];
@@ -105,41 +121,37 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
         steam32[index] = '\0';
     }
 
-    bool statTrak = CanUseStattrak(client) && item.GetStatTrak() != -1;
-
-    // Make sure the float value is not below the configured minimum.
-    if(floatValue < 0.0001) {
-        floatValue = 0.0001;
-    }
-
     // Check if the item is not a knife.
-    if(!isKnife) {
-        SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
-    }
-
+    SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
     SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
-    SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", skinId);
-    SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", floatValue);
-    SetEntProp(entity, Prop_Send, "m_nFallbackSeed", pattern);
 
-    // Check if the item is not a knife.
-    if(!isKnife) {
-        // Check if stattrak is enabled.
-        if(statTrak) {
-            SetEntProp(entity, Prop_Send, "m_nFallbackStatTrak", item.GetStatTrak());
-            SetEntProp(entity, Prop_Send, "m_iEntityQuality", 9);
-        }
-    } else {
-        if(statTrak) {
-            SetEntProp(entity, Prop_Send, "m_nFallbackStatTrak", item.GetStatTrak());
-        }
+    if(item != null) {
+        SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", skinId);
+        SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", floatValue);
+        SetEntProp(entity, Prop_Send, "m_nFallbackSeed", pattern);
 
+        // Check if the item is not a knife.
+        if(!isKnife) {
+            // Check if stattrak is enabled.
+            if(statTrak) {
+                SetEntProp(entity, Prop_Send, "m_nFallbackStatTrak", item.GetStatTrak());
+                SetEntProp(entity, Prop_Send, "m_iEntityQuality", 9);
+            }
+        } else if(statTrak) {
+            SetEntProp(entity, Prop_Send, "m_nFallbackStatTrak", item.GetStatTrak());
+        }
+    }
+
+    if(isKnife) {
         SetEntProp(entity, Prop_Send, "m_iEntityQuality", 3);
     }
 
     // Get the item's nametag.
     char nametag[24];
-    item.GetNametag(nametag, sizeof(nametag));
+
+    if(item != null) {
+        item.GetNametag(nametag, sizeof(nametag));
+    }
 
     // Check if the item's nametag is set.
     if(strlen(nametag) > 0) {

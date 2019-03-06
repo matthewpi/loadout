@@ -475,12 +475,12 @@ void Skins_RefreshAll(const int client, const bool knife = true) {
             }
         }
 
-        if(!matched) {
+        bool isKnife = IsKnife(weaponClass);
+
+        if(!isKnife && !matched) {
             continue;
         }
         // END TODO: Validate that this code actually works.
-
-        bool isKnife = IsKnife(weaponClass);
 
         if(isKnife && !knife) {
             continue;

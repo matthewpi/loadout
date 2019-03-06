@@ -8,6 +8,11 @@
  * Deletes memory allocation for the client's data if it is loaded.
  */
 public Action OnClientSayCommand(int client, const char[] command, const char[] args) {
+    // Check if the client is invalid.
+    if(!IsClientValid(client)) {
+        return Plugin_Continue;
+    }
+
     // Check if the user typed a command.
     if(strlen(args) > 0) {
         // If the command is a public showing command from this plugin, handle it then hide the message.
