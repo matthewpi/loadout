@@ -204,7 +204,7 @@ static void Callback_RandomSkin(Database database, DBResultSet results, const ch
         return;
     }
 
-    if(results.RowCount == 0) {
+    if(results.RowCount == 0 || !results.HasResults) {
         PrintToChat(client, "%s No results found.", PREFIX);
         return;
     }
