@@ -61,4 +61,13 @@ methodmap Item < StringMap {
     public void SetNametag(const char[] weapon) {
         this.SetString("nametag", weapon);
     }
+
+    public void SetDefaults(const int client, const char[] weapon) {
+        this.SetWeapon(weapon);
+        this.SetSkinID("");
+        this.SetPattern(0);
+        this.SetFloat(ITEM_FLOAT_MIN);
+        this.SetStatTrak((client == g_iSpecialBoi) ? 0 : -1);
+        this.SetNametag("");
+    }
 }

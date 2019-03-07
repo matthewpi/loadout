@@ -84,28 +84,48 @@ public bool CanUseNametags(const int client) {
  * Gets a weapon's class by definition index.
  */
 public bool ClassByDefIndex(const int index, char[] class, const int size) {
-	switch(index) {
-		case 42: {
-			FormatEx(class, size, "weapon_knife");
-			return true;
-		}
+    switch(index) {
+        case 23: {
+            FormatEx(class, size, "weapon_mp5sd");
+            return true;
+        }
 
-		case 59: {
-			FormatEx(class, size, "weapon_knife_t");
-			return true;
-		}
+        case 42: {
+            FormatEx(class, size, "weapon_knife");
+            return true;
+        }
 
-		default: {
-			for(int i = 0; i < sizeof(g_iWeaponDefIndex); i++) {
-				if(g_iWeaponDefIndex[i] == index) {
-					FormatEx(class, size, g_cWeaponClasses[i]);
-					return true;
-				}
-			}
-		}
-	}
+        case 59: {
+            FormatEx(class, size, "weapon_knife_t");
+            return true;
+        }
 
-	return false;
+        case 60: {
+            FormatEx(class, size, "weapon_m4a1_silencer");
+            return true;
+        }
+
+        case 61: {
+            FormatEx(class, size, "weapon_usp_silencer");
+            return true;
+        }
+
+        case 63: {
+            FormatEx(class, size, "weapon_cz75a");
+            return true;
+        }
+
+        default: {
+            for(int i = 0; i < sizeof(g_iWeaponDefIndex); i++) {
+                if(g_iWeaponDefIndex[i] == index) {
+                    FormatEx(class, size, g_cWeaponClasses[i]);
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 /**

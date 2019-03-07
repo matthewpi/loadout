@@ -23,13 +23,8 @@
 #define GLOVE_MAX 16
 #define GLOVE_SKIN_MAX 64
 #define USER_ITEM_MAX 75
+#define ITEM_FLOAT_MIN 0.0001
 // END Definitions
-
-// Project Models
-#include "loadout/models/glove.sp"
-#include "loadout/models/knife.sp"
-#include "loadout/models/item.sp"
-// END Project Models
 
 // Globals
 // sm_loadout_database - "Sets what database the plugin should use." (Default: "loadout")
@@ -40,10 +35,8 @@ ConVar g_cvStatTrak;
 // g_hDatabase Stores the active database connection.
 Database g_hDatabase;
 
-Knife g_hKnives[KNIFE_MAX];
 int g_iKnives[MAXPLAYERS + 1];
 
-Glove g_hGloves[GLOVE_MAX];
 int g_iGloves[MAXPLAYERS + 1];
 int g_iGloveSkins[MAXPLAYERS + 1];
 
@@ -53,11 +46,22 @@ bool g_bSkinSearch[MAXPLAYERS + 1];
 int g_iPatternSelect[MAXPLAYERS + 1];
 int g_iFloatSelect[MAXPLAYERS + 1];
 int g_iNametagSelect[MAXPLAYERS + 1];
-Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX];
 
 // Special boi :^)
 int g_iSpecialBoi = -1;
 // END Globals
+
+// Project Models
+#include "loadout/models/glove.sp"
+#include "loadout/models/knife.sp"
+#include "loadout/models/item.sp"
+// END Project Models
+
+// Model Globals
+Knife g_hKnives[KNIFE_MAX];
+Glove g_hGloves[GLOVE_MAX];
+Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX];
+// END Model Globals
 
 // Project Files
 #include "loadout/commands.sp"
@@ -74,7 +78,7 @@ int g_iSpecialBoi = -1;
 #include "loadout/events/player_chat.sp"
 #include "loadout/events/player_death.sp"
 #include "loadout/events/player_spawn.sp"
-#include "loadout/events/weapon_equip.sp"
+#include "loadout/events/weapon_equip2.sp"
 
 // Menus
 #include "loadout/menus/gloves.sp"
@@ -194,6 +198,10 @@ public void OnMapStart() {
  * Handles the save data timer.
  */
 public Action Timer_SaveData(const Handle timer) {
+    if(GetClientCount() < 1) {
+        return;
+    }
+
     LogMessage("%s Saving user data.", CONSOLE_PREFIX);
     Backend_SaveAllData();
 }

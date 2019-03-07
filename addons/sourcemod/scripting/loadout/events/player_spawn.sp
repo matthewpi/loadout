@@ -20,6 +20,12 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
         return Plugin_Continue;
     }
 
+    // Check if the client has gloves equipped.
+    if(g_iGloves[client] != 0 && g_iGloveSkins[client] != 0) {
+        // Refresh the client's physical gloves.
+        Gloves_Refresh(client);
+    }
+
     // Check if the client has a knife equipped.
     if(g_iKnives[client] != 0) {
         // Get what knife the client has equipped.
@@ -32,12 +38,6 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
 
     // Refresh the client's physical skins.
     Skins_RefreshAll(client, false);
-
-    // Check if the client has gloves equipped.
-    if(g_iGloves[client] != 0 && g_iGloveSkins[client] != 0) {
-        // Refresh the client's physical gloves.
-        Gloves_Refresh(client);
-    }
 
     return Plugin_Continue;
 }

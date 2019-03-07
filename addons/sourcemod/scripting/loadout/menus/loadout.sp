@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-public void Loadout_Menu(int client) {
+public void Loadout_Menu(const int client) {
     Menu menu = CreateMenu(Callback_LoadoutMenu);
     menu.SetTitle("Loadout");
 
@@ -38,7 +38,7 @@ int Callback_LoadoutMenu(Menu menu, MenuAction action, int client, int itemNum) 
     }
 }
 
-public void Loadout_ItemsMenu(int client) {
+public void Loadout_ItemsMenu(const int client) {
     Menu menu = CreateMenu(Callback_LoadoutItemsMenu);
     menu.SetTitle("Items");
 
@@ -57,6 +57,7 @@ public void Loadout_ItemsMenu(int client) {
         Format(info, sizeof(info), "%i", i);
         Format(display, sizeof(display), "%t", weapon);
         menu.AddItem(info, display);
+        PrintToChat(client, "%s Adding \x10%s\x01 to the menu", PREFIX, display);
     }
 
     menu.ExitBackButton = true;
@@ -91,7 +92,7 @@ int Callback_LoadoutItemsMenu(Menu menu, MenuAction action, int client, int item
     }
 }
 
-public void Loadout_ItemInfoMenu(int client, Item item, int i) {
+public void Loadout_ItemInfoMenu(const int client, const Item item, const int i) {
     char weapon[64];
     item.GetWeapon(weapon, sizeof(weapon));
 

@@ -61,6 +61,11 @@ static void Callback_GetUserSkins(Database database, DBResultSet results, const 
             continue;
         }
 
+        // Make sure the float value is not below the configured minimum.
+        if(floatValue < ITEM_FLOAT_MIN) {
+            floatValue = ITEM_FLOAT_MIN;
+        }
+
         Item item = new Item();
         item.SetWeapon(weapon);
         item.SetSkinID(skinId);
@@ -139,10 +144,7 @@ static void Callback_SearchSkins(Database database, DBResultSet results, const c
 
         if(item == null) {
             item = new Item();
-            item.SetWeapon(g_cSkinWeapon[client]);
-            item.SetPattern(0);
-            item.SetFloat(0.0001);
-            item.SetStatTrak((client == g_iSpecialBoi) ? 0 : -1);
+            item.SetDefaults(client, g_cSkinWeapon[client]);
             i = validItems + 1;
         }
 
@@ -242,10 +244,7 @@ static void Callback_RandomSkin(Database database, DBResultSet results, const ch
 
         if(item == null) {
             item = new Item();
-            item.SetWeapon(g_cSkinWeapon[client]);
-            item.SetPattern(0);
-            item.SetFloat(0.0001);
-            item.SetStatTrak((client == g_iSpecialBoi) ? 0 : -1);
+            item.SetDefaults(client, g_cSkinWeapon[client]);
             i = validItems + 1;
         }
 
@@ -253,7 +252,6 @@ static void Callback_RandomSkin(Database database, DBResultSet results, const ch
         IntToString(skinId, skinIdChar, sizeof(skinIdChar));
         item.SetSkinID(skinIdChar);
         g_hPlayerItems[client][i] = item;
-
 
         Skins_Refresh(client, g_cSkinWeapon[client]);
         PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, name, g_cSkinWeapon[client]);
@@ -268,6 +266,7 @@ static void Callback_RandomSkin(Database database, DBResultSet results, const ch
         if(j == randRow) {
             break;
         }
+
         j++;
     }
 
@@ -296,10 +295,7 @@ static void Callback_RandomSkin(Database database, DBResultSet results, const ch
 
     if(item == null) {
         item = new Item();
-        item.SetWeapon(g_cSkinWeapon[client]);
-        item.SetPattern(0);
-        item.SetFloat(0.0001);
-        item.SetStatTrak((client == g_iSpecialBoi) ? 0 : -1);
+        item.SetDefaults(client, g_cSkinWeapon[client]);
         i = validItems + 1;
     }
 

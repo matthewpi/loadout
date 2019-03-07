@@ -348,34 +348,38 @@ public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int 
             char weapon[64];
             int validItems = 0;
             for(i = 0; i < USER_ITEM_MAX; i++) {
-                item = g_hPlayerItems[client][i];
-                if(item == null) {
-                    continue;
+                if(strlen(weapon) < 1 || !StrEqual(weapon, g_cSkinWeapon[client])) {
+                    item = g_hPlayerItems[client][i];
+                    if(item == null) {
+                        continue;
+                    }
+
+                    item.GetWeapon(weapon, sizeof(weapon));
                 }
 
-                item.GetWeapon(weapon, sizeof(weapon));
                 validItems++;
-
-                if(StrEqual(weapon, g_cSkinWeapon[client])) {
-                    break;
-                }
             }
 
             if(item == null) {
                 item = new Item();
-                item.SetWeapon(g_cSkinWeapon[client]);
-                item.SetPattern(0);
-                item.SetFloat(0.0001);
-                item.SetStatTrak((client == g_iSpecialBoi) ? 0 : -1);
-                item.SetNametag("");
+                item.SetDefaults(client, g_cSkinWeapon[client]);
                 i = validItems + 1;
             }
 
+
+            // Update the item's skin.
             item.SetSkinID(info);
+
+            // Update the "g_hPlayerItems" array.
             g_hPlayerItems[client][i] = item;
+
+            // Send a message to the client.
             PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, displayName, g_cSkinWeapon[client]);
 
+            // Refresh the client's weapon.
             Skins_Refresh(client, g_cSkinWeapon[client]);
+
+            // Redisplay the menu.
             g_hSkinMenus[client].DisplayAt(client, GetMenuSelectionPosition(), 0);
         }
 
@@ -423,12 +427,9 @@ public void Skins_Refresh(const int client, const char[] weapon) {
         RemovePlayerItem(client, entity);
         AcceptEntityInput(entity, "KillHierarchy");
 
-        if(isKnife) {
-            int item = GivePlayerItem(client, weapon);
-            EquipPlayerWeapon(client, item);
-        } else {
-            entity = GivePlayerItem(client, weapon);
+        entity = GivePlayerItem(client, weapon);
 
+        if(!isKnife) {
             if(clip != -1) {
                 SetEntProp(entity, Prop_Send, "m_iClip1", clip);
             }
@@ -445,6 +446,8 @@ public void Skins_Refresh(const int client, const char[] weapon) {
                 pack.WriteCell(ammo);
             }
         }
+
+        EquipPlayerWeapon(client, entity);
     }
 }
 
