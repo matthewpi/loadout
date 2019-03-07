@@ -211,5 +211,9 @@ Action Timer_Reactivate(Handle timer, DataPack pack) {
         return;
     }
 
+    if(!IsValidEntity(active)) {
+        return;
+    }
+
     SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", active);
 }

@@ -54,6 +54,10 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
         isKnife = true;
     }
 
+    if(isKnife && definitionIndex == 0) {
+        return;
+    }
+
     Item item;
     char weapon[64];
     for(int i = 0; i < USER_ITEM_MAX; i++) {
