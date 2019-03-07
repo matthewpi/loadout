@@ -101,7 +101,7 @@ static void Callback_SearchSkins(Database database, DBResultSet results, const c
         return;
     }
 
-    if(results.RowCount == 0) {
+    if(results.RowCount == 0 || results.HasResults) {
         PrintToChat(client, "%s No results found.", PREFIX);
         return;
     }
