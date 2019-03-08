@@ -38,13 +38,45 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
         }
     }
 
-    // Check if we did not find an item.
-    if(item == null) {
-        return;
-    }
-
     // Get a boolean based off of if the entity is a knife.
     bool isItemKnife = IsKnife(classname);
+
+    // Get the client's steam 32 id.
+    char steam32[20];
+    GetClientAuthId(client, AuthId_Steam3, temp, sizeof(temp));
+    strcopy(steam32, sizeof(steam32), temp[5]);
+    int index;
+    if((index = StrContains(steam32, "]")) > -1) {
+        steam32[index] = '\0';
+    }
+    // END Get the client's steam 32 id.
+
+    // Check if we did not find an item.
+    if(item == null) {
+        if(isItemKnife) {
+            Knife knife = g_hKnives[g_iKnives[client]];
+
+            // Check if the knife is invalid.
+            if(knife == null) {
+                return;
+            }
+
+            LogMessage("%s item is null, attempting to set custom knife. (%i)", CONSOLE_PREFIX, knife.GetItemID());
+            //SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", knife.GetItemID());
+            SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
+            SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", 0);
+            SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", 0.0);
+            SetEntProp(entity, Prop_Send, "m_nFallbackSeed", GetRandomInt(0, 8192));
+            SetEntProp(entity, Prop_Send, "m_iEntityQuality", 3);
+            SetEntProp(entity, Prop_Send, "m_iAccountID", StringToInt(steam32));
+            SetEntPropEnt(entity, Prop_Data, "m_hParent", client);
+            SetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity", client);
+            SetEntPropEnt(entity, Prop_Data, "m_hMoveParent", client);
+            SetEntPropEnt(entity, Prop_Send, "m_hPrevOwner", -1);
+        }
+
+        return;
+    }
 
     // Get the item's skin id.
     item.GetSkinID(temp, sizeof(temp));
@@ -64,16 +96,6 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
     // Get the item's nametag.
     char nametag[24];
     item.GetNametag(nametag, sizeof(nametag));
-
-    // Get the client's steam 32 id.
-    char steam32[20];
-    GetClientAuthId(client, AuthId_Steam3, temp, sizeof(temp));
-    strcopy(steam32, sizeof(steam32), temp[5]);
-    int index;
-    if((index = StrContains(steam32, "]")) > -1) {
-        steam32[index] = '\0';
-    }
-    // END Get the client's steam 32 id.
 
     // Update the entity's properties.
     SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", itemIndex);

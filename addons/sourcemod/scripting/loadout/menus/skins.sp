@@ -348,24 +348,26 @@ public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int 
             char weapon[64];
             int validItems = 0;
             for(i = 0; i < USER_ITEM_MAX; i++) {
-                if(strlen(weapon) < 1 || !StrEqual(weapon, g_cSkinWeapon[client])) {
-                    item = g_hPlayerItems[client][i];
-                    if(item == null) {
-                        continue;
-                    }
+                item = g_hPlayerItems[client][i];
+                if(item == null) {
+                    continue;
+                }
 
-                    item.GetWeapon(weapon, sizeof(weapon));
+                item.GetWeapon(weapon, sizeof(weapon));
+
+                if(StrEqual(weapon, g_cSkinWeapon[client])) {
+                    break;
                 }
 
                 validItems++;
             }
 
             if(item == null) {
+                PrintToChat(client, "%s Creating a new item..", PREFIX);
                 item = new Item();
                 item.SetDefaults(client, g_cSkinWeapon[client]);
                 i = validItems + 1;
             }
-
 
             // Update the item's skin.
             item.SetSkinID(info);

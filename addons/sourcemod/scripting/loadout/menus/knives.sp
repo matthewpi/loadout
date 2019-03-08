@@ -77,6 +77,8 @@ void Knives_Refresh(const int client, const char[] itemName) {
 
     RemovePlayerItem(client, entity);
     AcceptEntityInput(entity, "KillHierarchy");
+
+    LogMessage("%s Giving player '%N': %s", CONSOLE_PREFIX, client, itemName);
     int item = GivePlayerItem(client, itemName);
     EquipPlayerWeapon(client, item);
 }
