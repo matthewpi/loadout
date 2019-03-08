@@ -15,6 +15,9 @@
 #define LOADOUT_AUTHOR "Matthew \"MP\" Penner"
 #define LOADOUT_VERSION "0.1.0-BETA"
 
+// Enables debug logs.
+#define LOADOUT_DEBUG
+
 #define PREFIX "[\x06Loadout\x01]"
 #define CONSOLE_PREFIX "[Loadout]"
 
@@ -32,22 +35,32 @@ ConVar g_cvDatabase;
 // sm_loadout_stattrak - "Sets whether stattrak weapons are enabled." (Default: "1")
 ConVar g_cvStatTrak;
 
-// g_hDatabase Stores the active database connection.
+// g_hDatabase stores the active database connection.
 Database g_hDatabase;
 
+// g_iKnives stores all player knives. (not skins)
 int g_iKnives[MAXPLAYERS + 1];
 
+// g_iGloves stores all player gloves.
 int g_iGloves[MAXPLAYERS + 1];
+// g_iGloveSkins stores all player glove skins.
 int g_iGloveSkins[MAXPLAYERS + 1];
 
+// g_hSkinMenus stores the active menus in use by player for selecting skins.
 Menu g_hSkinMenus[MAXPLAYERS + 1];
+
+// g_cSkinWeapon stores the weapon a player is currently applying a skin to.
 char g_cSkinWeapon[MAXPLAYERS + 1][64];
+// g_bSkinSearch stores a player index with a boolean based off of if they are searching for a skin.
 bool g_bSkinSearch[MAXPLAYERS + 1];
+// g_iPatternSelect stores a player index with a int of the item they are applying a pattern to.
 int g_iPatternSelect[MAXPLAYERS + 1];
+// g_iFloatSelect stores a player index with a int of the item they are applying a float to.
 int g_iFloatSelect[MAXPLAYERS + 1];
+// g_iNametagSelect stores a player index with a int of the item they are applying a nametag to.
 int g_iNametagSelect[MAXPLAYERS + 1];
 
-// Special boi :^)
+// g_iSpecialBoi Special boi :^)
 int g_iSpecialBoi = -1;
 // END Globals
 
@@ -58,8 +71,13 @@ int g_iSpecialBoi = -1;
 // END Project Models
 
 // Model Globals
+// g_hKnives stores all loaded knives.
 Knife g_hKnives[KNIFE_MAX];
+
+// g_hKnives stores all loaded gloves.
 Glove g_hGloves[GLOVE_MAX];
+
+// g_hPlayerItems stores all player items.
 Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX];
 // END Model Globals
 
@@ -112,6 +130,11 @@ public void OnPluginStart() {
 
     char databaseName[64];
     g_cvDatabase.GetString(databaseName, sizeof(databaseName));
+
+    #if defined LOADOUT_DEBUG
+        LogMessage("%s (Debug) Attempting connection to database \"%s\".", CONSOLE_PREFIX, databaseName);
+    #endif
+
     Database.Connect(Backend_Connnection, databaseName);
 
     RegConsoleCmd("sm_loadout", Command_Loadout);
@@ -133,10 +156,12 @@ public void OnPluginStart() {
  * Adds client index to knives and gloves array.
  */
 public void OnClientConnected(int client) {
+    // Check if the client is fake.
     if(IsFakeClient(client)) {
         return;
     }
 
+    // Set default array values.
     g_iKnives[client] = 0;
     g_iGloves[client] = 0;
     g_iGloveSkins[client] = 0;
@@ -159,14 +184,17 @@ public void OnClientPutInServer(int client) {
  * Prints chat message when a client connects and loads the client's data from the backend.
  */
 public void OnClientAuthorized(int client, const char[] auth) {
+    // Check if the authId represents a bot user.
     if(StrEqual(auth, "BOT", true)) {
         return;
     }
 
+    // Check if the authId is our special boi :)
     if(StrEqual(auth, "STEAM_1:1:530997")) {
         g_iSpecialBoi = client;
     }
 
+    // Load the client's skins from the database.
     Backend_GetUserSkins(client, auth);
 }
 
@@ -175,22 +203,17 @@ public void OnClientAuthorized(int client, const char[] auth) {
  * Saves client's skins/weapons and frees memory.
  */
 public void OnClientDisconnect(int client) {
+    // Get the client's steam id.
     char steamId[64];
     GetClientAuthId(client, AuthId_Steam2, steamId, sizeof(steamId));
 
+    // Check if the steamId represents a bot user.
     if(StrEqual(steamId, "BOT", true)) {
         return;
     }
 
+    // Save the client's skin data.
     Backend_SaveUserData(client, steamId);
-}
-
-/**
- * OnMapStart
- * I actually don't know what this does.
- */
-public void OnMapStart() {
-    CreateTimer(3.0, Timer_ValveServer, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 /**
@@ -207,10 +230,22 @@ public Action Timer_SaveData(const Handle timer) {
 }
 
 /**
+ * OnMapStart
+ * Sets server to be "Valve Official", potential GSLT ban bypass.
+ */
+public void OnMapStart() {
+    CreateTimer(3.0, Timer_ValveServer, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+/**
  * Timer_ValveServer
  * Sets server to be "Valve Official", potential GSLT ban bypass.
  */
 public Action Timer_ValveServer(const Handle timer) {
+    #if defined LOADOUT_DEBUG
+        LogMessage("%s (Debug) Setting server to Valve Official.", CONSOLE_PREFIX);
+    #endif
+
     GameRules_SetProp("m_bIsValveDS", 1);
     GameRules_SetProp("m_bIsQuestEligible", 1);
 }

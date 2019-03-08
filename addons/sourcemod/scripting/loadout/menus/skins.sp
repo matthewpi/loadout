@@ -464,7 +464,6 @@ void Skins_RefreshAll(const int client, const bool knife = true) {
             continue;
         }
 
-        // TODO: Validate that this code actually works.
         char weapon[64];
         bool matched = false;
         for(int j = 0; j < USER_ITEM_MAX; j++) {
@@ -485,7 +484,6 @@ void Skins_RefreshAll(const int client, const bool knife = true) {
         if(!isKnife && !matched) {
             continue;
         }
-        // END TODO: Validate that this code actually works.
 
         if(isKnife && !knife) {
             continue;
@@ -507,8 +505,8 @@ void Skins_RefreshAll(const int client, const bool knife = true) {
         AcceptEntityInput(entity, "KillHierarchy");
 
         if(isKnife) {
-            int item = GivePlayerItem(client, weaponClass);
-            EquipPlayerWeapon(client, item);
+            //GivePlayerItem(client, weaponClass);
+            GivePlayerItem(client, "weapon_knife");
         } else {
             entity = GivePlayerItem(client, weaponClass);
 

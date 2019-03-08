@@ -61,8 +61,12 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
                 return;
             }
 
+
+            #if defined LOADOUT_DEBUG
+                LogMessage("%s (Debug) \"%N\"'s knife item is null, attempting to set custom knife.", CONSOLE_PREFIX, client);
+            #endif
             LogMessage("%s item is null, attempting to set custom knife. (%i)", CONSOLE_PREFIX, knife.GetItemID());
-            //SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", knife.GetItemID());
+            SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", knife.GetItemID());
             SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
             SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", 0);
             SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", 0.0);

@@ -168,6 +168,10 @@ public void Gloves_Refresh(const int client) {
 
     if(armTemp[0]) {
         SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
+
+        #if defined LOADOUT_DEBUG
+            LogMessage("%s (Debug) Fixing arms for \"%N\".", CONSOLE_PREFIX, client);
+        #endif
     }
 
     entity = CreateEntityByName("wearable_item");
@@ -185,7 +189,17 @@ public void Gloves_Refresh(const int client) {
         SetEntProp(client, Prop_Send, "m_nBody", 1);
         DispatchSpawn(entity);
         SetEntPropEnt(client, Prop_Send, "m_hMyWearables", entity);
+
+        #if defined LOADOUT_DEBUG
+            LogMessage("%s (Debug) Applied entity properties for \"%N\"'s gloves.", CONSOLE_PREFIX, client);
+        #endif
     }
+
+    #if defined LOADOUT_DEBUG
+    else {
+        LogMessage("%s (Debug) Failed to create \"wearable_item\" for \"%N\".", CONSOLE_PREFIX, client);
+    }
+    #endif
 
     if(active != -1) {
         DataPack pack;
@@ -214,6 +228,11 @@ Action Timer_Reactivate(Handle timer, DataPack pack) {
     if(!IsValidEntity(active)) {
         return;
     }
+
+
+    #if defined LOADOUT_DEBUG
+        LogMessage("%s (Debug) Updating \"%N\"'s active weapon.", CONSOLE_PREFIX, client);
+    #endif
 
     SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", active);
 }
