@@ -13,7 +13,7 @@
 
 // Definitions
 #define LOADOUT_AUTHOR "Matthew \"MP\" Penner"
-#define LOADOUT_VERSION "0.0.3-BETA"
+#define LOADOUT_VERSION "0.1.0-BETA"
 
 #define PREFIX "[\x06Loadout\x01]"
 #define CONSOLE_PREFIX "[Loadout]"
