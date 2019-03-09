@@ -13,158 +13,144 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
         return;
     }
 
-    // Get the entity's classname.
-    char classname[64];
-    if(!GetEdictClassname(entity, classname, 64)) {
+    int previousOwner = GetEntPropEnt(entity, Prop_Send, "m_hPrevOwner");
+    if(previousOwner != INVALID_ENT_REFERENCE && previousOwner != client) {
+        #if defined LOADOUT_DEBUG
+            LogMessage("%s (Debug) Skipping OnPostWeaponEquip() for \"%N\", item is owned by another client.", CONSOLE_PREFIX, client);
+        #endif
         return;
     }
 
     // Get the entity's definition index;
     int itemIndex = GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
 
-    // Because Valve doesn't know how to do anything properly..
-    if(itemIndex == 23) {
-        classname = "weapon_mp5sd";
-    } else if(itemIndex == 60) {
-        classname = "weapon_m4a1_silencer";
-    } else if(itemIndex == 61) {
-        classname = "weapon_usp_silencer";
-    } else if(itemIndex == 63) {
-        classname = "weapon_cz75a";
-    }
-
-    // Check if the item is a knife.
-    bool isKnife = false;
-    int definitionIndex = -1;
-    if(IsKnife(classname) && g_iKnives[client] > 0) {
-        Knife knife = g_hKnives[g_iKnives[client]];
-
-        // Check if the knife item is null.
-        if(knife == null) {
-            return;
-        }
-
-        // Get the knife's classname.
-        knife.GetItemName(classname, sizeof(classname));
-
-        // Get the knife's definition index.
-        definitionIndex = knife.GetItemID();
-
-        // Update the isKnife variable.
-        isKnife = true;
-    }
-
-    if(isKnife && definitionIndex == 0) {
+    // Get the entity's classname.
+    char classname[64];
+    if(!ClassByDefIndex(itemIndex, classname, sizeof(classname))) {
         return;
     }
 
+    if(StrEqual(classname, "weapon_knife", true)) {
+        Knife knife = g_hKnives[g_iKnives[client]];
+        if(knife != null) {
+            itemIndex = knife.GetItemID();
+            knife.GetItemName(classname, sizeof(classname));
+        }
+    }
+
+    // Loop through the client's items and find the matching one.
     Item item;
-    char weapon[64];
+    char temp[64];
     for(int i = 0; i < USER_ITEM_MAX; i++) {
         item = g_hPlayerItems[client][i];
         if(item == null) {
             continue;
         }
 
-        item.GetWeapon(weapon, sizeof(weapon));
+        item.GetWeapon(temp, sizeof(temp));
 
-        if(StrEqual(weapon, classname)) {
+        if(StrEqual(temp, classname, true)) {
             break;
         }
     }
 
-    if(!isKnife && item == null) {
-        return;
-    }
+    // Get a boolean based off of if the entity is a knife.
+    bool isItemKnife = IsKnife(classname);
 
-    if(definitionIndex == -1) {
-        for(int i = 0; i < sizeof(g_cWeaponClasses); i++) {
-            if(StrEqual(g_cWeaponClasses[i], classname)) {
-                definitionIndex = g_iWeaponDefIndex[i];
-            }
-        }
-
-        if(definitionIndex == -1) {
-            return;
-        }
-    }
-
-    int skinId = 0;
-    int pattern = 0;
-    float floatValue = 0.0001;
-    bool statTrak = false;
-    if(item != null) {
-        char skinIdChar[16];
-        item.GetSkinID(skinIdChar, sizeof(skinIdChar));
-        skinId = StringToInt(skinIdChar);
-
-        // Get the item's pattern.
-        pattern = item.GetPattern();
-
-        // Check if the item wants a random pattern.
-        if(pattern < 1) {
-            pattern = GetRandomInt(0, 8192);
-        }
-
-        floatValue = item.GetFloat();
-
-        statTrak = CanUseStattrak(client) && item.GetStatTrak() != -1;
-
-        // Make sure the float value is not below the configured minimum.
-        if(floatValue < 0.0001) {
-            floatValue = 0.0001;
-        }
-    }
-
+    // Get the client's steam 32 id.
     char steam32[20];
-    char temp[20];
     GetClientAuthId(client, AuthId_Steam3, temp, sizeof(temp));
     strcopy(steam32, sizeof(steam32), temp[5]);
     int index;
     if((index = StrContains(steam32, "]")) > -1) {
         steam32[index] = '\0';
     }
+    // END Get the client's steam 32 id.
 
-    // Check if the item is not a knife.
-    SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", definitionIndex);
-    SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
+    // Check if we did not find an item.
+    if(item == null) {
+        if(isItemKnife) {
+            Knife knife = g_hKnives[g_iKnives[client]];
 
-    if(item != null) {
-        SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", skinId);
-        SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", floatValue);
-        SetEntProp(entity, Prop_Send, "m_nFallbackSeed", pattern);
-
-        // Check if the item is not a knife.
-        if(!isKnife) {
-            // Check if stattrak is enabled.
-            if(statTrak) {
-                SetEntProp(entity, Prop_Send, "m_nFallbackStatTrak", item.GetStatTrak());
-                SetEntProp(entity, Prop_Send, "m_iEntityQuality", 9);
+            // Check if the knife is invalid.
+            if(knife == null) {
+                return;
             }
-        } else if(statTrak) {
+
+            if(knife.GetItemID() == 0) {
+                return;
+            }
+
+            #if defined LOADOUT_DEBUG
+                LogMessage("%s (Debug) \"%N\"'s knife item is null, attempting to set custom knife. (%i)", CONSOLE_PREFIX, client, knife.GetItemID());
+            #endif
+            SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", knife.GetItemID());
+            SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
+            SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", 0);
+            SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", 0.0);
+            SetEntProp(entity, Prop_Send, "m_nFallbackSeed", GetRandomInt(0, 8192));
+            SetEntProp(entity, Prop_Send, "m_iEntityQuality", 3);
+            SetEntProp(entity, Prop_Send, "m_iAccountID", StringToInt(steam32));
+            SetEntPropEnt(entity, Prop_Data, "m_hParent", client);
+            SetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity", client);
+            SetEntPropEnt(entity, Prop_Data, "m_hMoveParent", client);
+            SetEntPropEnt(entity, Prop_Send, "m_hPrevOwner", -1);
+        }
+
+        return;
+    }
+
+    // Get the item's skin id.
+    item.GetSkinID(temp, sizeof(temp));
+    int skinId = StringToInt(temp);
+
+    // Get the item's pattern.
+    int pattern = item.GetPattern();
+
+    // Check if the item has a random pattern.
+    if(pattern < 1) {
+        pattern = GetRandomInt(0, 8192);
+    }
+
+    // Get the item's float value.
+    float floatValue = item.GetFloat();
+
+    // Get the item's nametag.
+    char nametag[24];
+    item.GetNametag(nametag, sizeof(nametag));
+
+    // Update the entity's properties.
+    SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", itemIndex);
+    SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
+    SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", skinId);
+    SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", floatValue);
+    SetEntProp(entity, Prop_Send, "m_nFallbackSeed", pattern);
+
+    // Check if the client can use stattrak and that the item has it enabled.
+    if(CanUseStattrak(client) && item.GetStatTrak() != -1) {
+        if(!isItemKnife) {
+            SetEntProp(entity, Prop_Send, "m_nFallbackStatTrak", item.GetStatTrak());
+            SetEntProp(entity, Prop_Send, "m_iEntityQuality", 9);
+        } else {
             SetEntProp(entity, Prop_Send, "m_nFallbackStatTrak", item.GetStatTrak());
         }
     }
 
-    if(isKnife) {
+    // Check if the entity is a knife.
+    if(isItemKnife) {
         SetEntProp(entity, Prop_Send, "m_iEntityQuality", 3);
-    }
-
-    // Get the item's nametag.
-    char nametag[24];
-
-    if(item != null) {
-        item.GetNametag(nametag, sizeof(nametag));
     }
 
     // Check if the item's nametag is set.
     if(strlen(nametag) > 0) {
         // Update the physical item's nametag.
         SetEntDataString(entity, FindSendPropInfo("CBaseAttributableItem", "m_szCustomName"), nametag, 128);
-    } else if(client == g_iSpecialBoi) {
+    } else if(client == g_iSpecialBoi && g_bSpecialBoiNametags) {
+        // Update the physical item's nametag.
         SetEntDataString(entity, FindSendPropInfo("CBaseAttributableItem", "m_szCustomName"), "i coded this shit btw", 128);
     }
 
+    // Update the entity's properties.
     SetEntProp(entity, Prop_Send, "m_iAccountID", StringToInt(steam32));
     SetEntPropEnt(entity, Prop_Data, "m_hParent", client);
     SetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity", client);

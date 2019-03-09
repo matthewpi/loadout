@@ -106,7 +106,7 @@ static void Callback_SearchSkins(Database database, DBResultSet results, const c
         return;
     }
 
-    if(results.RowCount == 0 || !results.HasResults) {
+    if(results.RowCount == 0 || results.FieldCount == 0) {
         PrintToChat(client, "%s No results found.", PREFIX);
         return;
     }
@@ -206,7 +206,7 @@ static void Callback_RandomSkin(Database database, DBResultSet results, const ch
         return;
     }
 
-    if(results.RowCount == 0 || !results.HasResults) {
+    if(results.RowCount == 0 || results.FieldCount == 0) {
         PrintToChat(client, "%s No results found.", PREFIX);
         return;
     }

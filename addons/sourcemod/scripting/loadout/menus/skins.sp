@@ -266,7 +266,7 @@ public void Skins_FilterMenu(const int client) {
     menu.SetTitle("Skin Filter");
 
     menu.AddItem("search", "Search..");
-    menu.AddItem("random", "Random");
+    //menu.AddItem("random", "Random");
     menu.AddItem("default", "Default");
 
     char alphabet[26][1] = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
@@ -398,6 +398,14 @@ public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int 
 }
 
 public void Skins_Refresh(const int client, const char[] weapon) {
+    if(IsKnife(weapon)) {
+        #if defined LOADOUT_DEBUG
+            LogMessage("%s (Debug) Skins_Refresh(): item is a knife, using Knives_Refresh().", CONSOLE_PREFIX);
+        #endif
+        Knives_Refresh(client, weapon);
+        return;
+    }
+
     int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
 
     char weaponClass[64];
@@ -413,81 +421,6 @@ public void Skins_Refresh(const int client, const char[] weapon) {
         }
 
         bool isKnife = IsKnife(weapon);
-
-        int offset = -1;
-        int ammo = -1;
-        int clip = -1;
-        int reserve = -1;
-
-        if(!isKnife) {
-            offset = FindDataMapInfo(client, "m_iAmmo") + (GetEntProp(entity, Prop_Data, "m_iPrimaryAmmoType") * 4);
-            ammo = GetEntData(client, offset);
-            clip = GetEntProp(entity, Prop_Send, "m_iClip1");
-            reserve = GetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount");
-        }
-
-        RemovePlayerItem(client, entity);
-        AcceptEntityInput(entity, "KillHierarchy");
-
-        entity = GivePlayerItem(client, weapon);
-
-        if(!isKnife) {
-            if(clip != -1) {
-                SetEntProp(entity, Prop_Send, "m_iClip1", clip);
-            }
-
-            if(reserve != -1) {
-                SetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount", reserve);
-            }
-
-            if(offset != -1 && ammo != -1) {
-                DataPack pack;
-                CreateDataTimer(0.1, Timer_WeaponAmmo, pack);
-                pack.WriteCell(client);
-                pack.WriteCell(offset);
-                pack.WriteCell(ammo);
-            }
-        }
-
-        EquipPlayerWeapon(client, entity);
-    }
-}
-
-void Skins_RefreshAll(const int client, const bool knife = true) {
-    int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
-
-    char weaponClass[64];
-    for(int i = 0; i < size; i++) {
-        int entity = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
-
-        if(entity == -1 || !GetWeaponClass(entity, weaponClass, sizeof(weaponClass))) {
-            continue;
-        }
-
-        char weapon[64];
-        bool matched = false;
-        for(int j = 0; j < USER_ITEM_MAX; j++) {
-            Item item = g_hPlayerItems[client][j];
-            if(item == null) {
-                continue;
-            }
-
-            item.GetWeapon(weapon, sizeof(weapon));
-
-            if(StrEqual(weapon, weaponClass)) {
-                matched = true;
-            }
-        }
-
-        bool isKnife = IsKnife(weaponClass);
-
-        if(!isKnife && !matched) {
-            continue;
-        }
-
-        if(isKnife && !knife) {
-            continue;
-        }
 
         int offset = -1;
         int ammo = -1;
@@ -524,6 +457,71 @@ void Skins_RefreshAll(const int client, const bool knife = true) {
                 pack.WriteCell(offset);
                 pack.WriteCell(ammo);
             }
+
+            EquipPlayerWeapon(client, entity);
+        }
+        break;
+    }
+}
+
+void Skins_RefreshAll(const int client) {
+    int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
+
+    char weaponClass[64];
+    for(int i = 0; i < size; i++) {
+        int entity = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
+
+        if(entity == -1 || !GetWeaponClass(entity, weaponClass, sizeof(weaponClass))) {
+            continue;
+        }
+
+        char weapon[64];
+        bool matched = false;
+        for(int j = 0; j < USER_ITEM_MAX; j++) {
+            Item item = g_hPlayerItems[client][j];
+            if(item == null) {
+                continue;
+            }
+
+            item.GetWeapon(weapon, sizeof(weapon));
+
+            if(StrEqual(weapon, weaponClass)) {
+                matched = true;
+            }
+        }
+
+        if(IsKnife(weaponClass)) {
+            continue;
+        }
+
+        if(!matched) {
+            continue;
+        }
+
+        int offset = FindDataMapInfo(client, "m_iAmmo") + (GetEntProp(entity, Prop_Data, "m_iPrimaryAmmoType") * 4);
+        int ammo = GetEntData(client, offset);
+        int clip = GetEntProp(entity, Prop_Send, "m_iClip1");
+        int reserve = GetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount");
+
+        RemovePlayerItem(client, entity);
+        AcceptEntityInput(entity, "KillHierarchy");
+
+        entity = GivePlayerItem(client, weaponClass);
+
+        if(clip != -1) {
+            SetEntProp(entity, Prop_Send, "m_iClip1", clip);
+        }
+
+        if(reserve != -1) {
+            SetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount", reserve);
+        }
+
+        if(offset != -1 && ammo != -1) {
+            DataPack pack;
+            CreateDataTimer(0.1, Timer_WeaponAmmo, pack);
+            pack.WriteCell(client);
+            pack.WriteCell(offset);
+            pack.WriteCell(ammo);
         }
     }
 }

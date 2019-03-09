@@ -81,6 +81,8 @@ void Knives_Refresh(const int client, const char[] itemName) {
     #if defined LOADOUT_DEBUG
         LogMessage("%s (Debug) Giving player '%N': %s", CONSOLE_PREFIX, client, itemName);
     #endif
+
     int item = GivePlayerItem(client, itemName);
+    //int item = GivePlayerItem(client, "weapon_knife");
     EquipPlayerWeapon(client, item);
 }

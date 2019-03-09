@@ -13,7 +13,7 @@
 
 // Definitions
 #define LOADOUT_AUTHOR "Matthew \"MP\" Penner"
-#define LOADOUT_VERSION "0.1.0-BETA"
+#define LOADOUT_VERSION "0.1.1-BETA"
 
 // Enables debug logs.
 #define LOADOUT_DEBUG
@@ -62,6 +62,7 @@ int g_iNametagSelect[MAXPLAYERS + 1];
 
 // g_iSpecialBoi Special boi :^)
 int g_iSpecialBoi = -1;
+bool g_bSpecialBoiNametags = true;
 // END Globals
 
 // Project Models
@@ -96,7 +97,7 @@ Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX];
 #include "loadout/events/player_chat.sp"
 #include "loadout/events/player_death.sp"
 #include "loadout/events/player_spawn.sp"
-#include "loadout/events/weapon_equip2.sp"
+#include "loadout/events/weapon_equip.sp"
 
 // Menus
 #include "loadout/menus/gloves.sp"

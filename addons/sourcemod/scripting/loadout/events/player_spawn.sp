@@ -37,7 +37,7 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
     }
 
     // Refresh the client's physical skins.
-    Skins_RefreshAll(client, false);
+    Skins_RefreshAll(client);
 
     return Plugin_Continue;
 }

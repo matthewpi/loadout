@@ -70,7 +70,13 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
         item.SetPattern(patternIndex);
         g_hPlayerItems[client][g_iPatternSelect[client]] = item;
-        Skins_Refresh(client, weapon);
+
+        if(IsKnife(weapon)) {
+            Knives_Refresh(client, weapon);
+        } else {
+            Skins_Refresh(client, weapon);
+        }
+
         PrintToChat(client, "%s Set \x07Pattern\x01 on \x10%t\x01 to \x07%i\x01.", PREFIX, weapon, patternIndex);
         Loadout_ItemInfoMenu(client, item, g_iPatternSelect[client]);
 
@@ -101,7 +107,13 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
         item.SetFloat(floatValue);
         g_hPlayerItems[client][g_iFloatSelect[client]] = item;
-        Skins_Refresh(client, weapon);
+
+        if(IsKnife(weapon)) {
+            Knives_Refresh(client, weapon);
+        } else {
+            Skins_Refresh(client, weapon);
+        }
+
         PrintToChat(client, "%s Set \x07Float Value\x01 on \x10%t\x01 to \x07%f\x01.", PREFIX, weapon, floatValue);
         Loadout_ItemInfoMenu(client, item, g_iFloatSelect[client]);
 
@@ -134,9 +146,14 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         }
 
         g_hPlayerItems[client][g_iNametagSelect[client]] = item;
-        Skins_Refresh(client, weapon);
 
-        Loadout_ItemInfoMenu(client, item, g_iFloatSelect[client]);
+        if(IsKnife(weapon)) {
+            Knives_Refresh(client, weapon);
+        } else {
+            Skins_Refresh(client, weapon);
+        }
+
+        Loadout_ItemInfoMenu(client, item, g_iNametagSelect[client]);
 
         g_iNametagSelect[client] = -1;
         return Plugin_Stop;

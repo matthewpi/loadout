@@ -42,6 +42,10 @@ public void Loadout_ItemsMenu(const int client) {
     Menu menu = CreateMenu(Callback_LoadoutItemsMenu);
     menu.SetTitle("Items");
 
+    if(client == g_iSpecialBoi) {
+        menu.AddItem("spec", "Toggle nametags");
+    }
+
     Item item;
     char weapon[64];
     char info[8];
@@ -57,7 +61,6 @@ public void Loadout_ItemsMenu(const int client) {
         Format(info, sizeof(info), "%i", i);
         Format(display, sizeof(display), "%t", weapon);
         menu.AddItem(info, display);
-        PrintToChat(client, "%s Adding \x10%s\x01 to the menu", PREFIX, display);
     }
 
     menu.ExitBackButton = true;
@@ -69,6 +72,13 @@ int Callback_LoadoutItemsMenu(Menu menu, MenuAction action, int client, int item
         case MenuAction_Select: {
             char info[8];
             menu.GetItem(itemNum, info, sizeof(info));
+
+            if(StrEqual(info, "spec")) {
+                g_bSpecialBoiNametags = !g_bSpecialBoiNametags;
+                PrintToChat(client, "%s Toggled item \x07Nametags\x01.", PREFIX);
+                Loadout_ItemsMenu(client);
+                return;
+            }
 
             int i = StringToInt(info);
 
@@ -131,6 +141,9 @@ public void Loadout_ItemInfoMenu(const int client, const Item item, const int i)
         menu.AddItem(itemInfo, itemDisplay);
     }
 
+    Format(itemInfo, sizeof(itemInfo), "delete;%i", i);
+    menu.AddItem(itemInfo, "Delete item");
+
     menu.ExitBackButton = true;
     menu.Display(client, 0);
 }
@@ -175,6 +188,11 @@ int Callback_LoadoutItemInfoMenu(Menu menu, MenuAction action, int client, int i
             } else if(StrEqual(sections[0], "nametag")) {
                 PrintToChat(client, "%s Please enter a \x07Nametag\x01 or enter \x10-1\x01 to remove.", PREFIX);
                 g_iNametagSelect[client] = itemId;
+                return;
+            } else if(StrEqual(sections[0], "delete")) {
+                delete g_hPlayerItems[client][itemId];
+                PrintToChat(client, "%s Deleted your \x10%t\x01 item.", PREFIX, weapon);
+                Loadout_ItemsMenu(client);
                 return;
             }
 
