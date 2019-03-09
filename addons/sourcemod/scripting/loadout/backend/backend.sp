@@ -10,7 +10,7 @@
 public void Backend_Connnection(Database database, const char[] error, any data) {
     // Handle the connection error.
     if(database == null) {
-        SetFailState("%s Failed to connect to server.  Error: %s", CONSOLE_PREFIX, error);
+        SetFailState("%s Failed to connect to server, error: %s", CONSOLE_PREFIX, error);
         return;
     }
 
