@@ -505,7 +505,6 @@ void Skins_RefreshAll(const int client, const bool knife = true) {
         AcceptEntityInput(entity, "KillHierarchy");
 
         if(isKnife) {
-            //GivePlayerItem(client, weaponClass);
             GivePlayerItem(client, "weapon_knife");
         } else {
             entity = GivePlayerItem(client, weaponClass);
