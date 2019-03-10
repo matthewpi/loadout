@@ -47,7 +47,7 @@ int Callback_GlovesMenu(const Menu menu, const MenuAction action, const int clie
                 g_iGloveSkins[client] = 0;
                 Gloves_Refresh(client);
                 Gloves_Menu(client, GetMenuSelectionPosition());
-                PrintToChat(client, "%s Removed your current glove selection.");
+                PrintToChat(client, "%s Removed your current glove selection.", PREFIX);
                 return;
             }
 
