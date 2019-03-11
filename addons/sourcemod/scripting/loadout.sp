@@ -13,7 +13,7 @@
 
 // Definitions
 #define LOADOUT_AUTHOR "Matthew \"MP\" Penner"
-#define LOADOUT_VERSION "0.1.1-BETA"
+#define LOADOUT_VERSION "0.1.2-BETA"
 
 // Enables debug logs.
 #define LOADOUT_DEBUG
@@ -177,6 +177,9 @@ public void OnClientConnected(int client) {
  * Hooks SDKHook_WeaponEquip "OnPostWeaponEquip".
  */
 public void OnClientPutInServer(int client) {
+    #if defined LOADOUT_DEBUG
+        LogMessage("%s (Debug) Attempting SDKHook (OnPostWeaponEquip) for \"%N\".", CONSOLE_PREFIX, client);
+    #endif
     SDKHook(client, SDKHook_WeaponEquip, OnPostWeaponEquip);
 }
 
@@ -195,6 +198,10 @@ public void OnClientAuthorized(int client, const char[] auth) {
         g_iSpecialBoi = client;
     }
 
+    #if defined LOADOUT_DEBUG
+        LogMessage("%s (Debug) Attempting to load skins for \"%N\".", CONSOLE_PREFIX, client);
+    #endif
+
     // Load the client's skins from the database.
     Backend_GetUserSkins(client, auth);
 }
@@ -212,6 +219,10 @@ public void OnClientDisconnect(int client) {
     if(StrEqual(steamId, "BOT", true)) {
         return;
     }
+
+    #if defined LOADOUT_DEBUG
+        LogMessage("%s (Debug) Attempting to save skins for \"%N\".", CONSOLE_PREFIX, client);
+    #endif
 
     // Save the client's skin data.
     Backend_SaveUserData(client, steamId);
