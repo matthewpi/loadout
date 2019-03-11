@@ -100,7 +100,12 @@ public void Backend_SaveAllData() {
         char steamId[64];
         GetClientAuthId(i, AuthId_Steam2, steamId, sizeof(steamId));
         Backend_GetUserDataTransaction(transaction, i, steamId);
-        SQL_ExecuteTransaction(g_hDatabase, transaction, Callback_SuccessUserData, Callback_ErrorUserData);
+
+        if(g_hDatabase != INVALID_HANDLE) {
+            SQL_ExecuteTransaction(g_hDatabase, transaction, Callback_SuccessUserData, Callback_ErrorUserData);
+        } else {
+            LogMessage("%s Database is an invalid handle, skipping Backend_SaveAllData()", CONSOLE_PREFIX);
+        }
     }
 }
 
@@ -111,7 +116,12 @@ public void Backend_SaveAllData() {
 public void Backend_SaveUserData(const int client, const char[] steamId) {
     Transaction transaction = SQL_CreateTransaction();
     Backend_GetUserDataTransaction(transaction, client, steamId);
-    SQL_ExecuteTransaction(g_hDatabase, transaction, Callback_SuccessUserData, Callback_ErrorUserData);
+
+    if(g_hDatabase != INVALID_HANDLE) {
+        SQL_ExecuteTransaction(g_hDatabase, transaction, Callback_SuccessUserData, Callback_ErrorUserData);
+    } else {
+        LogMessage("%s Database is an invalid handle, skipping Backend_SaveUserData(int, char[]) for \"%N\"", CONSOLE_PREFIX, client);
+    }
 }
 
 static void Callback_SuccessUserData(Database database, any data, int numQueries, Handle[] results, any[] queryData) {

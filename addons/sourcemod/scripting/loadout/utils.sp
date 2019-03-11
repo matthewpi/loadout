@@ -83,42 +83,47 @@ public bool CanUseNametags(const int client) {
  * ClassByDefIndex
  * Gets a weapon's class by definition index.
  */
-public bool ClassByDefIndex(const int index, char[] class, const int size) {
+public bool ClassByDefIndex(const int index, char[] buffer, const int maxlen) {
     switch(index) {
         case 23: {
-            FormatEx(class, size, "weapon_mp5sd");
+            FormatEx(buffer, maxlen, "weapon_mp5sd");
             return true;
         }
 
         case 42: {
-            FormatEx(class, size, "weapon_knife");
+            FormatEx(buffer, maxlen, "weapon_knife");
             return true;
         }
 
         case 59: {
-            FormatEx(class, size, "weapon_knife_t");
+            FormatEx(buffer, maxlen, "weapon_knife_t");
             return true;
         }
 
         case 60: {
-            FormatEx(class, size, "weapon_m4a1_silencer");
+            FormatEx(buffer, maxlen, "weapon_m4a1_silencer");
             return true;
         }
 
         case 61: {
-            FormatEx(class, size, "weapon_usp_silencer");
+            FormatEx(buffer, maxlen, "weapon_usp_silencer");
             return true;
         }
 
         case 63: {
-            FormatEx(class, size, "weapon_cz75a");
+            FormatEx(buffer, maxlen, "weapon_cz75a");
+            return true;
+        }
+
+        case 64: {
+            FormatEx(buffer, maxlen, "weapon_revolver");
             return true;
         }
 
         default: {
             for(int i = 0; i < sizeof(g_iWeaponDefIndex); i++) {
                 if(g_iWeaponDefIndex[i] == index) {
-                    FormatEx(class, size, g_cWeaponClasses[i]);
+                    FormatEx(buffer, maxlen, g_cWeaponClasses[i]);
                     return true;
                 }
             }
@@ -132,9 +137,9 @@ public bool ClassByDefIndex(const int index, char[] class, const int size) {
  * GetWeaponClass
  * Gets a entity's weapon class.
  */
-public bool GetWeaponClass(const int entity, char[] weaponClass, const int size) {
+public bool GetWeaponClass(const int entity, char[] buffer, const int maxlen) {
     int id = GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
-    return ClassByDefIndex(id, weaponClass, size);
+    return ClassByDefIndex(id, buffer, maxlen);
 }
 
 /**

@@ -8,7 +8,11 @@
  * ?
  */
 public void Backend_LoadKnives() {
-    g_hDatabase.Query(Callback_LoadKnives, GET_KNIVES);
+    if(g_hDatabase != INVALID_HANDLE) {
+        g_hDatabase.Query(Callback_LoadKnives, GET_KNIVES);
+    } else {
+        LogMessage("%s Database is an invalid handle, skipping Backend_LoadKnives()", CONSOLE_PREFIX);
+    }
 }
 
 static void Callback_LoadKnives(Database database, DBResultSet results, const char[] error, any data) {

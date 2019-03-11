@@ -235,7 +235,8 @@ public Action Timer_SaveData(const Handle timer) {
  * Sets server to be "Valve Official", potential GSLT ban bypass.
  */
 public void OnMapStart() {
-    CreateTimer(3.0, Timer_ValveServer, _, TIMER_FLAG_NO_MAPCHANGE);
+    // DISABLED:
+    //CreateTimer(3.0, Timer_ValveServer, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 /**

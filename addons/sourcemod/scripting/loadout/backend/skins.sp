@@ -10,7 +10,12 @@
 public void Backend_GetUserSkins(const int client, const char[] steamId) {
     char query[512];
     Format(query, sizeof(query), GET_USER_SKINS, steamId);
-    g_hDatabase.Query(Callback_GetUserSkins, query, client);
+
+    if(g_hDatabase != INVALID_HANDLE) {
+        g_hDatabase.Query(Callback_GetUserSkins, query, client);
+    } else {
+        LogMessage("%s Database is an invalid handle, skipping Backend_GetUserSkins(int, char[]) for \"%N\"", CONSOLE_PREFIX, client);
+    }
 }
 
 static void Callback_GetUserSkins(Database database, DBResultSet results, const char[] error, int client) {
@@ -85,6 +90,11 @@ static void Callback_GetUserSkins(Database database, DBResultSet results, const 
  * ?
  */
 public void Backend_SearchSkins(const int client, const char[] skinQuery) {
+    if(g_hDatabase == INVALID_HANDLE) {
+        LogMessage("%s Database is an invalid handle, skipping Backend_SearchSkins(int, char[]) for \"%N\"", CONSOLE_PREFIX, client);
+        return;
+    }
+
     int skinQueryLen = strlen(skinQuery) * 2 + 1;
     char[] escapedSkinQuery = new char[skinQueryLen];
 
@@ -187,6 +197,11 @@ static void Callback_SearchSkins(Database database, DBResultSet results, const c
  * ?
  */
 public void Backend_RandomSkin(const int client) {
+    if(g_hDatabase == INVALID_HANDLE) {
+        LogMessage("%s Database is an invalid handle, skipping Backend_RandomSkin(int) for \"%N\"", CONSOLE_PREFIX, client);
+        return;
+    }
+
     char alphabet[26][1] = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
     char letter[1];
     letter = alphabet[GetRandomInt(0, 26)];
