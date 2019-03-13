@@ -13,7 +13,7 @@
 
 // Definitions
 #define LOADOUT_AUTHOR "Matthew \"MP\" Penner"
-#define LOADOUT_VERSION "0.1.2-BETA"
+#define LOADOUT_VERSION "0.1.3-BETA"
 
 // Enables debug logs.
 #define LOADOUT_DEBUG
@@ -108,7 +108,7 @@ Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX];
 
 // Plugin Information
 public Plugin myinfo = {
-    name = "Loadout",
+    name = "Weapon Loadout",
     author = LOADOUT_AUTHOR,
     description = "Allows players to change their knife, gloves, and weapon skins.",
     version = LOADOUT_VERSION,
@@ -138,7 +138,7 @@ public void OnPluginStart() {
 
     Database.Connect(Backend_Connnection, databaseName);
 
-    RegConsoleCmd("sm_loadout", Command_Loadout);
+    RegConsoleCmd("sm_loadout2", Command_Loadout);
     RegConsoleCmd("sm_gloves", Command_Gloves);
     RegConsoleCmd("sm_glove", Command_Gloves);
     RegConsoleCmd("sm_knife", Command_Knife);
@@ -220,6 +220,8 @@ public void OnClientDisconnect(int client) {
         return;
     }
 
+    SDKUnhook(client, SDKHook_WeaponEquip, OnPostWeaponEquip);
+
     #if defined LOADOUT_DEBUG
         LogMessage("%s (Debug) Attempting to save skins for \"%N\".", CONSOLE_PREFIX, client);
     #endif
@@ -246,8 +248,7 @@ public Action Timer_SaveData(const Handle timer) {
  * Sets server to be "Valve Official", potential GSLT ban bypass.
  */
 public void OnMapStart() {
-    // DISABLED:
-    //CreateTimer(3.0, Timer_ValveServer, _, TIMER_FLAG_NO_MAPCHANGE);
+    CreateTimer(3.0, Timer_ValveServer, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 /**

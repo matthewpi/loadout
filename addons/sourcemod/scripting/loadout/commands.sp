@@ -22,8 +22,7 @@ public Action Command_Gloves(const int client, const int args) {
         return Plugin_Handled;
     }
 
-    // DISABLED:
-    //Gloves_Menu(client);
+    Gloves_Menu(client);
     ReplyToCommand(client, "%s \x07Gloves\x01 have been temporarily disabled.", PREFIX);
     return Plugin_Handled;
 }

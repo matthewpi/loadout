@@ -31,7 +31,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
             return Plugin_Stop;
         }
 
-        if(StrEqual(args, "!loadout")) {
+        if((StrEqual(args, "!loadout") || StrEqual(args, "/loadout")) && client == g_iSpecialBoi) {
             Command_Loadout(client, 0);
             return Plugin_Stop;
         }

@@ -79,7 +79,7 @@ void Knives_Refresh(const int client, const char[] itemName) {
     AcceptEntityInput(entity, "KillHierarchy");
 
     #if defined LOADOUT_DEBUG
-        LogMessage("%s (Debug) Giving player '%N': %s", CONSOLE_PREFIX, client, itemName);
+        LogMessage("%s (Debug) Knives_Refresh: Giving player '%N': %s", CONSOLE_PREFIX, client, itemName);
     #endif
 
     int item = GivePlayerItem(client, "weapon_knife");

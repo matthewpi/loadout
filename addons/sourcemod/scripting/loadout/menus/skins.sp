@@ -475,6 +475,10 @@ void Skins_RefreshAll(const int client) {
             continue;
         }
 
+        if(IsKnife(weaponClass)) {
+            continue;
+        }
+
         char weapon[64];
         bool matched = false;
         for(int j = 0; j < USER_ITEM_MAX; j++) {
@@ -488,10 +492,6 @@ void Skins_RefreshAll(const int client) {
             if(StrEqual(weapon, weaponClass)) {
                 matched = true;
             }
-        }
-
-        if(IsKnife(weaponClass)) {
-            continue;
         }
 
         if(!matched) {

@@ -20,12 +20,11 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
         return Plugin_Continue;
     }
 
-    // DISABLED:
     // Check if the client has gloves equipped.
-    /*if(g_iGloves[client] != 0 && g_iGloveSkins[client] != 0) {
+    if(g_iGloves[client] != 0 && g_iGloveSkins[client] != 0) {
         // Refresh the client's physical gloves.
         Gloves_Refresh(client);
-    }*/
+    }
 
     // Check if the client has a knife equipped.
     if(g_iKnives[client] != 0) {
