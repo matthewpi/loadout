@@ -420,46 +420,33 @@ public void Skins_Refresh(const int client, const char[] weapon) {
             continue;
         }
 
-        bool isKnife = IsKnife(weapon);
-
-        int offset = -1;
-        int ammo = -1;
-        int clip = -1;
-        int reserve = -1;
-
-        if(!isKnife) {
-            offset = FindDataMapInfo(client, "m_iAmmo") + (GetEntProp(entity, Prop_Data, "m_iPrimaryAmmoType") * 4);
-            ammo = GetEntData(client, offset);
-            clip = GetEntProp(entity, Prop_Send, "m_iClip1");
-            reserve = GetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount");
-        }
+        int offset = FindDataMapInfo(client, "m_iAmmo") + (GetEntProp(entity, Prop_Data, "m_iPrimaryAmmoType") * 4);
+        int ammo = GetEntData(client, offset);
+        int clip = GetEntProp(entity, Prop_Send, "m_iClip1");
+        int reserve = GetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount");
 
         RemovePlayerItem(client, entity);
         AcceptEntityInput(entity, "KillHierarchy");
 
-        if(isKnife) {
-            GivePlayerItem(client, "weapon_knife");
-        } else {
-            entity = GivePlayerItem(client, weaponClass);
+        entity = GivePlayerItem(client, weaponClass);
 
-            if(clip != -1) {
-                SetEntProp(entity, Prop_Send, "m_iClip1", clip);
-            }
-
-            if(reserve != -1) {
-                SetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount", reserve);
-            }
-
-            if(offset != -1 && ammo != -1) {
-                DataPack pack;
-                CreateDataTimer(0.1, Timer_WeaponAmmo, pack);
-                pack.WriteCell(client);
-                pack.WriteCell(offset);
-                pack.WriteCell(ammo);
-            }
-
-            EquipPlayerWeapon(client, entity);
+        if(clip != -1) {
+            SetEntProp(entity, Prop_Send, "m_iClip1", clip);
         }
+
+        if(reserve != -1) {
+            SetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount", reserve);
+        }
+
+        if(offset != -1 && ammo != -1) {
+            DataPack pack;
+            CreateDataTimer(0.1, Timer_WeaponAmmo, pack);
+            pack.WriteCell(client);
+            pack.WriteCell(offset);
+            pack.WriteCell(ammo);
+        }
+
+        EquipPlayerWeapon(client, entity);
         break;
     }
 }

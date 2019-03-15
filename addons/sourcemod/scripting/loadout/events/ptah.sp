@@ -4,13 +4,50 @@
  */
 
 /**
- * OnPostWeaponEquip
- * Handles setting a client's knife.
+ * Event_GiveNamedItemPre
+ * ?
  */
-public Action OnPostWeaponEquip(const int client, const int entity) {
-    // Check if the client is invalid.
+public Action Event_GiveNamedItemPre(int client, char classname[64], CEconItemView &item, bool &ignoredCEconItemView, bool &originIsNull, float origin[3]) {
+    if(!IsClientValid(client)) {
+        return Plugin_Continue;
+    }
+
+    if(g_iKnives[client] == 0) {
+        return Plugin_Continue;
+    }
+
+    if(!IsKnife(classname)) {
+        return Plugin_Continue;
+    }
+
+    Knife knife = g_hKnives[g_iKnives[client]];
+    if(knife == null) {
+        return Plugin_Continue;
+    }
+
+    ignoredCEconItemView = true;
+    knife.GetItemName(classname, sizeof(classname));
+
+    return Plugin_Changed;
+}
+
+/**
+ * Event_GiveNamedItem
+ * ?
+ */
+public void Event_GiveNamedItem(const int client, const char[] classname, const CEconItemView itemView, int entity, bool originIsNull, const float origin[3]) {
     if(!IsClientValid(client)) {
         return;
+    }
+
+    if(!IsValidEntity(entity)) {
+        return;
+    }
+
+    int itemIndex = GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
+
+    if(IsKnife) {
+        EquipPlayerWeapon(client, entity);
     }
 
     int previousOwner = GetEntPropEnt(entity, Prop_Send, "m_hPrevOwner");
@@ -21,11 +58,8 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
         return;
     }
 
-    // Get the entity's definition index;
-    int itemIndex = GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
-
     // Get the entity's classname.
-    char classname[64];
+    /*char classname[64];
     if(!ClassByDefIndex(itemIndex, classname, sizeof(classname))) {
         return;
     }
@@ -40,7 +74,7 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
             itemIndex = knife.GetItemID();
             knife.GetItemName(classname, sizeof(classname));
         }
-    }
+    }*/
 
     // Loop through the client's items and find the matching one.
     Item item;
@@ -72,7 +106,7 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
     // END Get the client's steam 32 id.
 
     // Check if we did not find an item.
-    if(item == null) {
+    /*if(item == null) {
         if(isItemKnife) {
             Knife knife = g_hKnives[g_iKnives[client]];
 
@@ -102,7 +136,7 @@ public Action OnPostWeaponEquip(const int client, const int entity) {
         }
 
         return;
-    }
+    }*/
 
     // Get the item's skin id.
     item.GetSkinID(temp, sizeof(temp));

@@ -8,7 +8,7 @@ public void Loadout_Menu(const int client) {
     menu.SetTitle("Loadout");
 
     menu.AddItem("knives", "Knives");
-    menu.AddItem("gloves", "Gloves", ITEMDRAW_DISABLED);
+    menu.AddItem("gloves", "Gloves");
     menu.AddItem("skins", "Skins");
     menu.AddItem("items", "Items");
 

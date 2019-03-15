@@ -4,6 +4,7 @@
  */
 
 #include <cstrike>
+#include <PTaH>
 #include <sdkhooks>
 #include <sdktools>
 #include <sourcemod>
@@ -97,7 +98,8 @@ Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX];
 #include "loadout/events/player_chat.sp"
 #include "loadout/events/player_death.sp"
 #include "loadout/events/player_spawn.sp"
-#include "loadout/events/weapon_equip.sp"
+#include "loadout/events/ptah.sp"
+//#include "loadout/events/weapon_equip.sp"
 
 // Menus
 #include "loadout/menus/gloves.sp"
@@ -148,6 +150,8 @@ public void OnPluginStart() {
 
     HookEvent("player_spawn", Event_PlayerSpawn);
     HookEvent("player_death", Event_PlayerDeath);
+    PTaH(PTaH_GiveNamedItemPre, Hook, Event_GiveNamedItemPre);
+    PTaH(PTaH_GiveNamedItem, Hook, Event_GiveNamedItem);
 
     CreateTimer(60.0, Timer_SaveData, _, TIMER_REPEAT);
 }
@@ -180,7 +184,7 @@ public void OnClientPutInServer(int client) {
     #if defined LOADOUT_DEBUG
         LogMessage("%s (Debug) Attempting SDKHook (OnPostWeaponEquip) for \"%N\".", CONSOLE_PREFIX, client);
     #endif
-    SDKHook(client, SDKHook_WeaponEquip, OnPostWeaponEquip);
+    //SDKHook(client, SDKHook_WeaponEquip, OnPostWeaponEquip);
 }
 
 /**
@@ -220,7 +224,7 @@ public void OnClientDisconnect(int client) {
         return;
     }
 
-    SDKUnhook(client, SDKHook_WeaponEquip, OnPostWeaponEquip);
+    //SDKUnhook(client, SDKHook_WeaponEquip, OnPostWeaponEquip);
 
     #if defined LOADOUT_DEBUG
         LogMessage("%s (Debug) Attempting to save skins for \"%N\".", CONSOLE_PREFIX, client);
