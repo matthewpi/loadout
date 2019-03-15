@@ -35,7 +35,7 @@ public Action Event_GiveNamedItemPre(int client, char classname[64], CEconItemVi
  * Event_GiveNamedItem
  * ?
  */
-public void Event_GiveNamedItem(const int client, const char[] classname, const CEconItemView itemView, int entity, bool originIsNull, const float origin[3]) {
+public void Event_GiveNamedItem(const int client, const char[] cn, const CEconItemView itemView, int entity, bool originIsNull, const float origin[3]) {
     if(!IsClientValid(client)) {
         return;
     }
@@ -46,35 +46,23 @@ public void Event_GiveNamedItem(const int client, const char[] classname, const 
 
     int itemIndex = GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
 
-    if(IsKnife) {
-        EquipPlayerWeapon(client, entity);
-    }
-
-    int previousOwner = GetEntPropEnt(entity, Prop_Send, "m_hPrevOwner");
-    if(previousOwner != INVALID_ENT_REFERENCE && previousOwner != client) {
-        #if defined LOADOUT_DEBUG
-            LogMessage("%s (Debug) Skipping OnPostWeaponEquip() for \"%N\", item is owned by another client.", CONSOLE_PREFIX, client);
-        #endif
-        return;
-    }
-
     // Get the entity's classname.
-    /*char classname[64];
+    char classname[64];
     if(!ClassByDefIndex(itemIndex, classname, sizeof(classname))) {
         return;
     }
 
-    if(StrEqual(classname, "weapon_knife", true)) {
-        if(g_iKnives[client] == 0) {
-            return;
-        }
+    int previousOwner = GetEntPropEnt(entity, Prop_Send, "m_hPrevOwner");
+    if(previousOwner != INVALID_ENT_REFERENCE && previousOwner != client) {
+        return;
+    }
 
-        Knife knife = g_hKnives[g_iKnives[client]];
-        if(knife != null) {
-            itemIndex = knife.GetItemID();
-            knife.GetItemName(classname, sizeof(classname));
-        }
-    }*/
+    // Get a boolean based off of if the entity is a knife.
+    bool isItemKnife = IsKnife(classname);
+
+    if(isItemKnife) {
+        EquipPlayerWeapon(client, entity);
+    }
 
     // Loop through the client's items and find the matching one.
     Item item;
@@ -92,8 +80,9 @@ public void Event_GiveNamedItem(const int client, const char[] classname, const 
         }
     }
 
-    // Get a boolean based off of if the entity is a knife.
-    bool isItemKnife = IsKnife(classname);
+    if(item == null) {
+        return;
+    }
 
     // Get the client's steam 32 id.
     char steam32[20];
@@ -104,39 +93,6 @@ public void Event_GiveNamedItem(const int client, const char[] classname, const 
         steam32[index] = '\0';
     }
     // END Get the client's steam 32 id.
-
-    // Check if we did not find an item.
-    /*if(item == null) {
-        if(isItemKnife) {
-            Knife knife = g_hKnives[g_iKnives[client]];
-
-            // Check if the knife is invalid.
-            if(knife == null) {
-                return;
-            }
-
-            if(knife.GetItemID() == 0) {
-                return;
-            }
-
-            #if defined LOADOUT_DEBUG
-                LogMessage("%s (Debug) \"%N\"'s knife item is null, attempting to set custom knife. (%i)", CONSOLE_PREFIX, client, knife.GetItemID());
-            #endif
-            SetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex", knife.GetItemID());
-            SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
-            SetEntProp(entity, Prop_Send, "m_nFallbackPaintKit", 0);
-            SetEntPropFloat(entity, Prop_Send, "m_flFallbackWear", 0.0);
-            SetEntProp(entity, Prop_Send, "m_nFallbackSeed", GetRandomInt(0, 8192));
-            SetEntProp(entity, Prop_Send, "m_iEntityQuality", 3);
-            SetEntProp(entity, Prop_Send, "m_iAccountID", StringToInt(steam32));
-            SetEntPropEnt(entity, Prop_Data, "m_hParent", client);
-            SetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity", client);
-            SetEntPropEnt(entity, Prop_Data, "m_hMoveParent", client);
-            SetEntPropEnt(entity, Prop_Send, "m_hPrevOwner", client);
-        }
-
-        return;
-    }*/
 
     // Get the item's skin id.
     item.GetSkinID(temp, sizeof(temp));
@@ -193,5 +149,5 @@ public void Event_GiveNamedItem(const int client, const char[] classname, const 
     SetEntPropEnt(entity, Prop_Data, "m_hParent", client);
     SetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity", client);
     SetEntPropEnt(entity, Prop_Data, "m_hMoveParent", client);
-    SetEntPropEnt(entity, Prop_Send, "m_hPrevOwner", client);
+    SetEntPropEnt(entity, Prop_Send, "m_hPrevOwner", -1);
 }

@@ -363,7 +363,6 @@ public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int 
             }
 
             if(item == null) {
-                PrintToChat(client, "%s Creating a new item..", PREFIX);
                 item = new Item();
                 item.SetDefaults(client, g_cSkinWeapon[client]);
                 i = validItems + 1;
@@ -399,10 +398,7 @@ public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int 
 
 public void Skins_Refresh(const int client, const char[] weapon) {
     if(IsKnife(weapon)) {
-        #if defined LOADOUT_DEBUG
-            LogMessage("%s (Debug) Skins_Refresh(): item is a knife, using Knives_Refresh().", CONSOLE_PREFIX);
-        #endif
-        Knives_Refresh(client, weapon);
+        Knives_Refresh(client);
         return;
     }
 

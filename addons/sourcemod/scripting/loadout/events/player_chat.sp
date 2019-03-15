@@ -72,7 +72,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         g_hPlayerItems[client][g_iPatternSelect[client]] = item;
 
         if(IsKnife(weapon)) {
-            Knives_Refresh(client, weapon);
+            Knives_Refresh(client);
         } else {
             Skins_Refresh(client, weapon);
         }
@@ -109,7 +109,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         g_hPlayerItems[client][g_iFloatSelect[client]] = item;
 
         if(IsKnife(weapon)) {
-            Knives_Refresh(client, weapon);
+            Knives_Refresh(client);
         } else {
             Skins_Refresh(client, weapon);
         }
@@ -148,7 +148,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         g_hPlayerItems[client][g_iNametagSelect[client]] = item;
 
         if(IsKnife(weapon)) {
-            Knives_Refresh(client, weapon);
+            Knives_Refresh(client);
         } else {
             Skins_Refresh(client, weapon);
         }

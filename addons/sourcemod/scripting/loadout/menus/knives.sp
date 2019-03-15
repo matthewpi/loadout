@@ -49,7 +49,7 @@ int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
             knife.GetItemName(itemName, sizeof(itemName));
 
             PrintToChat(client, "%s Setting your knife to \x10%t\x01.", PREFIX, itemName);
-            Knives_Refresh(client, itemName);
+            Knives_Refresh(client);
             Knives_Menu(client, GetMenuSelectionPosition());
         }
 
@@ -65,23 +65,19 @@ int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
     }
 }
 
-void Knives_Refresh(const int client, const char[] itemName) {
+void Knives_Refresh(const int client) {
     if(!IsPlayerAlive(client)) {
         return;
     }
 
     int entity = GetPlayerWeaponSlot(client, CS_SLOT_KNIFE);
-    if(entity == -1) {
-        return;
+
+    while(entity > 0) {
+        RemovePlayerItem(client, entity);
+        AcceptEntityInput(entity, "Kill");
+        entity = GetPlayerWeaponSlot(client, CS_SLOT_KNIFE);
     }
 
-    RemovePlayerItem(client, entity);
-    AcceptEntityInput(entity, "KillHierarchy");
-
-    #if defined LOADOUT_DEBUG
-        LogMessage("%s (Debug) Knives_Refresh: Giving player '%N': %s", CONSOLE_PREFIX, client, itemName);
-    #endif
-
-    int item = GivePlayerItem(client, itemName);
-    EquipPlayerWeapon(client, item);
+    entity = GivePlayerItem(client, "weapon_knife");
+    EquipPlayerWeapon(client, entity);
 }

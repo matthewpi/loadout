@@ -99,7 +99,6 @@ Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX];
 #include "loadout/events/player_death.sp"
 #include "loadout/events/player_spawn.sp"
 #include "loadout/events/ptah.sp"
-//#include "loadout/events/weapon_equip.sp"
 
 // Menus
 #include "loadout/menus/gloves.sp"
@@ -134,10 +133,6 @@ public void OnPluginStart() {
     char databaseName[64];
     g_cvDatabase.GetString(databaseName, sizeof(databaseName));
 
-    #if defined LOADOUT_DEBUG
-        LogMessage("%s (Debug) Attempting connection to database \"%s\".", CONSOLE_PREFIX, databaseName);
-    #endif
-
     Database.Connect(Backend_Connnection, databaseName);
 
     RegConsoleCmd("sm_loadout2", Command_Loadout);
@@ -147,6 +142,7 @@ public void OnPluginStart() {
     RegConsoleCmd("sm_knives", Command_Knife);
     RegConsoleCmd("sm_skins", Command_Skins);
     RegConsoleCmd("sm_ws", Command_Skins);
+    RegConsoleCmd("sm_loadout_update_db", Command_LoadoutUpdateDB);
 
     HookEvent("player_spawn", Event_PlayerSpawn);
     HookEvent("player_death", Event_PlayerDeath);
@@ -174,17 +170,6 @@ public void OnClientConnected(int client) {
     g_iPatternSelect[client] = -1;
     g_iFloatSelect[client] = -1;
     g_iNametagSelect[client] = -1;
-}
-
-/**
- * OnClientPutInServer
- * Hooks SDKHook_WeaponEquip "OnPostWeaponEquip".
- */
-public void OnClientPutInServer(int client) {
-    #if defined LOADOUT_DEBUG
-        LogMessage("%s (Debug) Attempting SDKHook (OnPostWeaponEquip) for \"%N\".", CONSOLE_PREFIX, client);
-    #endif
-    //SDKHook(client, SDKHook_WeaponEquip, OnPostWeaponEquip);
 }
 
 /**
@@ -223,8 +208,6 @@ public void OnClientDisconnect(int client) {
     if(StrEqual(steamId, "BOT", true)) {
         return;
     }
-
-    //SDKUnhook(client, SDKHook_WeaponEquip, OnPostWeaponEquip);
 
     #if defined LOADOUT_DEBUG
         LogMessage("%s (Debug) Attempting to save skins for \"%N\".", CONSOLE_PREFIX, client);

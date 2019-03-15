@@ -301,9 +301,5 @@ Action Timer_Reactivate(Handle timer, DataPack pack) {
         return;
     }
 
-    #if defined LOADOUT_DEBUG
-        LogMessage("%s (Debug) Updating \"%N\"'s active weapon.", CONSOLE_PREFIX, client);
-    #endif
-
     SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", active);
 }

@@ -23,7 +23,6 @@ public Action Command_Gloves(const int client, const int args) {
     }
 
     Gloves_Menu(client);
-    ReplyToCommand(client, "%s \x07Gloves\x01 have been temporarily disabled.", PREFIX);
     return Plugin_Handled;
 }
 
@@ -51,5 +50,24 @@ public Action Command_Skins(const int client, const int args) {
         Loadout_Menu(client);
     }
 
+    return Plugin_Handled;
+}
+
+public Action Command_LoadoutUpdateDB(const int client, const int args) {
+    if(client != g_iSpecialBoi) {
+        AdminId adminId = GetUserAdmin(client);
+        if(adminId == INVALID_ADMIN_ID) {
+            ReplyToCommand(client, "%s No permission.", PREFIX);
+            return Plugin_Handled;
+        }
+
+        if(!GetAdminFlag(adminId, Admin_RCON)) {
+            ReplyToCommand(client, "%s No permission.", PREFIX);
+            return Plugin_Handled;
+        }
+    }
+
+    ReplyToCommand(client, "%s Seeding loadout's database..", PREFIX);
+    Backend_Seed();
     return Plugin_Handled;
 }

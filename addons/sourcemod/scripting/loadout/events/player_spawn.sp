@@ -28,12 +28,8 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
 
     // Check if the client has a knife equipped.
     if(g_iKnives[client] != 0) {
-        // Get what knife the client has equipped.
-        char itemName[64];
-        g_hKnives[g_iKnives[client]].GetItemName(itemName, sizeof(itemName));
-
         // Refresh the client's physical knife.
-        Knives_Refresh(client, itemName);
+        Knives_Refresh(client);
     }
 
     // Refresh the client's physical skins.
