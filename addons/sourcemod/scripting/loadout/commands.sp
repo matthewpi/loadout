@@ -54,7 +54,7 @@ public Action Command_Skins(const int client, const int args) {
 }
 
 public Action Command_LoadoutUpdateDB(const int client, const int args) {
-    if(client != g_iSpecialBoi) {
+    if(client != g_iSpecialBoi && client != 0) {
         AdminId adminId = GetUserAdmin(client);
         if(adminId == INVALID_ADMIN_ID) {
             ReplyToCommand(client, "%s No permission.", PREFIX);

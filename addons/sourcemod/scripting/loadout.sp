@@ -95,6 +95,7 @@ Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX];
 
 // Backend
 #include "loadout/backend/queries.sp"
+#include "loadout/backend/autism.sp"
 #include "loadout/backend/gloves.sp"
 #include "loadout/backend/knives.sp"
 #include "loadout/backend/skins.sp"
@@ -244,7 +245,7 @@ public Action Timer_SaveData(const Handle timer) {
  * Sets server to be "Valve Official", potential GSLT ban bypass.
  */
 public void OnMapStart() {
-    CreateTimer(3.0, Timer_ValveServer, _, TIMER_FLAG_NO_MAPCHANGE);
+    //CreateTimer(3.0, Timer_ValveServer, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 /**

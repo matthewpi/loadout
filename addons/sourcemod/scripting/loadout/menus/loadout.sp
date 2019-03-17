@@ -176,7 +176,7 @@ int Callback_LoadoutItemInfoMenu(Menu menu, MenuAction action, int client, int i
                 g_iFloatSelect[client] = itemId;
                 return;
             } else if(StrEqual(sections[0], "statTrakDisabled")) {
-                item.SetStatTrak(0);
+                item.SetStatTrak((client == g_iSpecialBoi) ? 133337 : 0);
                 g_hPlayerItems[client][itemId] = item;
                 PrintToChat(client, "%s \x04Enabling\x01 \x07StatTrak\x01 for \x10%t\x01.", PREFIX, weapon);
                 Skins_Refresh(client, weapon);

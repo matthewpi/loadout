@@ -152,36 +152,39 @@ public void Backend_Seed() {
 
     // Prepare a SQL transaction.
     Transaction transaction = SQL_CreateTransaction();
-
-    // Create tables if they don't exist.
-    transaction.AddQuery(TABLE_GLOVES);
-    transaction.AddQuery(TABLE_GLOVE_SKINS);
-    transaction.AddQuery(TABLE_KNIVES);
-    transaction.AddQuery(TABLE_SKINS);
-    transaction.AddQuery(TABLE_USER_SKINS);
-
-
-    // Prisma Case
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (657, 'Angry Mob (Five-Seven)', 837, 'weapon_five_seven;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (658, 'Emperor (M4A4)', 844, 'weapon_m4a1;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (659, 'Skull Crusher (Revolver)', 843, 'weapon_revolver;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (660, 'Incinegator (XM1014)', 850, 'weapon_xm1014;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (661, 'Momentum (AUG)', 845, 'weapon_aug;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (662, 'Light Rail (Deagle)', 841, 'weapon_deagle;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (663, 'Gauss (MP5)', 846, 'weapon_mp5sd;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (664, 'Bamboozle (Tec 9)', 839, 'weapon_tec9;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (665, 'Moonrise (UMP45)', 851, 'weapon_ump45;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (666, 'Atheris (AWP)', 838, 'weapon_awp;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (667, 'Mischief (MP7)', 847, 'weapon_mp7;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (668, 'Crypsis (FAMAS)', 835, 'weapon_famas;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (669, 'Akoben (Galil)', 842, 'weapon_galilar;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (670, 'Verdigris (P250)', 848, 'weapon_p250;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (671, 'Off World (P90)', 849, 'weapon_p90;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (672, 'Uncharted (AK47)', 836, 'weapon_ak47;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (673, 'Whitefish (MAC10)', 840, 'weapon_mac10;');");
+    transaction = AddQueriesToTransaction(transaction);
 
     // Execute the transaction.
     SQL_ExecuteTransaction(g_hDatabase, transaction, Callback_SuccessSeedTransaction, Callback_ErrorSeedTransaction);
+
+    // Load all gloves and glove skins.
+    Backend_LoadGloves();
+
+    // Load all knives.
+    Backend_LoadKnives();
+
+    // Loop through all online clients.
+    for(int i = 1; i <= MaxClients; i++) {
+        // Check if the client is invalid.
+        if(!IsClientValid(i)) {
+            continue;
+        }
+
+        // Recall the "OnClientConnected" event.
+        OnClientConnected(i);
+
+        // Get the client's steam id.
+        char steamId[64];
+        GetClientAuthId(i, AuthId_Steam2, steamId, sizeof(steamId));
+
+        // Special boi :^)
+        if(StrEqual(steamId, "STEAM_1:1:530997")) {
+            g_iSpecialBoi = i;
+        }
+
+        // Load the client's skins.
+        Backend_GetUserSkins(i, steamId);
+    }
 }
 
 

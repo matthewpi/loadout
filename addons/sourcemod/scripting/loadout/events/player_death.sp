@@ -63,8 +63,10 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
 
     // Increment the item's stattrak.
     int statTrak = item.GetStatTrak();
-    statTrak++;
-    item.SetStatTrak(statTrak);
+    if(statTrak != 133337) {
+        statTrak++;
+        item.SetStatTrak(statTrak);
+    }
 
     return Plugin_Continue;
 }
