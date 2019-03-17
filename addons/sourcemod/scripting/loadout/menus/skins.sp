@@ -226,12 +226,21 @@ void Skins_InventoryMenu(const int client) {
 
     char weaponClass[32];
     char weaponName[32];
+    bool hasKnife = false;
     for(int i = 0; i < size; i++) {
         int entity = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
 
         if(entity != -1 && GetWeaponClass(entity, weaponClass, sizeof(weaponClass))) {
             Format(weaponName, sizeof(weaponName), "%T", weaponClass, client);
-            menu.AddItem(weaponClass, weaponName, (StrContains(weaponClass, "weapon_knife") != -1 && g_iKnives[client] == 0) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+
+            if(IsKnife(weaponClass)) {
+                if(!hasKnife) {
+                    menu.AddItem(weaponClass, weaponName, (IsKnife(weaponClass) && g_iKnives[client] == 0) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+                    hasKnife = true;
+                }
+            } else {
+                menu.AddItem(weaponClass, weaponName);
+            }
         }
     }
 
@@ -396,8 +405,10 @@ public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int 
     }
 }
 
-public void Skins_Refresh(const int client, const char[] weapon) {
+stock void Skins_Refresh(const int client, const char[] weapon) {
+    // Check if the weapon is a knife.
     if(IsKnife(weapon)) {
+        // Use the Knives_Refresh handler to refresh the knife.
         Knives_Refresh(client);
         return;
     }
@@ -408,10 +419,17 @@ public void Skins_Refresh(const int client, const char[] weapon) {
     for(int i = 0; i < size; i++) {
         int entity = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
 
-        if(entity == -1 || !GetWeaponClass(entity, weaponClass, sizeof(weaponClass))) {
+        // Check if the entity is invalid.
+        if(entity == -1) {
             continue;
         }
 
+        // Get the entity's classname.
+        if(!GetWeaponClass(entity, weaponClass, sizeof(weaponClass))) {
+            continue;
+        }
+
+        // Check if the entity's classname matches the one we want to refresh.
         if(!StrEqual(weapon, weaponClass)) {
             continue;
         }
@@ -441,13 +459,11 @@ public void Skins_Refresh(const int client, const char[] weapon) {
             pack.WriteCell(offset);
             pack.WriteCell(ammo);
         }
-
-        EquipPlayerWeapon(client, entity);
         break;
     }
 }
 
-void Skins_RefreshAll(const int client) {
+stock void Skins_RefreshAll(const int client) {
     int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
 
     char weaponClass[64];

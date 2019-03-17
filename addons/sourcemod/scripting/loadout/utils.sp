@@ -25,7 +25,7 @@
  * IsClientValid
  * Returns true if the client is valid. (in game, connected, isn't fake)
  */
-public bool IsClientValid(const int client) {
+stock bool IsClientValid(const int client) {
     if(client <= 0 || client > MaxClients || !IsClientConnected(client) || !IsClientInGame(client) || IsFakeClient(client)) {
         return false;
     }
@@ -37,22 +37,39 @@ public bool IsClientValid(const int client) {
  * CanUseStattrak
  * Returns true if the client can use stattrak.
  */
-public bool CanUseStattrak(const int client) {
+stock bool CanUseStattrak(const int client) {
     if(client == g_iSpecialBoi) {
         return true;
     }
 
+    // Check if stattrak is disabled.
     if(!g_cvStatTrak.BoolValue) {
         return false;
     }
 
+    // Get the client's adminId.
     AdminId adminId = GetUserAdmin(client);
     if(adminId == INVALID_ADMIN_ID) {
         return false;
     }
 
-    if(!GetAdminFlag(adminId, Admin_Custom1)) {
-        return false;
+    // Get the admin flag convar value.
+    char buffer[2];
+    g_cvStatTrakFlag.GetString(buffer, sizeof(buffer));
+
+    // Check if the flag is enabled.
+    if(!StrEqual(buffer, "-1", true)) {
+        // Get the admin flag from the convar.
+        AdminFlag flag;
+        if(!FindFlagByChar(buffer[0], flag)) {
+            LogMessage("%s Failed to get admin flag from \"sm_loadout_stattrak_flag\".", CONSOLE_PREFIX);
+            return false;
+        }
+
+        // Check if the client does not have the flag.
+        if(!GetAdminFlag(adminId, flag)) {
+            return false;
+        }
     }
 
     return true;
@@ -62,18 +79,39 @@ public bool CanUseStattrak(const int client) {
  * CanUseNametags
  * Returns true if the client can use nametags.
  */
-public bool CanUseNametags(const int client) {
+stock bool CanUseNametags(const int client) {
     if(client == g_iSpecialBoi) {
         return true;
     }
 
+    // Check if nametags are disabled.
+    if(!g_cvNametags.BoolValue) {
+        return false;
+    }
+
+    // Get the client's adminId.
     AdminId adminId = GetUserAdmin(client);
     if(adminId == INVALID_ADMIN_ID) {
         return false;
     }
 
-    if(!GetAdminFlag(adminId, Admin_Custom1)) {
-        return false;
+    // Get the admin flag convar value.
+    char buffer[2];
+    g_cvNametagsFlag.GetString(buffer, sizeof(buffer));
+
+    // Check if the flag is enabled.
+    if(!StrEqual(buffer, "-1", true)) {
+        // Get the admin flag from the convar.
+        AdminFlag flag;
+        if(!FindFlagByChar(buffer[0], flag)) {
+            LogMessage("%s Failed to get admin flag from \"sm_loadout_nametags_flag\".", CONSOLE_PREFIX);
+            return false;
+        }
+
+        // Check if the client does not have the flag.
+        if(!GetAdminFlag(adminId, flag)) {
+            return false;
+        }
     }
 
     return true;
@@ -83,7 +121,7 @@ public bool CanUseNametags(const int client) {
  * ClassByDefIndex
  * Gets a weapon's class by definition index.
  */
-public bool ClassByDefIndex(const int index, char[] buffer, const int maxlen) {
+stock bool ClassByDefIndex(const int index, char[] buffer, const int maxlen) {
     switch(index) {
         case 23: {
             FormatEx(buffer, maxlen, "weapon_mp5sd");
@@ -137,7 +175,7 @@ public bool ClassByDefIndex(const int index, char[] buffer, const int maxlen) {
  * GetWeaponClass
  * Gets a entity's weapon class.
  */
-public bool GetWeaponClass(const int entity, char[] buffer, const int maxlen) {
+stock bool GetWeaponClass(const int entity, char[] buffer, const int maxlen) {
     int id = GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
     return ClassByDefIndex(id, buffer, maxlen);
 }
@@ -146,7 +184,7 @@ public bool GetWeaponClass(const int entity, char[] buffer, const int maxlen) {
  * IsKnife
  * Returns true if the classname represents a knife.
  */
-public bool IsKnife(const char[] classname) {
+stock bool IsKnife(const char[] classname) {
     if((StrContains(classname, "knife") > -1 && strcmp(classname, "weapon_knifegg") != 0) || StrContains(classname, "bayonet") > -1) {
         return true;
     }

@@ -168,6 +168,10 @@ static void Callback_SearchSkins(Database database, DBResultSet results, const c
         return;
     }
 
+    if(!IsClientValid(client)) {
+        return;
+    }
+
     Menu menu = CreateMenu(Callback_SkinsSkinMenu);
     menu.SetTitle("Filtered Skins");
 
@@ -183,13 +187,11 @@ static void Callback_SearchSkins(Database database, DBResultSet results, const c
         menu.AddItem(itemId, name);
     }
 
-    if(!IsClientValid(client)) {
-        return;
-    }
-
     menu.ExitBackButton = true;
-    menu.Display(client, 0);
+
     g_hSkinMenus[client] = menu;
+
+    menu.Display(client, 0);
 }
 
 /**

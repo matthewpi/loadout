@@ -31,10 +31,16 @@
 // END Definitions
 
 // Globals
-// sm_loadout_database - "Sets what database the plugin should use." (Default: "loadout")
+// sm_loadout_database      - "Sets what database the plugin should use." (Default: "loadout")
 ConVar g_cvDatabase;
-// sm_loadout_stattrak - "Sets whether stattrak weapons are enabled." (Default: "1")
+// sm_loadout_stattrak      - "Sets whether stattrak weapons are enabled." (Default: "1")
 ConVar g_cvStatTrak;
+// sm_loadout_stattrak_flag - "Sets what admin flag is required to use stattrak, use -1 to allow anyone." (Default: "o")
+ConVar g_cvStatTrakFlag;
+// sm_loadout_nametags      - "Sets whether weapon nametags are enabled." (Default: "1")
+ConVar g_cvNametags;
+// sm_loadout_nametags_flag - "Sets what admin flag is required to use nametags, use -1 to allow anyone." (Default: "o")
+ConVar g_cvNametagsFlag;
 
 // g_hDatabase stores the active database connection.
 Database g_hDatabase;
@@ -125,8 +131,11 @@ public void OnPluginStart() {
     LoadTranslations("common.phrases");
     LoadTranslations("loadout.weapons.phrases");
 
-    g_cvDatabase = CreateConVar("sm_loadout_database", "loadout", "Sets what database the plugin should use.");
-    g_cvStatTrak = CreateConVar("sm_loadout_stattrak", "1", "Sets whether stattrak weapons are enabled.");
+    g_cvDatabase     = CreateConVar("sm_loadout_database", "loadout", "Sets what database the plugin should use.");
+    g_cvStatTrak     = CreateConVar("sm_loadout_stattrak", "1", "Sets whether stattrak weapons are enabled.", _, true, 0.0, true, 1.0);
+    g_cvStatTrakFlag = CreateConVar("sm_loadout_stattrak_flag", "o", "Sets what admin flag is required to use stattrak, use -1 to allow anyone.");
+    g_cvNametags     = CreateConVar("sm_loadout_nametags", "1", "Sets whether weapon nametags are enabled.", _, true, 0.0, true, 1.0);
+    g_cvNametagsFlag = CreateConVar("sm_loadout_nametags_flag", "o", "Sets what admin flag is required to use nametags, use -1 to allow anyone.");
 
     AutoExecConfig(true, "loadout");
 

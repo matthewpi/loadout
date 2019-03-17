@@ -7,8 +7,6 @@ void Gloves_Menu(const int client, const int position = -1) {
     Menu menu = CreateMenu(Callback_GlovesMenu);
     menu.SetTitle("Gloves");
 
-    menu.AddItem("0", "Default");
-
     char item[8];
     char name[64];
     for(int i = 0; i < GLOVE_MAX; i++) {
@@ -42,7 +40,7 @@ int Callback_GlovesMenu(const Menu menu, const MenuAction action, const int clie
 
             int gloveId = StringToInt(info);
 
-            if(gloveId == 0) {
+            if(gloveId == 1) {
                 g_iGloves[client] = 0;
                 g_iGloveSkins[client] = 0;
                 Gloves_Refresh(client);
