@@ -14,7 +14,7 @@
 
 // Definitions
 #define LOADOUT_AUTHOR "Matthew \"MP\" Penner"
-#define LOADOUT_VERSION "0.2.1-BETA"
+#define LOADOUT_VERSION "0.2.2-BETA"
 
 // Enables debug logs.
 #define LOADOUT_DEBUG
