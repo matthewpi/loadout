@@ -98,25 +98,6 @@ Transaction AddQueriesToTransaction(Transaction transaction) {
     transaction.AddQuery("INSERT IGNORE INTO `loadout_knives` (`id`, `displayName`, `itemName`, `itemId`) VALUES (14, 'Talon', 'weapon_knife_widowmaker', 523);");
     transaction.AddQuery("INSERT IGNORE INTO `loadout_knives` (`id`, `displayName`, `itemName`, `itemId`) VALUES (15, 'Ursus', 'weapon_knife_ursus', 519);");
 
-    // Prisma Case
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (657, 'Angry Mob (Five-Seven)', 837, 'weapon_five_seven;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (658, 'Emperor (M4A4)', 844, 'weapon_m4a1;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (659, 'Skull Crusher (Revolver)', 843, 'weapon_revolver;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (660, 'Incinegator (XM1014)', 850, 'weapon_xm1014;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (661, 'Momentum (AUG)', 845, 'weapon_aug;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (662, 'Light Rail (Deagle)', 841, 'weapon_deagle;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (663, 'Gauss (MP5)', 846, 'weapon_mp5sd;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (664, 'Bamboozle (Tec 9)', 839, 'weapon_tec9;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (665, 'Moonrise (UMP45)', 851, 'weapon_ump45;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (666, 'Atheris (AWP)', 838, 'weapon_awp;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (667, 'Mischief (MP7)', 847, 'weapon_mp7;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (668, 'Crypsis (FAMAS)', 835, 'weapon_famas;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (669, 'Akoben (Galil)', 842, 'weapon_galilar;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (670, 'Verdigris (P250)', 848, 'weapon_p250;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (671, 'Off World (P90)', 849, 'weapon_p90;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (672, 'Uncharted (AK47)', 836, 'weapon_ak47;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (673, 'Whitefish (MAC10)', 840, 'weapon_mac10;');");
-
     // special boi skins
     transaction.AddQuery("INSERT IGNORE INTO `loadout_user_skins` (`steamId`, `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`, `nametag`) VALUES ('STEAM_1:1:530997', 'plugin_gloves', '7;2', 0, 0.00009900000, -1, '');");
     transaction.AddQuery("INSERT IGNORE INTO `loadout_user_skins` (`steamId`, `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`, `nametag`) VALUES ('STEAM_1:1:530997', 'plugin_knife', '9', 0, 0.00009900000, -1, '');");
@@ -791,7 +772,7 @@ Transaction AddQueriesToTransaction(Transaction transaction) {
     transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (655, 'Oxide Blaze (Glock)', 808, 'weapon_glock;');");
     transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (656, 'Modest Threat (MP9)', 804, 'weapon_mp9;');");
     transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (657, 'Angry Mob (Five-Seven)', 837, 'weapon_five_seven;');");
-    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (658, 'Emperor (M4A4)', 844, 'weapon_m4a1;');");
+    transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (658, 'The Emperor (M4A4)', 844, 'weapon_m4a1;');");
     transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (659, 'Skull Crusher (Revolver)', 843, 'weapon_revolver;');");
     transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (660, 'Incinegator (XM1014)', 850, 'weapon_xm1014;');");
     transaction.AddQuery("INSERT IGNORE INTO `loadout_skins` (`id`, `displayName`, `skinId`, `weapons`) VALUES (661, 'Momentum (AUG)', 845, 'weapon_aug;');");

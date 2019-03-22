@@ -73,6 +73,8 @@ public void Backend_SaveAllData() {
         } else {
             LogMessage("%s Database is an invalid handle, skipping Backend_SaveAllData()", CONSOLE_PREFIX);
         }
+
+        transaction = null;
     }
 }
 

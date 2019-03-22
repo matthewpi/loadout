@@ -204,12 +204,10 @@ public void Backend_RandomSkin(const int client) {
         return;
     }
 
-    char alphabet[26][1] = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
-    char letter[1];
-    letter = alphabet[GetRandomInt(0, 26)];
+    int skinId = GetRandomInt(1, g_iSkinCount);
 
     char query[512];
-    Format(query, sizeof(query), SEARCH_WEAPON_SKINS, letter);
+    Format(query, sizeof(query), GET_WEAPON_SKIN, skinId);
     g_hDatabase.Query(Callback_RandomSkin, query, client);
 }
 
@@ -233,59 +231,7 @@ static void Callback_RandomSkin(Database database, DBResultSet results, const ch
     if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"loadout_skins\".", CONSOLE_PREFIX); return; }
     if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"loadout_skins\".", CONSOLE_PREFIX); return; }
 
-    if(results.RowCount == 1) {
-        results.FetchRow();
-
-        char name[64];
-        int skinId = results.FetchInt(skinIdIndex);
-
-        results.FetchString(nameIndex, name, sizeof(name));
-
-        int i;
-        Item item;
-        char weapon[64];
-        int validItems = 0;
-        for(i = 0; i < USER_ITEM_MAX; i++) {
-            item = g_hPlayerItems[client][i];
-            if(item == null) {
-                continue;
-            }
-
-            item.GetWeapon(weapon, sizeof(weapon));
-            validItems++;
-
-            if(StrEqual(weapon, g_cSkinWeapon[client])) {
-                break;
-            }
-        }
-
-        if(item == null) {
-            item = new Item();
-            item.SetDefaults(client, g_cSkinWeapon[client]);
-            i = validItems + 1;
-        }
-
-        char skinIdChar[16];
-        IntToString(skinId, skinIdChar, sizeof(skinIdChar));
-        item.SetSkinID(skinIdChar);
-        g_hPlayerItems[client][i] = item;
-
-        Skins_Refresh(client, g_cSkinWeapon[client]);
-        PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, name, g_cSkinWeapon[client]);
-        Skins_FilterMenu(client);
-        return;
-    }
-
-    int randRow = GetRandomInt(0, results.RowCount);
-    int j = 0;
-
-    while(results.FetchRow()) {
-        if(j == randRow) {
-            break;
-        }
-
-        j++;
-    }
+    results.FetchRow();
 
     char name[64];
     int skinId = results.FetchInt(skinIdIndex);

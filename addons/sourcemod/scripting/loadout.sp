@@ -53,6 +53,9 @@ int g_iGloves[MAXPLAYERS + 1];
 // g_iGloveSkins stores all player glove skins.
 int g_iGloveSkins[MAXPLAYERS + 1];
 
+// g_iSkinCount stores how many skins exist in the database.
+int g_iSkinCount = 673;
+
 // g_hSkinMenus stores the active menus in use by player for selecting skins.
 Menu g_hSkinMenus[MAXPLAYERS + 1];
 

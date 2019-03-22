@@ -275,7 +275,7 @@ public void Skins_FilterMenu(const int client) {
     menu.SetTitle("Skin Filter");
 
     menu.AddItem("search", "Search..");
-    //menu.AddItem("random", "Random");
+    menu.AddItem("random", "Random");
     menu.AddItem("default", "Default");
 
     char alphabet[26][1] = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
