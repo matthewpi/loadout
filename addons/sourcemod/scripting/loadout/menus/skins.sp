@@ -406,6 +406,14 @@ public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int 
 }
 
 stock void Skins_Refresh(const int client, const char[] weapon) {
+    if(!IsClientValid(client)) {
+        return;
+    }
+
+    if(!IsPlayerAlive(client)) {
+        return;
+    }
+
     // Check if the weapon is a knife.
     if(IsKnife(weapon)) {
         // Use the Knives_Refresh handler to refresh the knife.
@@ -464,6 +472,14 @@ stock void Skins_Refresh(const int client, const char[] weapon) {
 }
 
 stock void Skins_RefreshAll(const int client) {
+    if(!IsClientValid(client)) {
+        return;
+    }
+
+    if(!IsPlayerAlive(client)) {
+        return;
+    }
+
     int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
 
     char weaponClass[64];

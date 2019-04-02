@@ -153,6 +153,14 @@ int Callback_GlovesSubMenu(const Menu menu, const MenuAction action, const int c
 }
 
 public void Gloves_Refresh(const int client) {
+    if(!IsClientValid(client)) {
+        return;
+    }
+
+    if(!IsPlayerAlive(client)) {
+        return;
+    }
+
     if(g_iGloves[client] == 0) {
         int active = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
         if(active != -1) {

@@ -66,6 +66,10 @@ int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
 }
 
 void Knives_Refresh(const int client) {
+    if(!IsClientValid(client)) {
+        return;
+    }
+
     if(!IsPlayerAlive(client)) {
         return;
     }
