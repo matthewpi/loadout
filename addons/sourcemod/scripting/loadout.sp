@@ -132,23 +132,21 @@ public Plugin myinfo = {
  * Initiates plugin, registers convars, registers commands, connects to database.
  */
 public void OnPluginStart() {
+    // Load translations.
     LoadTranslations("common.phrases");
     LoadTranslations("loadout.weapons.phrases");
 
-    g_cvDatabase     = CreateConVar("sm_loadout_database", "loadout", "Sets what database the plugin should use.");
+    // Create custom convars for the plugin.
+    g_cvDatabase     = CreateConVar("sm_loadout_database", "loadout", "Sets what database the plugin should use.", FCVAR_PROTECTED);
     g_cvStatTrak     = CreateConVar("sm_loadout_stattrak", "1", "Sets whether stattrak weapons are enabled.", _, true, 0.0, true, 1.0);
     g_cvStatTrakFlag = CreateConVar("sm_loadout_stattrak_flag", "o", "Sets what admin flag is required to use stattrak, use -1 to allow anyone.");
     g_cvNametags     = CreateConVar("sm_loadout_nametags", "1", "Sets whether weapon nametags are enabled.", _, true, 0.0, true, 1.0);
     g_cvNametagsFlag = CreateConVar("sm_loadout_nametags_flag", "o", "Sets what admin flag is required to use nametags, use -1 to allow anyone.");
 
+    // Generate and load our plugin convar config.
     AutoExecConfig(true, "loadout");
 
-    char databaseName[64];
-    g_cvDatabase.GetString(databaseName, sizeof(databaseName));
-
-    Database.Connect(Backend_Connnection, databaseName);
-
-    RegConsoleCmd("sm_loadout2", Command_Loadout);
+    // Commands
     RegConsoleCmd("sm_gloves", Command_Gloves);
     RegConsoleCmd("sm_glove", Command_Gloves);
     RegConsoleCmd("sm_knife", Command_Knife);
@@ -156,13 +154,37 @@ public void OnPluginStart() {
     RegConsoleCmd("sm_skins", Command_Skins);
     RegConsoleCmd("sm_ws", Command_Skins);
     RegConsoleCmd("sm_loadout_update_db", Command_LoadoutUpdateDB);
+    // END Commands
 
+    // Events
     HookEvent("player_spawn", Event_PlayerSpawn);
     HookEvent("player_death", Event_PlayerDeath);
     PTaH(PTaH_GiveNamedItemPre, Hook, Event_GiveNamedItemPre);
     PTaH(PTaH_GiveNamedItem, Hook, Event_GiveNamedItem);
+    // END Events
 
     CreateTimer(60.0, Timer_SaveData, _, TIMER_REPEAT);
+}
+
+/**
+ * OnConfigsExecuted
+ * Connects to the database using the configured convar.
+ */
+public void OnConfigsExecuted() {
+    // Get the database name from the g_cvDatabase convar.
+    char databaseName[64];
+    g_cvDatabase.GetString(databaseName, sizeof(databaseName));
+
+    // Attempt connection to the database.
+    Database.Connect(Backend_Connnection, databaseName);
+}
+
+/**
+ * OnPluginEnd
+ * Saves all user data.
+ */
+public void OnPluginEnd() {
+    Backend_SaveAllData();
 }
 
 /**
@@ -248,7 +270,7 @@ public Action Timer_SaveData(const Handle timer) {
  * Sets server to be "Valve Official", potential GSLT ban bypass.
  */
 public void OnMapStart() {
-    //CreateTimer(3.0, Timer_ValveServer, _, TIMER_FLAG_NO_MAPCHANGE);
+    CreateTimer(3.0, Timer_ValveServer, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 /**

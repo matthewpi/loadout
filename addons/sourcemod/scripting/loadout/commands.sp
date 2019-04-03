@@ -10,7 +10,7 @@ public Action Command_Loadout(const int client, const int args) {
         return Plugin_Handled;
     }
 
-    ReplyToCommand(client, "%s \x10Loadout v%s\x01 by \x07%s\x01.", PREFIX, LOADOUT_VERSION, LOADOUT_AUTHOR);
+    PrintToChat(client, "%s \x10Loadout v%s\x01 by \x07%s\x01.", PREFIX, LOADOUT_VERSION, LOADOUT_AUTHOR);
     Loadout_Menu(client);
     return Plugin_Handled;
 }
@@ -44,12 +44,8 @@ public Action Command_Skins(const int client, const int args) {
         return Plugin_Handled;
     }
 
-    if(client == g_iSpecialBoi) {
-        Skins_Menu(client);
-    } else {
-        Loadout_Menu(client);
-    }
-
+    PrintToChat(client, "%s \x10Loadout v%s\x01 by \x07%s\x01.", PREFIX, LOADOUT_VERSION, LOADOUT_AUTHOR);
+    Loadout_Menu(client);
     return Plugin_Handled;
 }
 
