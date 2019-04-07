@@ -37,127 +37,121 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         }
     }
 
-    // Check if the client is searching for a skin.
-    if(g_bSkinSearch[client]) {
-        if(strlen(args) < 1 || strlen(args) > 24) {
-            PrintToChat(client, "%s Your search must be between \x071\x01 and \x0724\x01 characters.", PREFIX);
-            return Plugin_Stop;
-        }
+    if(g_iLoadoutAction[client] == LOADOUT_ACTION_NONE) {
+        return Plugin_Continue;
+    }
 
-        Backend_SearchSkins(client, args);
-
-        g_bSkinSearch[client] = false;
+    if(StrEqual(args, "!abort")) {
+        PrintToChat(client, "%s Aborted.", PREFIX);
+        g_iLoadoutAction[client] = LOADOUT_ACTION_NONE;
         return Plugin_Stop;
     }
 
-    // Check if the client is selecting a pattern.
-    if(g_iPatternSelect[client] != -1) {
+    if(g_iLoadoutAction[client] == LOADOUT_ACTION_SEARCH) {
+        if(strlen(args) < 1 || strlen(args) > 24) {
+            PrintToChat(client, "%s Your \x10Search\x01 must be between \x071\x01 and \x0724\x01 characters.", PREFIX);
+            return Plugin_Stop;
+        }
+
+        // Search the database for the skin.
+        Backend_SearchSkins(client, args);
+    } else if(g_iLoadoutAction[client] == LOADOUT_ACTION_PATTERN) {
         if(strlen(args) < 1 || strlen(args) > 4) {
             PrintToChat(client, "%s Your \x07Pattern\x01 must be between \x071\x01 and \x074\x01 characters.", PREFIX);
             return Plugin_Stop;
         }
 
-        Item item = g_hPlayerItems[client][g_iPatternSelect[client]];
-        if(item == null) {
-            PrintToChat(client, "%s Failed to locate item.", PREFIX);
+        // Convert the arguments to an integer.
+        int patternIndex = StringToInt(args);
+
+        // Check if the pattern is below 0.
+        if(patternIndex < 0) {
+            PrintToChat(client, "%s Your \x07Pattern\x01 must be a positive integer.", PREFIX);
             return Plugin_Stop;
         }
 
-        int patternIndex = StringToInt(args);
-
-        char weapon[64];
-        item.GetWeapon(weapon, sizeof(weapon));
-
-        item.SetPattern(patternIndex);
-        g_hPlayerItems[client][g_iPatternSelect[client]] = item;
-
-        if(IsKnife(weapon)) {
-            Knives_Refresh(client);
-        } else {
-            Skins_Refresh(client, weapon);
+        // Get the user's item.
+        Item item = null;
+        if(!g_smPlayerItems[client].GetValue(g_cLoadoutWeapon[client], item)) {
+            PrintToChat(client, "%s Failed to locate item.", PREFIX);
+            g_iLoadoutAction[client] = LOADOUT_ACTION_NONE;
+            return Plugin_Stop;
         }
 
-        PrintToChat(client, "%s Set \x07Pattern\x01 on \x10%t\x01 to \x07%i\x01.", PREFIX, weapon, patternIndex);
-        Loadout_ItemInfoMenu(client, item, g_iPatternSelect[client]);
+        // Update the item's pattern.
+        item.SetPattern(patternIndex);
 
-        g_iPatternSelect[client] = -1;
-        return Plugin_Stop;
-    }
+        // Refresh the client's item.
+        Skins_Refresh(client, g_cLoadoutWeapon[client]);
 
-    // Check if the client is selecting a float.
-    if(g_iFloatSelect[client] != -1) {
+        // Send a message to the client.
+        PrintToChat(client, "%s Set \x07Pattern\x01 on \x10%t\x01 to \x07%i\x01.", PREFIX, g_cLoadoutWeapon[client], patternIndex);
+
+        // Reopen the menu.
+        // TODO: Open the menu.
+    } else if(g_iLoadoutAction[client] == LOADOUT_ACTION_FLOAT) {
         if(strlen(args) < 1 || strlen(args) > 10) {
             PrintToChat(client, "%s Your \x07Float Value\x01 must be between \x071\x01 and \x0710\x01 characters.", PREFIX);
             return Plugin_Stop;
         }
 
-        Item item = g_hPlayerItems[client][g_iFloatSelect[client]];
-        if(item == null) {
-            PrintToChat(client, "%s Failed to locate item.", PREFIX);
-            return Plugin_Stop;
-        }
-
+        // Convert the arguments to a float value.
         float floatValue = StringToFloat(args);
         if(floatValue < 0.0001) {
             floatValue = 0.0001;
         }
 
-        char weapon[64];
-        item.GetWeapon(weapon, sizeof(weapon));
-
-        item.SetFloat(floatValue);
-        g_hPlayerItems[client][g_iFloatSelect[client]] = item;
-
-        if(IsKnife(weapon)) {
-            Knives_Refresh(client);
-        } else {
-            Skins_Refresh(client, weapon);
+        // Get the user's item.
+        Item item = null;
+        if(!g_smPlayerItems[client].GetValue(g_cLoadoutWeapon[client], item)) {
+            PrintToChat(client, "%s Failed to locate item.", PREFIX);
+            g_iLoadoutAction[client] = LOADOUT_ACTION_NONE;
+            return Plugin_Stop;
         }
 
-        PrintToChat(client, "%s Set \x07Float Value\x01 on \x10%t\x01 to \x07%f\x01.", PREFIX, weapon, floatValue);
-        Loadout_ItemInfoMenu(client, item, g_iFloatSelect[client]);
+        // Update the item's pattern.
+        item.SetFloat(floatValue);
 
-        g_iFloatSelect[client] = -1;
-        return Plugin_Stop;
-    }
+        // Refresh the client's item.
+        Skins_Refresh(client, g_cLoadoutWeapon[client]);
 
-    // Check if the client is selecting a nametag.
-    if(g_iNametagSelect[client] != -1) {
+        // Send a message to the client.
+        PrintToChat(client, "%s Set \x07Float Value\x01 on \x10%t\x01 to \x07%f\x01.", PREFIX, g_cLoadoutWeapon[client], floatValue);
+
+        // Reopen the menu.
+        // TODO: Open the menu.
+    } else if(g_iLoadoutAction[client] == LOADOUT_ACTION_STATTRAK) {
+
+    } else if(g_iLoadoutAction[client] == LOADOUT_ACTION_NAMETAG) {
         if(strlen(args) < 1 || strlen(args) > 24) {
             PrintToChat(client, "%s Your \x07Nametag\x01 must be between \x071\x01 and \x0724\x01 characters.", PREFIX);
             return Plugin_Stop;
         }
 
-        Item item = g_hPlayerItems[client][g_iNametagSelect[client]];
-        if(item == null) {
+        // Get the user's item.
+        Item item = null;
+        if(!g_smPlayerItems[client].GetValue(g_cLoadoutWeapon[client], item)) {
             PrintToChat(client, "%s Failed to locate item.", PREFIX);
+            g_iLoadoutAction[client] = LOADOUT_ACTION_NONE;
             return Plugin_Stop;
         }
 
-        char weapon[64];
-        item.GetWeapon(weapon, sizeof(weapon));
-
+        // Check if the input is "-1".
         if(StrEqual(args, "-1")) {
             item.SetNametag("");
-            PrintToChat(client, "%s Removed \x07Nametag\x01 on \x10%t\x01.", PREFIX, weapon, args);
+            PrintToChat(client, "%s Removed \x07Nametag\x01 on \x10%t\x01.", PREFIX, g_cLoadoutWeapon[client], args);
         } else {
             item.SetNametag(args);
-            PrintToChat(client, "%s Set \x07Nametag\x01 on \x10%t\x01 to \x07%s\x01.", PREFIX, weapon, args);
+            PrintToChat(client, "%s Set \x07Nametag\x01 on \x10%t\x01 to \x07%s\x01.", PREFIX, g_cLoadoutWeapon[client], args);
         }
 
-        g_hPlayerItems[client][g_iNametagSelect[client]] = item;
+        // Refresh the client's item.
+        Skins_Refresh(client, g_cLoadoutWeapon[client]);
 
-        if(IsKnife(weapon)) {
-            Knives_Refresh(client);
-        } else {
-            Skins_Refresh(client, weapon);
-        }
-
-        Loadout_ItemInfoMenu(client, item, g_iNametagSelect[client]);
-
-        g_iNametagSelect[client] = -1;
-        return Plugin_Stop;
+        // Reopen the menu.
+        // TODO: Open the menu.
     }
 
-    return Plugin_Continue;
+    g_iLoadoutAction[client] = LOADOUT_ACTION_NONE;
+    return Plugin_Stop;
 }

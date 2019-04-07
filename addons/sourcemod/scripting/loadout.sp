@@ -14,7 +14,7 @@
 
 // Definitions
 #define LOADOUT_AUTHOR "Matthew \"MP\" Penner"
-#define LOADOUT_VERSION "0.2.2-BETA"
+#define LOADOUT_VERSION "0.2.3-BETA"
 
 // Enables debug logs.
 #define LOADOUT_DEBUG
@@ -22,78 +22,34 @@
 #define PREFIX "[\x06Loadout\x01]"
 #define CONSOLE_PREFIX "[Loadout]"
 
-#define GROUP_MAX 16
-#define KNIFE_MAX 20
-#define GLOVE_MAX 16
-#define GLOVE_SKIN_MAX 64
-#define USER_ITEM_MAX 75
-#define ITEM_FLOAT_MIN 0.0001
+// Array Limits
+#define LOADOUT_KNIFE_MAX 20
+#define LOADOUT_GLOVE_MAX 16
+#define LOADOUT_GLOVE_SKIN_MAX 64
+
+// Defaults
+#define LOADOUT_DEFAULT_FLOAT 0.0001
+
+// Actions
+#define LOADOUT_ACTION_NONE    -1
+#define LOADOUT_ACTION_SEARCH   1
+#define LOADOUT_ACTION_PATTERN  2
+#define LOADOUT_ACTION_FLOAT    3
+#define LOADOUT_ACTION_STATTRAK 4
+#define LOADOUT_ACTION_NAMETAG  5
 // END Definitions
 
-// Globals
-// sm_loadout_database      - "Sets what database the plugin should use." (Default: "loadout")
-ConVar g_cvDatabase;
-// sm_loadout_stattrak      - "Sets whether stattrak weapons are enabled." (Default: "1")
-ConVar g_cvStatTrak;
-// sm_loadout_stattrak_flag - "Sets what admin flag is required to use stattrak, use -1 to allow anyone." (Default: "o")
-ConVar g_cvStatTrakFlag;
-// sm_loadout_nametags      - "Sets whether weapon nametags are enabled." (Default: "1")
-ConVar g_cvNametags;
-// sm_loadout_nametags_flag - "Sets what admin flag is required to use nametags, use -1 to allow anyone." (Default: "o")
-ConVar g_cvNametagsFlag;
-
-// g_hDatabase stores the active database connection.
-Database g_hDatabase;
-
-// g_iKnives stores all player knives. (not skins)
-int g_iKnives[MAXPLAYERS + 1];
-
-// g_iGloves stores all player gloves.
-int g_iGloves[MAXPLAYERS + 1];
-// g_iGloveSkins stores all player glove skins.
-int g_iGloveSkins[MAXPLAYERS + 1];
-
-// g_iSkinCount stores how many skins exist in the database.
-int g_iSkinCount = 673;
-
-// g_hSkinMenus stores the active menus in use by player for selecting skins.
-Menu g_hSkinMenus[MAXPLAYERS + 1];
-
-// g_cSkinWeapon stores the weapon a player is currently applying a skin to.
-char g_cSkinWeapon[MAXPLAYERS + 1][64];
-// g_bSkinSearch stores a player index with a boolean based off of if they are searching for a skin.
-bool g_bSkinSearch[MAXPLAYERS + 1];
-// g_iPatternSelect stores a player index with a int of the item they are applying a pattern to.
-int g_iPatternSelect[MAXPLAYERS + 1];
-// g_iFloatSelect stores a player index with a int of the item they are applying a float to.
-int g_iFloatSelect[MAXPLAYERS + 1];
-// g_iNametagSelect stores a player index with a int of the item they are applying a nametag to.
-int g_iNametagSelect[MAXPLAYERS + 1];
-
-// g_iSpecialBoi Special boi :^)
-int g_iSpecialBoi = -1;
-bool g_bSpecialBoiNametags = true;
-// END Globals
-
-// Project Models
+// Project Files
+// Models
 #include "loadout/models/glove.sp"
 #include "loadout/models/knife.sp"
 #include "loadout/models/item.sp"
-// END Project Models
 
-// Model Globals
-// g_hKnives stores all loaded knives.
-Knife g_hKnives[KNIFE_MAX];
-
-// g_hKnives stores all loaded gloves.
-Glove g_hGloves[GLOVE_MAX];
-
-// g_hPlayerItems stores all player items.
-Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX];
-// END Model Globals
-
-// Project Files
+#include "loadout/globals.sp"
 #include "loadout/commands.sp"
+#include "loadout/gloves.sp"
+#include "loadout/knives.sp"
+#include "loadout/skins.sp"
 #include "loadout/utils.sp"
 
 // Backend
@@ -102,6 +58,7 @@ Item g_hPlayerItems[MAXPLAYERS + 1][USER_ITEM_MAX];
 #include "loadout/backend/gloves.sp"
 #include "loadout/backend/knives.sp"
 #include "loadout/backend/skins.sp"
+#include "loadout/backend/user.sp"
 #include "loadout/backend/backend.sp"
 
 // Events
@@ -136,15 +93,31 @@ public void OnPluginStart() {
     LoadTranslations("common.phrases");
     LoadTranslations("loadout.weapons.phrases");
 
-    // Create custom convars for the plugin.
-    g_cvDatabase     = CreateConVar("sm_loadout_database", "loadout", "Sets what database the plugin should use.", FCVAR_PROTECTED);
-    g_cvStatTrak     = CreateConVar("sm_loadout_stattrak", "1", "Sets whether stattrak weapons are enabled.", _, true, 0.0, true, 1.0);
-    g_cvStatTrakFlag = CreateConVar("sm_loadout_stattrak_flag", "o", "Sets what admin flag is required to use stattrak, use -1 to allow anyone.");
-    g_cvNametags     = CreateConVar("sm_loadout_nametags", "1", "Sets whether weapon nametags are enabled.", _, true, 0.0, true, 1.0);
-    g_cvNametagsFlag = CreateConVar("sm_loadout_nametags_flag", "o", "Sets what admin flag is required to use nametags, use -1 to allow anyone.");
+    // ConVars
+    g_cvDatabase = CreateConVar("sm_loadout_database", "loadout", "Sets what database the plugin should use.", FCVAR_PROTECTED);
+    g_cvOfficial = CreateConVar("sm_loadout_official", "0", "Should we set the server to Valve Official?", _, true, 0.0, true, 1.0);
+
+    g_cvPatterns     = CreateConVar("sm_loadout_patterns", "1", "Sets whether custom patterns are enabled.", _, true, 0.0, true, 1.0);
+    g_cvPatternsFlag = CreateConVar("sm_loadout_patterns_flag", "-", "What admin flag is required to use custom patterns, '-' to allow anyone.");
+
+    g_cvFloats     = CreateConVar("sm_loadout_floats", "1", "Sets whether custom floats are enabled.", _, true, 0.0, true, 1.0);
+    g_cvFloatsFlag = CreateConVar("sm_loadout_floats_flag", "-", "What admin flag is required to use custom floats, '-' to allow anyone.");
+
+    g_cvStatTrak     = CreateConVar("sm_loadout_stattrak", "1", "Sets whether StatTrak is enabled.", _, true, 0.0, true, 1.0);
+    g_cvStatTrakFlag = CreateConVar("sm_loadout_stattrak_flag", "-", "What admin flag is required to use StatTrak, '-' to allow anyone.");
+
+    g_cvNametags     = CreateConVar("sm_loadout_nametags", "1", "Sets whether custom nametags are enabled.", _, true, 0.0, true, 1.0);
+    g_cvNametagsFlag = CreateConVar("sm_loadout_nametags_flag", "-", "What admin flag is required to use custom nametags, '-' to allow anyone.");
+    // END ConVars
 
     // Generate and load our plugin convar config.
     AutoExecConfig(true, "loadout");
+
+    // Initialize the StringMaps
+    g_smWeaponIndex = new StringMap();
+    for(int i = 0; i < sizeof(g_cWeaponClasses); i++) {
+        g_smWeaponIndex.SetValue(g_cWeaponClasses[i], i);
+    }
 
     // Commands
     RegConsoleCmd("sm_gloves", Command_Gloves);
@@ -161,6 +134,13 @@ public void OnPluginStart() {
     HookEvent("player_death", Event_PlayerDeath);
     PTaH(PTaH_GiveNamedItemPre, Hook, Event_GiveNamedItemPre);
     PTaH(PTaH_GiveNamedItem, Hook, Event_GiveNamedItem);
+
+    ConVar gameType = FindConVar("game_type");
+    ConVar gameMode = FindConVar("game_mode");
+
+    if(gameType != null && gameMode != null && gameType.IntValue == 1 && gameMode.IntValue == 2) {
+        PTaH(PTaH_WeaponCanUse, Hook, Event_CanUseWeapon);
+    }
     // END Events
 
     CreateTimer(60.0, Timer_SaveData, _, TIMER_REPEAT);
@@ -201,10 +181,9 @@ public void OnClientConnected(int client) {
     g_iKnives[client] = 0;
     g_iGloves[client] = 0;
     g_iGloveSkins[client] = 0;
-    g_bSkinSearch[client] = false;
-    g_iPatternSelect[client] = -1;
-    g_iFloatSelect[client] = -1;
-    g_iNametagSelect[client] = -1;
+    g_smPlayerItems[client] = new StringMap();
+    g_cLoadoutWeapon[client] = "";
+    g_iLoadoutAction[client] = -1;
 }
 
 /**
@@ -262,6 +241,8 @@ public Action Timer_SaveData(const Handle timer) {
     }
 
     LogMessage("%s Saving user data.", CONSOLE_PREFIX);
+
+    // Save all user data.
     Backend_SaveAllData();
 }
 
@@ -270,6 +251,10 @@ public Action Timer_SaveData(const Handle timer) {
  * Sets server to be "Valve Official", potential GSLT ban bypass.
  */
 public void OnMapStart() {
+    if(!g_cvOfficial.BoolValue) {
+        return;
+    }
+
     CreateTimer(3.0, Timer_ValveServer, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 

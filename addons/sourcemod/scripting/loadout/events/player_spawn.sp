@@ -26,14 +26,11 @@ public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadca
         Gloves_Refresh(client);
     }
 
-    // Check if the client has a knife equipped.
+    // Check if the client has a knife.
     if(g_iKnives[client] != 0) {
-        // Refresh the client's physical knife.
+        // Refresh the client's knife.
         Knives_Refresh(client);
     }
-
-    // Refresh the client's physical skins.
-    Skins_RefreshAll(client);
 
     return Plugin_Continue;
 }

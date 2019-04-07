@@ -9,7 +9,7 @@ void Knives_Menu(const int client, const int position = -1) {
 
     char item[4];
     char name[64];
-    for(int i = 0; i < KNIFE_MAX; i++) {
+    for(int i = 0; i < LOADOUT_KNIFE_MAX; i++) {
         Knife knife = g_hKnives[i];
         if(knife == null) {
             continue;
@@ -63,25 +63,4 @@ int Callback_KnivesMenu(Menu menu, MenuAction action, int client, int itemNum) {
             delete menu;
         }
     }
-}
-
-void Knives_Refresh(const int client) {
-    if(!IsClientValid(client)) {
-        return;
-    }
-
-    if(!IsPlayerAlive(client)) {
-        return;
-    }
-
-    int entity = GetPlayerWeaponSlot(client, CS_SLOT_KNIFE);
-
-    while(entity > 0) {
-        RemovePlayerItem(client, entity);
-        AcceptEntityInput(entity, "Kill");
-        entity = GetPlayerWeaponSlot(client, CS_SLOT_KNIFE);
-    }
-
-    entity = GivePlayerItem(client, "weapon_knife");
-    EquipPlayerWeapon(client, entity);
 }

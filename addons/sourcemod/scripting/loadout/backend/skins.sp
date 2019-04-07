@@ -4,85 +4,36 @@
  */
 
 /**
- * Backend_GetUserSkins
+ * Backend_GetSkinCount
  * ?
  */
-public void Backend_GetUserSkins(const int client, const char[] steamId) {
-    char query[512];
-    Format(query, sizeof(query), GET_USER_SKINS, steamId);
-
-    if(g_hDatabase != INVALID_HANDLE) {
-        g_hDatabase.Query(Callback_GetUserSkins, query, client);
-    } else {
-        LogMessage("%s Database is an invalid handle, skipping Backend_GetUserSkins(int, char[]) for \"%N\"", CONSOLE_PREFIX, client);
-    }
-}
-
-static void Callback_GetUserSkins(Database database, DBResultSet results, const char[] error, int client) {
-    if(results == null) {
-        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_GetUserSkins", (strlen(error) > 0 ? error : "Unknown."));
+public void Backend_GetSkinCount() {
+    if(g_dbLoadout == INVALID_HANDLE) {
+        LogMessage("%s Database is an invalid handle, skipping Backend_GetSkinCount()", CONSOLE_PREFIX);
         return;
     }
 
-    int weaponIndex;
-    int skinIdIndex;
-    int patternIndex;
-    int floatIndex;
-    int statTrakIndex;
-    int nametagIndex;
-    if(!results.FieldNameToNum("weapon", weaponIndex)) { LogError("%s Failed to locate \"weapon\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("skinPattern", patternIndex)) { LogError("%s Failed to locate \"skinPattern\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("skinFloat", floatIndex)) { LogError("%s Failed to locate \"skinFloat\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("statTrak", statTrakIndex)) { LogError("%s Failed to locate \"statTrak\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
-    if(!results.FieldNameToNum("nametag", nametagIndex)) { LogError("%s Failed to locate \"nametag\" field in table \"loadout_user_skins\".", CONSOLE_PREFIX); return; }
+    g_dbLoadout.Query(Callback_GetSkinCount, GET_SKIN_COUNT);
+}
 
-    int i = 0;
-    while(results.FetchRow()) {
-        char weapon[64];
-        char skinId[16];
-        int pattern = results.FetchInt(patternIndex);
-        float floatValue = results.FetchFloat(floatIndex);
-        int statTrak = results.FetchInt(statTrakIndex);
-        char nametag[24];
-
-        results.FetchString(weaponIndex, weapon, sizeof(weapon));
-        results.FetchString(skinIdIndex, skinId, sizeof(skinId));
-        results.FetchString(nametagIndex, nametag, sizeof(nametag));
-
-        // Handles knife type (not skin)
-        if(StrEqual(weapon, "plugin_knife", true)) {
-            g_iKnives[client] = StringToInt(skinId);
-            continue;
-        }
-
-        // Handles gloves
-        if(StrEqual(weapon, "plugin_gloves", true)) {
-            char gloveSections[2][8];
-            ExplodeString(skinId, ";", gloveSections, 2, 8, true);
-
-            g_iGloves[client] = StringToInt(gloveSections[0]);
-            g_iGloveSkins[client] = StringToInt(gloveSections[1]);
-            continue;
-        }
-
-        // Make sure the float value is not below the configured minimum.
-        if(floatValue < ITEM_FLOAT_MIN) {
-            floatValue = ITEM_FLOAT_MIN;
-        }
-
-        Item item = new Item();
-        item.SetWeapon(weapon);
-        item.SetSkinID(skinId);
-        item.SetPattern(pattern);
-        item.SetFloat(floatValue);
-        item.SetStatTrak(statTrak);
-        item.SetNametag(nametag);
-
-        // Handles all actual skins
-        g_hPlayerItems[client][i] = item;
-        i++;
+static void Callback_GetSkinCount(Database database, DBResultSet results, const char[] error, any data) {
+    if(results == null) {
+        LogError("%s Query failure. %s >> %s", CONSOLE_PREFIX, "Callback_GetSkinCount", (strlen(error) > 0 ? error : "Unknown."));
+        return;
     }
+
+    int countIndex;
+    if(!results.FieldNameToNum("count", countIndex)) { LogError("%s Failed to locate \"count\" field in table \"loadout_skins\".", CONSOLE_PREFIX); return; }
+
+    results.FetchRow();
+    int count = results.FetchInt(countIndex);
+
+    if(count == 0) {
+        LogError("%s Failed to find any weapon skins, please initialize the database by running `sm_loadout_update_db`.", CONSOLE_PREFIX);
+        return;
+    }
+
+    g_iSkinCount = count;
 }
 
 /**
@@ -90,7 +41,7 @@ static void Callback_GetUserSkins(Database database, DBResultSet results, const 
  * ?
  */
 public void Backend_SearchSkins(const int client, const char[] skinQuery) {
-    if(g_hDatabase == INVALID_HANDLE) {
+    if(g_dbLoadout == INVALID_HANDLE) {
         LogMessage("%s Database is an invalid handle, skipping Backend_SearchSkins(int, char[]) for \"%N\"", CONSOLE_PREFIX, client);
         return;
     }
@@ -98,12 +49,12 @@ public void Backend_SearchSkins(const int client, const char[] skinQuery) {
     int skinQueryLen = strlen(skinQuery) * 2 + 1;
     char[] escapedSkinQuery = new char[skinQueryLen];
 
-    g_hDatabase.Escape(skinQuery, escapedSkinQuery, skinQueryLen);
+    g_dbLoadout.Escape(skinQuery, escapedSkinQuery, skinQueryLen);
 
     char query[512];
     Format(query, sizeof(query), SEARCH_WEAPON_SKINS, escapedSkinQuery);
 
-    g_hDatabase.Query(Callback_SearchSkins, query, client);
+    g_dbLoadout.Query(Callback_SearchSkins, query, client);
 }
 
 static void Callback_SearchSkins(Database database, DBResultSet results, const char[] error, int client) {
@@ -127,53 +78,40 @@ static void Callback_SearchSkins(Database database, DBResultSet results, const c
     if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"loadout_skins\".", CONSOLE_PREFIX); return; }
 
     if(results.RowCount == 1) {
+        // Switch to the first row.
         results.FetchRow();
 
+        // Get the query data.
         char name[64];
         int skinId = results.FetchInt(skinIdIndex);
-
         results.FetchString(nameIndex, name, sizeof(name));
 
-        int i;
-        Item item;
-        char weapon[64];
-        int validItems = 0;
-        for(i = 0; i < USER_ITEM_MAX; i++) {
-            item = g_hPlayerItems[client][i];
-            if(item == null) {
-                continue;
-            }
-
-            item.GetWeapon(weapon, sizeof(weapon));
-            validItems++;
-
-            if(StrEqual(weapon, g_cSkinWeapon[client])) {
-                break;
-            }
-        }
-
-        if(item == null) {
+        // Get or create the players item.
+        Item item = null;
+        if(!g_smPlayerItems[client].GetValue(g_cLoadoutWeapon[client], item)) {
             item = new Item();
-            item.SetDefaults(client, g_cSkinWeapon[client]);
-            i = validItems + 1;
+            item.SetDefaults(client, g_cLoadoutWeapon[client]);
+            g_smPlayerItems[client].SetValue(g_cLoadoutWeapon[client], item);
         }
 
+        // Get the item's skinId.
         char skinIdChar[16];
         IntToString(skinId, skinIdChar, sizeof(skinIdChar));
         item.SetSkinID(skinIdChar);
-        g_hPlayerItems[client][i] = item;
 
-        Skins_Refresh(client, g_cSkinWeapon[client]);
-        PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, name, g_cSkinWeapon[client]);
-        return;
-    }
+        // Refresh the client's item.
+        Skins_Refresh(client, g_cLoadoutWeapon[client]);
 
-    if(!IsClientValid(client)) {
+        // Send a message to the client.
+        PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, name, g_cLoadoutWeapon[client]);
+
+        // Show the filter menu to the client.
+        Skins_FilterMenu(client);
         return;
     }
 
     Menu menu = CreateMenu(Callback_SkinsSkinMenu);
-    menu.SetTitle("Filtered Skins");
+    menu.SetTitle("Loadout | Skins");
 
     while(results.FetchRow()) {
         char name[64];
@@ -187,10 +125,13 @@ static void Callback_SearchSkins(Database database, DBResultSet results, const c
         menu.AddItem(itemId, name);
     }
 
+    // Enable the menu's ExitBack button.
     menu.ExitBackButton = true;
 
-    g_hSkinMenus[client] = menu;
+    // Add the menu to the array.
+    g_mFilterMenus[client] = menu;
 
+    // Display the menu to the client.
     menu.Display(client, 0);
 }
 
@@ -199,7 +140,7 @@ static void Callback_SearchSkins(Database database, DBResultSet results, const c
  * ?
  */
 public void Backend_RandomSkin(const int client) {
-    if(g_hDatabase == INVALID_HANDLE) {
+    if(g_dbLoadout == INVALID_HANDLE) {
         LogMessage("%s Database is an invalid handle, skipping Backend_RandomSkin(int) for \"%N\"", CONSOLE_PREFIX, client);
         return;
     }
@@ -208,7 +149,7 @@ public void Backend_RandomSkin(const int client) {
 
     char query[512];
     Format(query, sizeof(query), GET_WEAPON_SKIN, skinId);
-    g_hDatabase.Query(Callback_RandomSkin, query, client);
+    g_dbLoadout.Query(Callback_RandomSkin, query, client);
 }
 
 static void Callback_RandomSkin(Database database, DBResultSet results, const char[] error, int client) {
@@ -231,43 +172,32 @@ static void Callback_RandomSkin(Database database, DBResultSet results, const ch
     if(!results.FieldNameToNum("displayName", nameIndex)) { LogError("%s Failed to locate \"displayName\" field in table \"loadout_skins\".", CONSOLE_PREFIX); return; }
     if(!results.FieldNameToNum("skinId", skinIdIndex)) { LogError("%s Failed to locate \"skinId\" field in table \"loadout_skins\".", CONSOLE_PREFIX); return; }
 
+    // Switch to the first row.
     results.FetchRow();
 
+    // Get the query data.
     char name[64];
     int skinId = results.FetchInt(skinIdIndex);
-
     results.FetchString(nameIndex, name, sizeof(name));
 
-    int i;
-    Item item;
-    char weapon[64];
-    int validItems = 0;
-    for(i = 0; i < USER_ITEM_MAX; i++) {
-        item = g_hPlayerItems[client][i];
-        if(item == null) {
-            continue;
-        }
-
-        item.GetWeapon(weapon, sizeof(weapon));
-        validItems++;
-
-        if(StrEqual(weapon, g_cSkinWeapon[client])) {
-            break;
-        }
-    }
-
-    if(item == null) {
+    // Get or create the players item.
+    Item item = null;
+    if(!g_smPlayerItems[client].GetValue(g_cLoadoutWeapon[client], item)) {
         item = new Item();
-        item.SetDefaults(client, g_cSkinWeapon[client]);
-        i = validItems + 1;
+        item.SetDefaults(client, g_cLoadoutWeapon[client]);
+        g_smPlayerItems[client].SetValue(g_cLoadoutWeapon[client], item);
     }
 
+    // Get the item's skinId.
     char skinIdChar[16];
     IntToString(skinId, skinIdChar, sizeof(skinIdChar));
     item.SetSkinID(skinIdChar);
-    g_hPlayerItems[client][i] = item;
 
-    Skins_Refresh(client, g_cSkinWeapon[client]);
-    PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, name, g_cSkinWeapon[client]);
+    // Refresh the client's item.
+    Skins_Refresh(client, g_cLoadoutWeapon[client]);
+
+    // Send a message to the client.
+    PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, name, g_cLoadoutWeapon[client]);
+
     Skins_FilterMenu(client);
 }

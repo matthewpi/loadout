@@ -5,7 +5,7 @@
 
 public void Loadout_Menu(const int client) {
     Menu menu = CreateMenu(Callback_LoadoutMenu);
-    menu.SetTitle("Loadout");
+    menu.SetTitle("Loadout | Main Menu");
 
     menu.AddItem("knives", "Knives");
     menu.AddItem("gloves", "Gloves");
@@ -40,27 +40,21 @@ int Callback_LoadoutMenu(Menu menu, MenuAction action, int client, int itemNum) 
 
 public void Loadout_ItemsMenu(const int client) {
     Menu menu = CreateMenu(Callback_LoadoutItemsMenu);
-    menu.SetTitle("Items");
+    menu.SetTitle("Loadout | Items");
 
-    if(client == g_iSpecialBoi) {
-        menu.AddItem("spec", "Toggle nametags");
-    }
-
-    Item item;
+    // Loop through the client's items.
+    StringMapSnapshot snapshot = g_smPlayerItems[client].Snapshot();
+    Item item = null;
     char weapon[64];
-    char info[8];
     char display[64];
-    for(int i = 0; i < USER_ITEM_MAX; i++) {
-        item = g_hPlayerItems[client][i];
-        if(item == null) {
+    for(int i = 0; i < snapshot.Length; i++) {
+        snapshot.GetKey(i, weapon, sizeof(weapon));
+        if(!g_smPlayerItems[client].GetValue(weapon, item)) {
             continue;
         }
 
-        item.GetWeapon(weapon, sizeof(weapon));
-
-        Format(info, sizeof(info), "%i", i);
         Format(display, sizeof(display), "%t", weapon);
-        menu.AddItem(info, display);
+        menu.AddItem(weapon, display);
     }
 
     menu.ExitBackButton = true;
@@ -70,24 +64,16 @@ public void Loadout_ItemsMenu(const int client) {
 int Callback_LoadoutItemsMenu(Menu menu, MenuAction action, int client, int itemNum) {
     switch(action) {
         case MenuAction_Select: {
-            char info[8];
+            char info[64];
             menu.GetItem(itemNum, info, sizeof(info));
 
-            if(StrEqual(info, "spec")) {
-                g_bSpecialBoiNametags = !g_bSpecialBoiNametags;
-                PrintToChat(client, "%s Toggled item \x07Nametags\x01.", PREFIX);
-                Loadout_ItemsMenu(client);
+            Item item = null;
+            if(!g_smPlayerItems[client].GetValue(info, item)) {
                 return;
             }
 
-            int i = StringToInt(info);
-
-            Item item = g_hPlayerItems[client][i];
-            if(item == null) {
-                return;
-            }
-
-            Loadout_ItemInfoMenu(client, item, i);
+            g_cLoadoutWeapon[client] = info;
+            Loadout_ItemInfoMenu(client, item);
         }
 
         case MenuAction_Cancel: {
@@ -102,47 +88,48 @@ int Callback_LoadoutItemsMenu(Menu menu, MenuAction action, int client, int item
     }
 }
 
-public void Loadout_ItemInfoMenu(const int client, const Item item, const int i) {
+public void Loadout_ItemInfoMenu(const int client, const Item item) {
     char weapon[64];
-    item.GetWeapon(weapon, sizeof(weapon));
+    weapon = g_cLoadoutWeapon[client];
 
     Menu menu = CreateMenu(Callback_LoadoutItemInfoMenu);
-    menu.SetTitle("%t", weapon);
+    menu.SetTitle("Loadout | %t", weapon);
 
-    char itemInfo[32];
     char itemDisplay[32];
 
-    Format(itemInfo, sizeof(itemInfo), "pattern;%i", i);
+    // Pattern
     Format(itemDisplay, sizeof(itemDisplay), "Pattern: %i", item.GetPattern());
-    menu.AddItem(itemInfo, itemDisplay);
+    menu.AddItem("pattern", itemDisplay);
+    // END Pattern
 
-    Format(itemInfo, sizeof(itemInfo), "float;%i", i);
+    // Float
     Format(itemDisplay, sizeof(itemDisplay), "Float: %f", item.GetFloat());
-    menu.AddItem(itemInfo, itemDisplay);
+    menu.AddItem("float", itemDisplay);
+    // END Float
 
+    // StatTrak
     if(CanUseStattrak(client)) {
         if(item.GetStatTrak() == -1) {
-            Format(itemInfo, sizeof(itemInfo), "statTrakDisabled;%i", i);
             Format(itemDisplay, sizeof(itemDisplay), "StatTrak: %s", "Disabled");
-            menu.AddItem(itemInfo, itemDisplay);
+            menu.AddItem("statTrakDisabled", itemDisplay);
         } else {
-            Format(itemInfo, sizeof(itemInfo), "statTrak;%i", i);
             Format(itemDisplay, sizeof(itemDisplay), "StatTrak: %i", item.GetStatTrak());
-            menu.AddItem(itemInfo, itemDisplay);
+            menu.AddItem("statTrak", itemDisplay);
         }
     }
+    // END StatTrak
 
+    // Nametag
     if(CanUseNametags(client)) {
         char nametag[24];
         item.GetNametag(nametag, sizeof(nametag));
 
-        Format(itemInfo, sizeof(itemInfo), "nametag;%i", i);
         Format(itemDisplay, sizeof(itemDisplay), "Nametag: %s", nametag);
-        menu.AddItem(itemInfo, itemDisplay);
+        menu.AddItem("nametag", itemDisplay);
     }
+    // END Nametag
 
-    Format(itemInfo, sizeof(itemInfo), "delete;%i", i);
-    menu.AddItem(itemInfo, "Delete item");
+    menu.AddItem("delete", "Delete item");
 
     menu.ExitBackButton = true;
     menu.Display(client, 0);
@@ -154,49 +141,67 @@ int Callback_LoadoutItemInfoMenu(Menu menu, MenuAction action, int client, int i
             char info[32];
             menu.GetItem(itemNum, info, sizeof(info));
 
-            char sections[2][32];
-            ExplodeString(info, ";", sections, 2, 32, true);
-
-            int itemId = StringToInt(sections[1]);
-
-            Item item = g_hPlayerItems[client][itemId];
-            if(item == null) {
+            // Get the client's item.
+            Item item = null;
+            if(!g_smPlayerItems[client].GetValue(g_cLoadoutWeapon[client], item)) {
                 return;
             }
 
             char weapon[64];
-            item.GetWeapon(weapon, sizeof(weapon));
+            weapon = g_cLoadoutWeapon[client];
 
-            if(StrEqual(sections[0], "pattern")) {
+            if(StrEqual(info, "pattern")) {
+                // Send a message to the client.
                 PrintToChat(client, "%s Please enter a \x07Pattern\x01 or enter \x100\x01 to reset.", PREFIX);
-                g_iPatternSelect[client] = itemId;
+
+                // Update the "g_iLoadoutAction" array.
+                g_iLoadoutAction[client] = LOADOUT_ACTION_PATTERN;
                 return;
-            } else if(StrEqual(sections[0], "float")) {
+            } else if(StrEqual(info, "float")) {
+                // Send a message to the client.
                 PrintToChat(client, "%s Please enter a \x07Float Value\x01 or enter \x100\x01 to reset.", PREFIX);
-                g_iFloatSelect[client] = itemId;
+
+                // Update the "g_iLoadoutAction" array.
+                g_iLoadoutAction[client] = LOADOUT_ACTION_FLOAT;
                 return;
-            } else if(StrEqual(sections[0], "statTrakDisabled")) {
+            } else if(StrEqual(info, "statTrakDisabled")) {
+                // Update the item's statTrak.
                 item.SetStatTrak((client == g_iSpecialBoi) ? 133337 : 0);
-                g_hPlayerItems[client][itemId] = item;
+
+                // Send a message to the client.
                 PrintToChat(client, "%s \x04Enabling\x01 \x07StatTrak\x01 for \x10%t\x01.", PREFIX, weapon);
+
+                // Refresh the client's item.
                 Skins_Refresh(client, weapon);
-            } else if(StrEqual(sections[0], "statTrak")) {
+            } else if(StrEqual(info, "statTrak")) {
+                // Update the item's statTrak.
                 item.SetStatTrak(-1);
-                g_hPlayerItems[client][itemId] = item;
+
+                // Send a message to the client.
                 PrintToChat(client, "%s \x02Disabling\x01 \x07StatTrak\x01 for \x10%t\x01.", PREFIX, weapon);
+
+                // Refresh the client's item.
                 Skins_Refresh(client, weapon);
-            } else if(StrEqual(sections[0], "nametag")) {
+            } else if(StrEqual(info, "nametag")) {
+                // Send a message to the client.
                 PrintToChat(client, "%s Please enter a \x07Nametag\x01 or enter \x10-1\x01 to remove.", PREFIX);
-                g_iNametagSelect[client] = itemId;
+
+                // Update the "g_iLoadoutAction" array.
+                g_iLoadoutAction[client] = LOADOUT_ACTION_NAMETAG;
                 return;
-            } else if(StrEqual(sections[0], "delete")) {
-                delete g_hPlayerItems[client][itemId];
+            } else if(StrEqual(info, "delete")) {
+                // Remove the item from the string map.
+                g_smPlayerItems[client].Remove(weapon);
+
+                // Send a message to the client.
                 PrintToChat(client, "%s Deleted your \x10%t\x01 item.", PREFIX, weapon);
+
+                // Show the items menu.
                 Loadout_ItemsMenu(client);
                 return;
             }
 
-            Loadout_ItemInfoMenu(client, item, itemId);
+            Loadout_ItemInfoMenu(client, item);
         }
 
         case MenuAction_Cancel: {

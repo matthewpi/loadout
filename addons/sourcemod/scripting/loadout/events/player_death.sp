@@ -37,27 +37,9 @@ public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadca
         return Plugin_Continue;
     }
 
-    Item item;
-    char weapon[64];
-
-    // Loop through the attacker's items.
-    for(int i = 0; i < USER_ITEM_MAX; i++) {
-        item = g_hPlayerItems[attacker][i];
-        if(item == null) {
-            continue;
-        }
-
-        // Get the item's weapon name.
-        item.GetWeapon(weapon, sizeof(weapon));
-
-        // Check if the item's weapon name is the same as the attacker's weapon.
-        if(StrEqual(weapon, classname)) {
-            break;
-        }
-    }
-
-    // Check if no item was found.
-    if(item == null) {
+    // Get the attacker's weapon.
+    Item item = null;
+    if(!g_smPlayerItems[attacker].GetValue(classname, item)) {
         return Plugin_Continue;
     }
 

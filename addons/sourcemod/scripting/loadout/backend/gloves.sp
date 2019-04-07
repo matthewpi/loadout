@@ -8,11 +8,12 @@
  * ?
  */
 public void Backend_LoadGloves() {
-    if(g_hDatabase != INVALID_HANDLE) {
-        g_hDatabase.Query(Callback_LoadGloves, GET_GLOVES);
-    } else {
+    if(g_dbLoadout == INVALID_HANDLE) {
         LogMessage("%s Database is an invalid handle, skipping Backend_LoadGloves()", CONSOLE_PREFIX);
+        return;
     }
+
+    g_dbLoadout.Query(Callback_LoadGloves, GET_GLOVES);
 }
 
 static void Callback_LoadGloves(Database database, DBResultSet results, const char[] error, any data) {
@@ -43,7 +44,7 @@ static void Callback_LoadGloves(Database database, DBResultSet results, const ch
         g_hGloves[id] = glove;
     }
 
-    g_hDatabase.Query(Callback_LoadGloveSkins, GET_GLOVE_SKINS);
+    g_dbLoadout.Query(Callback_LoadGloveSkins, GET_GLOVE_SKINS);
 }
 
 static void Callback_LoadGloveSkins(Database database, DBResultSet results, const char[] error, any data) {
@@ -61,7 +62,7 @@ static void Callback_LoadGloveSkins(Database database, DBResultSet results, cons
     if(!results.FieldNameToNum("gloveId", gloveIdIndex)) { LogError("%s Failed to locate \"gloveId\" field in table \"loadout_glove_skins\".", CONSOLE_PREFIX); return; }
     if(!results.FieldNameToNum("paintId", paintIdIndex)) { LogError("%s Failed to locate \"paintId\" field in table \"loadout_glove_skins\".", CONSOLE_PREFIX); return; }
 
-    GloveSkin skins[GLOVE_SKIN_MAX + 1];
+    GloveSkin skins[LOADOUT_GLOVE_SKIN_MAX + 1];
     while(results.FetchRow()) {
         int id = results.FetchInt(idIndex);
         char name[64];
@@ -79,7 +80,7 @@ static void Callback_LoadGloveSkins(Database database, DBResultSet results, cons
         skins[id] = skin;
     }
 
-    int gloveSkins[GLOVE_MAX + 1];
+    int gloveSkins[LOADOUT_GLOVE_MAX + 1];
     for(int i = 0; i < sizeof(g_hGloves); i++) {
         Glove glove = g_hGloves[i];
         if(glove == null) {

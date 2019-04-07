@@ -89,7 +89,7 @@ methodmap Glove < StringMap {
     }
 
     public void AddSkin(const int index, const GloveSkin skin) {
-        GloveSkin skins[GLOVE_SKIN_MAX + 1];
+        GloveSkin skins[LOADOUT_GLOVE_SKIN_MAX + 1];
         this.GetSkins(skins, sizeof(skins));
 
         skins[index] = skin;
@@ -97,7 +97,7 @@ methodmap Glove < StringMap {
     }
 
     public GloveSkin GetSkin(const int index) {
-        GloveSkin skins[GLOVE_SKIN_MAX];
+        GloveSkin skins[LOADOUT_GLOVE_SKIN_MAX + 1];
         this.GetSkins(skins, sizeof(skins));
         return skins[index];
     }

@@ -5,17 +5,38 @@
 
 public void Skins_Menu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsMenu, MENU_ACTIONS_DEFAULT);
-    menu.SetTitle("Skins");
+    menu.SetTitle("Loadout | Skins");
 
+    if(IsPlayerAlive(client)) {
+        int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
+
+        char weaponClass[32];
+        char weaponName[32];
+        bool hasKnife = false;
+        for(int i = 0; i < size; i++) {
+            int entity = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
+
+            if(entity != -1 && GetWeaponClass(entity, weaponClass, sizeof(weaponClass))) {
+                Format(weaponName, sizeof(weaponName), "%T", weaponClass, client);
+
+                if(IsKnife(weaponClass)) {
+                    if(!hasKnife) {
+                        menu.AddItem(weaponClass, weaponName, (IsKnife(weaponClass) && g_iKnives[client] == 0) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+                        hasKnife = true;
+                    }
+                } else {
+                    menu.AddItem(weaponClass, weaponName);
+                }
+            }
+        }
+    }
+
+    menu.AddItem("", "", ITEMDRAW_SPACER);
     menu.AddItem("pistols", "Pistols");
     menu.AddItem("heavy", "Heavy");
     menu.AddItem("smg", "SMG");
     menu.AddItem("rifles", "Rifles");
     menu.AddItem("knives", "Knives");
-
-    if(IsPlayerAlive(client)) {
-        menu.AddItem("inventory", "Inventory");
-    }
 
     menu.ExitBackButton = true;
     menu.Display(client, 0);
@@ -37,8 +58,11 @@ int Callback_SkinsMenu(Menu menu, MenuAction action, int client, int itemNum) {
                 Skins_RifleMenu(client);
             } else if(StrEqual(info, "knives")) {
                 Skins_KnifeMenu(client);
-            } else if(StrEqual(info, "inventory")) {
+            }/* else if(StrEqual(info, "inventory")) {
                 Skins_InventoryMenu(client);
+            }*/ else {
+                g_cLoadoutWeapon[client] = info;
+                Skins_FilterMenu(client);
             }
         }
 
@@ -54,9 +78,9 @@ int Callback_SkinsMenu(Menu menu, MenuAction action, int client, int itemNum) {
     }
 }
 
-void Skins_PistolMenu(const int client) {
+static void Skins_PistolMenu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
-    menu.SetTitle("Pistols");
+    menu.SetTitle("Loadout | Pistols");
 
     char weaponName[32];
 
@@ -94,9 +118,9 @@ void Skins_PistolMenu(const int client) {
     menu.Display(client, 0);
 }
 
-void Skins_HeavyMenu(const int client) {
+static void Skins_HeavyMenu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
-    menu.SetTitle("Heavy");
+    menu.SetTitle("Loadout | Heavy");
 
     char weaponName[32];
 
@@ -122,9 +146,9 @@ void Skins_HeavyMenu(const int client) {
     menu.Display(client, 0);
 }
 
-void Skins_SMGMenu(const int client) {
+static void Skins_SMGMenu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
-    menu.SetTitle("SMG");
+    menu.SetTitle("Loadout | SMG");
 
     char weaponName[32];
 
@@ -153,9 +177,9 @@ void Skins_SMGMenu(const int client) {
     menu.Display(client, 0);
 }
 
-void Skins_RifleMenu(const int client) {
+static void Skins_RifleMenu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
-    menu.SetTitle("Rifles");
+    menu.SetTitle("Loadout | Rifles");
 
     char weaponName[32];
 
@@ -196,13 +220,13 @@ void Skins_RifleMenu(const int client) {
     menu.Display(client, 0);
 }
 
-void Skins_KnifeMenu(const int client) {
+static void Skins_KnifeMenu(const int client) {
     Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
-    menu.SetTitle("Knives");
+    menu.SetTitle("Loadout | Knives");
 
     char name[64];
     char itemName[64];
-    for(int i = 0; i < KNIFE_MAX; i++) {
+    for(int i = 0; i < LOADOUT_KNIFE_MAX; i++) {
         Knife knife = g_hKnives[i];
         if(knife == null || knife.GetItemID() == 0) {
             continue;
@@ -218,43 +242,13 @@ void Skins_KnifeMenu(const int client) {
     menu.Display(client, 0);
 }
 
-void Skins_InventoryMenu(const int client) {
-    Menu menu = CreateMenu(Callback_SkinsWeaponMenu);
-    menu.SetTitle("Inventory");
-
-    int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
-
-    char weaponClass[32];
-    char weaponName[32];
-    bool hasKnife = false;
-    for(int i = 0; i < size; i++) {
-        int entity = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
-
-        if(entity != -1 && GetWeaponClass(entity, weaponClass, sizeof(weaponClass))) {
-            Format(weaponName, sizeof(weaponName), "%T", weaponClass, client);
-
-            if(IsKnife(weaponClass)) {
-                if(!hasKnife) {
-                    menu.AddItem(weaponClass, weaponName, (IsKnife(weaponClass) && g_iKnives[client] == 0) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
-                    hasKnife = true;
-                }
-            } else {
-                menu.AddItem(weaponClass, weaponName);
-            }
-        }
-    }
-
-    menu.ExitBackButton = true;
-    menu.Display(client, 0);
-}
-
 int Callback_SkinsWeaponMenu(Menu menu, MenuAction action, int client, int itemNum) {
     switch(action) {
         case MenuAction_Select: {
             char info[32];
             menu.GetItem(itemNum, info, sizeof(info));
 
-            g_cSkinWeapon[client] = info;
+            g_cLoadoutWeapon[client] = info;
             Skins_FilterMenu(client);
         }
 
@@ -294,39 +288,29 @@ static int Callback_SkinsFilterMenu(Menu menu, MenuAction action, int client, in
             menu.GetItem(itemNum, info, sizeof(info));
 
             if(StrEqual(info, "search", true)) {
-                g_bSkinSearch[client] = true;
+                // Update the "g_iLoadoutAction" array.
+                g_iLoadoutAction[client] = LOADOUT_ACTION_SEARCH;
+
+                // Send a message to the client.
                 PrintToChat(client, "%s Enter the name of the skin you would like.", PREFIX);
             } else if(StrEqual(info, "random", true)) {
+                // Get a random skin from the database.
                 Backend_RandomSkin(client);
             } else if(StrEqual(info, "default", true)) {
-                int i;
-                Item item;
-                char weapon[64];
-                for(i = 0; i < USER_ITEM_MAX; i++) {
-                    item = g_hPlayerItems[client][i];
-                    if(item == null) {
-                        continue;
-                    }
+                // Remove the weapon from the map.
+                g_smPlayerItems[client].Remove(g_cLoadoutWeapon[client]);
 
-                    item.GetWeapon(weapon, sizeof(weapon));
+                // Send a message to the client.
+                PrintToChat(client, "%s Removing skin from \x07%t\x01.", PREFIX, g_cLoadoutWeapon[client]);
 
-                    if(StrEqual(weapon, g_cSkinWeapon[client])) {
-                        break;
-                    }
-                }
-
-                if(item == null) {
-                    return 0;
-                }
-
-                PrintToChat(client, "%s Removing skin from \x07%t\x01.", PREFIX, g_cSkinWeapon[client]);
-                g_hPlayerItems[client][i] = null;
-                Skins_Refresh(client, g_cSkinWeapon[client]);
+                // Refresh the weapon.
+                Skins_Refresh(client, g_cLoadoutWeapon[client]);
             } else {
-                if(strlen(info) < 1 || strlen(info) > 24) {
-                    return 0;
+                if(strlen(info) != 1) {
+                    return;
                 }
 
+                // Search the database using the letter categories.
                 Backend_SearchSkins(client, info);
             }
         }
@@ -341,8 +325,6 @@ static int Callback_SkinsFilterMenu(Menu menu, MenuAction action, int client, in
             delete menu;
         }
     }
-
-    return 0;
 }
 
 public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int itemNum) {
@@ -352,203 +334,35 @@ public int Callback_SkinsSkinMenu(Menu menu, MenuAction action, int client, int 
             char displayName[64];
             menu.GetItem(itemNum, info, sizeof(info), _, displayName, sizeof(displayName));
 
-            int i;
-            Item item;
-            char weapon[64];
-            int validItems = 0;
-            for(i = 0; i < USER_ITEM_MAX; i++) {
-                item = g_hPlayerItems[client][i];
-                if(item == null) {
-                    continue;
-                }
-
-                item.GetWeapon(weapon, sizeof(weapon));
-
-                if(StrEqual(weapon, g_cSkinWeapon[client])) {
-                    break;
-                }
-
-                validItems++;
-            }
-
-            if(item == null) {
+            // Get the client's item.
+            Item item = null;
+            if(!g_smPlayerItems[client].GetValue(g_cLoadoutWeapon[client], item)) {
                 item = new Item();
-                item.SetDefaults(client, g_cSkinWeapon[client]);
-                i = validItems + 1;
+                item.SetDefaults(client, g_cLoadoutWeapon[client]);
+                g_smPlayerItems[client].SetValue(g_cLoadoutWeapon[client], item);
             }
 
             // Update the item's skin.
             item.SetSkinID(info);
 
-            // Update the "g_hPlayerItems" array.
-            g_hPlayerItems[client][i] = item;
-
             // Send a message to the client.
-            PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, displayName, g_cSkinWeapon[client]);
+            PrintToChat(client, "%s Applying \x10%s\x01 to \x07%t\x01.", PREFIX, displayName, g_cLoadoutWeapon[client]);
 
             // Refresh the client's weapon.
-            Skins_Refresh(client, g_cSkinWeapon[client]);
+            Skins_Refresh(client, g_cLoadoutWeapon[client]);
 
             // Redisplay the menu.
-            g_hSkinMenus[client].DisplayAt(client, GetMenuSelectionPosition(), 0);
+            g_mFilterMenus[client].DisplayAt(client, GetMenuSelectionPosition(), 0);
         }
 
         case MenuAction_Cancel: {
             if(itemNum == MenuCancel_ExitBack) {
-                Skins_Menu(client);
+                Skins_FilterMenu(client);
             }
         }
 
         case MenuAction_End: {
             //delete menu;
         }
-    }
-}
-
-stock void Skins_Refresh(const int client, const char[] weapon) {
-    if(!IsClientValid(client)) {
-        return;
-    }
-
-    if(!IsPlayerAlive(client)) {
-        return;
-    }
-
-    // Check if the weapon is a knife.
-    if(IsKnife(weapon)) {
-        // Use the Knives_Refresh handler to refresh the knife.
-        Knives_Refresh(client);
-        return;
-    }
-
-    int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
-
-    char weaponClass[64];
-    for(int i = 0; i < size; i++) {
-        int entity = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
-
-        // Check if the entity is invalid.
-        if(entity == -1) {
-            continue;
-        }
-
-        // Get the entity's classname.
-        if(!GetWeaponClass(entity, weaponClass, sizeof(weaponClass))) {
-            continue;
-        }
-
-        // Check if the entity's classname matches the one we want to refresh.
-        if(!StrEqual(weapon, weaponClass)) {
-            continue;
-        }
-
-        int offset = FindDataMapInfo(client, "m_iAmmo") + (GetEntProp(entity, Prop_Data, "m_iPrimaryAmmoType") * 4);
-        int ammo = GetEntData(client, offset);
-        int clip = GetEntProp(entity, Prop_Send, "m_iClip1");
-        int reserve = GetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount");
-
-        RemovePlayerItem(client, entity);
-        AcceptEntityInput(entity, "KillHierarchy");
-
-        entity = GivePlayerItem(client, weaponClass);
-
-        if(clip != -1) {
-            SetEntProp(entity, Prop_Send, "m_iClip1", clip);
-        }
-
-        if(reserve != -1) {
-            SetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount", reserve);
-        }
-
-        if(offset != -1 && ammo != -1) {
-            DataPack pack;
-            CreateDataTimer(0.1, Timer_WeaponAmmo, pack);
-            pack.WriteCell(client);
-            pack.WriteCell(offset);
-            pack.WriteCell(ammo);
-        }
-        break;
-    }
-}
-
-stock void Skins_RefreshAll(const int client) {
-    if(!IsClientValid(client)) {
-        return;
-    }
-
-    if(!IsPlayerAlive(client)) {
-        return;
-    }
-
-    int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
-
-    char weaponClass[64];
-    for(int i = 0; i < size; i++) {
-        int entity = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
-
-        if(entity == -1 || !GetWeaponClass(entity, weaponClass, sizeof(weaponClass))) {
-            continue;
-        }
-
-        if(IsKnife(weaponClass)) {
-            continue;
-        }
-
-        char weapon[64];
-        bool matched = false;
-        for(int j = 0; j < USER_ITEM_MAX; j++) {
-            Item item = g_hPlayerItems[client][j];
-            if(item == null) {
-                continue;
-            }
-
-            item.GetWeapon(weapon, sizeof(weapon));
-
-            if(StrEqual(weapon, weaponClass)) {
-                matched = true;
-            }
-        }
-
-        if(!matched) {
-            continue;
-        }
-
-        int offset = FindDataMapInfo(client, "m_iAmmo") + (GetEntProp(entity, Prop_Data, "m_iPrimaryAmmoType") * 4);
-        int ammo = GetEntData(client, offset);
-        int clip = GetEntProp(entity, Prop_Send, "m_iClip1");
-        int reserve = GetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount");
-
-        RemovePlayerItem(client, entity);
-        AcceptEntityInput(entity, "KillHierarchy");
-
-        entity = GivePlayerItem(client, weaponClass);
-
-        if(clip != -1) {
-            SetEntProp(entity, Prop_Send, "m_iClip1", clip);
-        }
-
-        if(reserve != -1) {
-            SetEntProp(entity, Prop_Send, "m_iPrimaryReserveAmmoCount", reserve);
-        }
-
-        if(offset != -1 && ammo != -1) {
-            DataPack pack;
-            CreateDataTimer(0.1, Timer_WeaponAmmo, pack);
-            pack.WriteCell(client);
-            pack.WriteCell(offset);
-            pack.WriteCell(ammo);
-        }
-    }
-}
-
-static Action Timer_WeaponAmmo(Handle timer, DataPack pack) {
-    ResetPack(pack);
-
-    int client = pack.ReadCell();
-    int offset = pack.ReadCell();
-    int ammo = pack.ReadCell();
-
-    if(IsClientValid(client) && IsPlayerAlive(client)) {
-        SetEntData(client, offset, ammo, 4, true);
     }
 }

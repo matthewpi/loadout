@@ -55,21 +55,31 @@ CREATE TABLE IF NOT EXISTS `loadout_user_skins` (\
 #define GET_GLOVES "\
 SELECT * FROM `loadout_gloves` ORDER BY `displayName`;\
 "
+
 #define GET_GLOVE_SKINS "\
 SELECT * FROM `loadout_glove_skins`;\
 "
+
 #define GET_KNIVES "\
 SELECT * FROM `loadout_knives` ORDER BY `displayName`;\
 "
+
+#define GET_SKIN_COUNT "\
+SELECT COUNT(`id`) AS `count` FROM `loadout_skins`;\
+"
+
 #define GET_WEAPON_SKIN "\
 SELECT `displayName`, `skinId` FROM `loadout_skins` WHERE `id`=%i;\
 "
+
 #define SEARCH_WEAPON_SKINS "\
 SELECT `displayName`, `skinId` FROM `loadout_skins` WHERE `displayName` LIKE \"%s%%\" ORDER BY `displayName`;\
 "
+
 #define GET_USER_SKINS "\
 SELECT `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`, `nametag` FROM `loadout_user_skins` WHERE `steamId`='%s';\
 "
+
 #define SET_USER_SKIN "\
 INSERT INTO `loadout_user_skins` (`steamId`, `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`, `nametag`) VALUES ('%s', '%s', '%s', %i, %f, %i, '%s') ON DUPLICATE KEY UPDATE `skinId`='%s', `skinPattern`=%i, `skinFloat`=%f, `statTrak`=%i, `nametag`='%s';\
 "

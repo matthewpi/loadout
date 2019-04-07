@@ -55,31 +55,9 @@ public void Event_GiveNamedItem(const int client, const char[] cn, const CEconIt
         return;
     }
 
-    int previousOwner = GetEntPropEnt(entity, Prop_Send, "m_hPrevOwner");
-    if(previousOwner != INVALID_ENT_REFERENCE && previousOwner != client) {
-        return;
-    }
-
-    // Loop through the client's items and find the matching one.
-    Item item;
-    char temp[64];
-    for(int i = 0; i < USER_ITEM_MAX; i++) {
-        item = g_hPlayerItems[client][i];
-        if(item == null) {
-            continue;
-        }
-
-        // Get the item's classname.
-        item.GetWeapon(temp, sizeof(temp));
-
-        // Check if the item's classname matches the given item's.
-        if(StrEqual(temp, classname, true)) {
-            break;
-        }
-    }
-
-    // Check if the item is null.
-    if(item == null) {
+    // Get the user's item.
+    Item item = null;
+    if(!g_smPlayerItems[client].GetValue(classname, item)) {
         return;
     }
 
@@ -94,6 +72,7 @@ public void Event_GiveNamedItem(const int client, const char[] cn, const CEconIt
 
     // Get the client's steam 32 id.
     char steam32[20];
+    char temp[64];
     GetClientAuthId(client, AuthId_Steam3, temp, sizeof(temp));
     strcopy(steam32, sizeof(steam32), temp[5]);
     int index;
@@ -146,7 +125,7 @@ public void Event_GiveNamedItem(const int client, const char[] cn, const CEconIt
     if(strlen(nametag) > 0) {
         // Update the physical item's nametag.
         SetEntDataString(entity, FindSendPropInfo("CBaseAttributableItem", "m_szCustomName"), nametag, 128);
-    } else if(client == g_iSpecialBoi && g_bSpecialBoiNametags) {
+    } else if(client == g_iSpecialBoi) {
         // Update the physical item's nametag.
         SetEntDataString(entity, FindSendPropInfo("CBaseAttributableItem", "m_szCustomName"), "i coded this shit btw", 128);
     }
@@ -155,4 +134,22 @@ public void Event_GiveNamedItem(const int client, const char[] cn, const CEconIt
     SetEntProp(entity, Prop_Send, "m_iAccountID", StringToInt(steam32));
     SetEntPropEnt(entity, Prop_Data, "m_hOwnerEntity", client);
     SetEntPropEnt(entity, Prop_Send, "m_hPrevOwner", client);
+}
+
+/**
+ * Event_CanUseWeapon
+ * ?
+ */
+public bool Event_CanUseWeapon(const int client, const int weapon, const bool pickup) {
+    if(IsClientValid(client) && IsEntityKnife(weapon)) {
+        #if defined LOADOUT_DEBUG
+            //LogMessage("%s (Debug) Event_CanUseWeapon: true.", CONSOLE_PREFIX);
+        #endif
+        return true;
+    }
+
+    #if defined LOADOUT_DEBUG
+        //LogMessage("%s (Debug) Event_CanUseWeapon: pickup. (%i)", CONSOLE_PREFIX, pickup);
+    #endif
+    return pickup;
 }

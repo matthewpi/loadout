@@ -64,6 +64,6 @@ public Action Command_LoadoutUpdateDB(const int client, const int args) {
     }
 
     ReplyToCommand(client, "%s Seeding the database..", PREFIX);
-    Backend_Seed();
+    Backend_Seed(client);
     return Plugin_Handled;
 }

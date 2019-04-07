@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2019 Matthew Penner <me@matthewp.io>
+ * All rights reserved.
+ */
+
 Transaction AddQueriesToTransaction(Transaction transaction) {
     // Drop existing tables.
     transaction.AddQuery("DROP TABLE IF EXISTS `loadout_glove_skins`;");
