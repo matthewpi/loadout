@@ -81,5 +81,5 @@ SELECT `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`, `nametag` FRO
 "
 
 #define SET_USER_SKIN "\
-INSERT INTO `loadout_user_skins` (`steamId`, `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`, `nametag`) VALUES ('%s', '%s', '%s', %i, %f, %i, '%s') ON DUPLICATE KEY UPDATE `skinId`='%s', `skinPattern`=%i, `skinFloat`=%f, `statTrak`=%i, `nametag`='%s';\
+INSERT INTO `loadout_user_skins` (`steamId`, `weapon`, `skinId`, `skinPattern`, `skinFloat`, `statTrak`, `nametag`) VALUES ('%s', '%s', '%s', %i, %f, %i, \"%s\") ON DUPLICATE KEY UPDATE `skinId`='%s', `skinPattern`=%i, `skinFloat`=%f, `statTrak`=%i, `nametag`=\"%s\";\
 "

@@ -17,9 +17,6 @@ public void Knives_Refresh(const int client) {
     }
 
     int entity = GetPlayerWeaponSlot(client, CS_SLOT_KNIFE);
-    if(entity < 1) {
-        return;
-    }
 
     while(entity > 0) {
         RemovePlayerItem(client, entity);

@@ -9,7 +9,7 @@ public void Loadout_Menu(const int client) {
 
     menu.AddItem("knives", "Knives");
     menu.AddItem("gloves", "Gloves");
-    menu.AddItem("skins", "Skins");
+    menu.AddItem("skins", "Weapon Skins");
     menu.AddItem("items", "Items");
 
     menu.Display(client, 0);

@@ -24,6 +24,11 @@ static void Callback_GetUserSkins(Database database, DBResultSet results, const 
         return;
     }
 
+    if(!IsClientConnected(client)) {
+        LogMessage("%s Client (%i) left before their skins were loaded.", CONSOLE_PREFIX, client);
+        return;
+    }
+
     int weaponIndex;
     int skinIdIndex;
     int patternIndex;
@@ -150,8 +155,10 @@ public Transaction Backend_GetUserDataTransaction(const Transaction transaction,
 
         char nametag[24];
         item.GetNametag(nametag, sizeof(nametag));
+        char escapedNametag[32];
+        g_dbLoadout.Escape(nametag, escapedNametag, sizeof(escapedNametag));
 
-        Format(query, sizeof(query), SET_USER_SKIN, steamId, weapon, skinId, pattern, floatValue, statTrak, nametag, skinId, pattern, floatValue, statTrak, nametag);
+        Format(query, sizeof(query), SET_USER_SKIN, steamId, weapon, skinId, pattern, floatValue, statTrak, escapedNametag, skinId, pattern, floatValue, statTrak, escapedNametag);
         transaction.AddQuery(query);
     }
 
